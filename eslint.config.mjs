@@ -1,3 +1,4 @@
+import tsParser from '@typescript-eslint/parser';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 
@@ -15,6 +16,14 @@ export default [
   },
   {
     files: ['**/*.{ts,tsx,js,jsx,mjs,cjs}'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        ecmaFeatures: { jsx: true },
+      },
+    },
     plugins: {
       'simple-import-sort': simpleImportSort,
       'unused-imports': unusedImports,
