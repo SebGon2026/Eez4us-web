@@ -9,7 +9,7 @@ geofence dispara "Llegué" automático al entrar al colegio.
 - Monorepo pnpm + turbo: `apps/mobile`, `apps/web`, `packages/db`
 - Mobile: Expo SDK 54 + expo-router + NativeWind v4 + Nunito
 - Web admin: Next 15 App Router + Tailwind + shadcn/ui
-- DB: Prisma + Postgres (Neon)
+- DB: Prisma + **Prisma Postgres** + **Accelerate** (NO Neon)
 - Auth.js: web=cookies de sesión, mobile=Bearer JWT (NO mezclar)
 - Mapbox (NO Google Maps): `@rnmapbox/maps` en mobile, `mapbox-gl` en web
 - Supabase Realtime para sincronización del dashboard
@@ -35,6 +35,26 @@ geofence dispara "Llegué" automático al entrar al colegio.
   redondeadas, micro-animaciones de feedback en cada tap.
 - Sin emojis decorativos en UI productiva.
 - Sin banderas, sin código país en inputs de teléfono.
+
+## Base de datos: Prisma Postgres + Accelerate
+
+Tres URLs en `packages/db/.env`. Cuál usar:
+
+- **`DATABASE_URL`** (Accelerate, `prisma+postgres://accelerate.prisma-data.net/...`)
+  - Es la que carga el `PrismaClient` en runtime (apps/web, workers).
+  - El cliente se extiende con `withAccelerate()` desde `@prisma/extension-accelerate`.
+  - Edge-friendly, cache de queries opcional con `cacheStrategy`.
+- **`DIRECT_URL`** (directa a `db.prisma.io:5432`, sin pooling)
+  - `schema.prisma` la usa como `directUrl`.
+  - La usan: migraciones (`prisma migrate dev/deploy`), `prisma db push`,
+    `prisma db pull`, seeds, scripts SQL directos, `prisma studio`.
+  - Prisma Migrate **no funciona a través de Accelerate**, por eso esta URL es obligatoria.
+- **`POOLED_URL`** (pooled sin Accelerate, `pooled.db.prisma.io:5432`)
+  - Reserva. Solo si en algún momento queremos saltarnos Accelerate
+    y conectar con pooling tradicional (p.ej. una Lambda no-edge).
+  - Hoy NO se usa.
+
+Nunca commitear el `.env`. Cambios de credenciales solo con permiso explícito.
 
 ## Reglas que ya pagamos caras (no negociables)
 
