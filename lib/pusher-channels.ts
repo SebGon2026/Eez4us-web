@@ -1,6 +1,9 @@
 import { prisma } from './db';
 import { encryptForChannel, readEncryptionMasterKey } from './pusher-encrypt';
 import { pusherTrigger, readPusherEnv } from './pusher-server';
+import type { RankedTrip, TripUpdatePayload } from './trip-types';
+
+export type { RankedTrip, TripUpdatePayload } from './trip-types';
 
 export function schoolPickupChannel(schoolId: string, pickupPointId: string): string {
   return `private-encrypted-school-${schoolId}-pickup-${pickupPointId}`;
@@ -67,20 +70,6 @@ async function publish(channel: string, event: string, payload: unknown): Promis
   }
 }
 
-export interface RankedTrip {
-  tripId: string;
-  parentId: string;
-  parentName: string | null;
-  vehicle: { plate: string; model: string; color: string };
-  students: Array<{ id: string; firstName: string; lastName: string }>;
-  status: string;
-  etaSeconds: number | null;
-  etaUpdatedAt: string | null;
-  lastLat: number | null;
-  lastLng: number | null;
-  arrivedAt: string | null;
-}
-
 export async function buildRankedTrips(schoolId: string, pickupPointId: string): Promise<RankedTrip[]> {
   const trips = await prisma.trip.findMany({
     where: {
@@ -116,16 +105,6 @@ export async function buildRankedTrips(schoolId: string, pickupPointId: string):
 export async function broadcastRankedTrips(schoolId: string, pickupPointId: string): Promise<void> {
   const ranked = await buildRankedTrips(schoolId, pickupPointId);
   await publish(schoolPickupChannel(schoolId, pickupPointId), 'trips.ranked', { trips: ranked });
-}
-
-export interface TripUpdatePayload {
-  tripId: string;
-  status: string;
-  etaSeconds: number | null;
-  etaUpdatedAt: string | null;
-  lastLat: number | null;
-  lastLng: number | null;
-  arrivedAt: string | null;
 }
 
 export async function broadcastTripUpdate(tripId: string): Promise<void> {

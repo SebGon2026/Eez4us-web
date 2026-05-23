@@ -28,7 +28,7 @@ export default async function AdminHomePage() {
   const tiles = [
     { label: 'Alumnos activos', value: studentsCount, href: '/admin/students' },
     { label: 'Invitaciones pendientes', value: invitationsPending, href: '/admin/invitations' },
-    { label: 'Viajes en curso', value: tripsActive, href: '/admin' },
+    { label: 'Viajes en curso', value: tripsActive, href: '/admin/dashboard' },
   ];
 
   return (

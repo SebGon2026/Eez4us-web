@@ -14,6 +14,7 @@ interface SidebarItem {
 
 const ITEMS: SidebarItem[] = [
   { href: '/admin', label: 'Inicio' },
+  { href: '/admin/dashboard', label: 'Dashboard en vivo' },
   { href: '/admin/pickup-points', label: 'Puntos de recogida' },
   { href: '/admin/grades', label: 'Grados' },
   { href: '/admin/students', label: 'Alumnos' },
