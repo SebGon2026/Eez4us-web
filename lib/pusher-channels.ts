@@ -38,6 +38,13 @@ export async function canAccessChannel(
     return session.user.schoolId === schoolId;
   }
 
+  const alertsMatch = channelName.match(/^private-encrypted-school-([^-]+)-alerts$/);
+  if (alertsMatch) {
+    const [, schoolId] = alertsMatch;
+    if (!STAFF_ROLES.has(session.user.role ?? '')) return false;
+    return session.user.schoolId === schoolId;
+  }
+
   const tripMatch = channelName.match(/^private-encrypted-trip-(.+)$/);
   if (tripMatch) {
     const [, tripId] = tripMatch;

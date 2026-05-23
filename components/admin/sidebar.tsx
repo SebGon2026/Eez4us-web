@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { authClient } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,7 @@ const ITEMS: SidebarItem[] = [
   { href: '/admin/grades', label: 'Grados' },
   { href: '/admin/students', label: 'Alumnos' },
   { href: '/admin/invitations', label: 'Invitaciones' },
+  { href: '/admin/alerts', label: 'Alertas' },
   { href: '/admin/reports/operational', label: 'Reporte operativo', roles: ['director', 'super_admin'] },
   { href: '/admin/reports/school', label: 'Reporte de escuela', roles: ['director', 'super_admin'] },
   { href: '/admin/reports/financial', label: 'Reporte financiero', roles: ['super_admin'] },
@@ -37,6 +39,29 @@ interface SidebarProps {
 export function Sidebar({ userName, role, schoolName }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const res = await fetch('/api/alerts?unread=true&limit=1', { credentials: 'include' });
+        if (!res.ok) return;
+        const data = (await res.json()) as { unreadCount?: number };
+        if (!cancelled && typeof data.unreadCount === 'number') {
+          setUnread(data.unreadCount);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [pathname]);
 
   const visible = ITEMS.filter((it) => !it.roles || it.roles.includes(role));
 
@@ -58,18 +83,28 @@ export function Sidebar({ userName, role, schoolName }: SidebarProps) {
           const active = item.href === '/admin'
             ? pathname === '/admin'
             : pathname.startsWith(item.href);
+          const isAlerts = item.href === '/admin/alerts';
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center rounded-2xl px-4 py-3 text-sm font-bold transition-colors',
+                'flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold transition-colors',
                 active
                   ? 'bg-primary text-primary-foreground'
                   : 'text-foreground hover:bg-secondary',
               )}
             >
-              {item.label}
+              <span>{item.label}</span>
+              {isAlerts && unread > 0 && (
+                <span
+                  className={cn(
+                    'ml-2 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-destructive px-1.5 py-0.5 text-xs font-bold text-white',
+                  )}
+                >
+                  {unread > 99 ? '99+' : unread}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { prisma } from '@/lib/db';
 import { recomputeTripEta } from '@/lib/eta';
+import { sendPushToUser } from '@/lib/push';
 import { broadcastRankedTrips, broadcastTripUpdate } from '@/lib/pusher-channels';
 import { jsonError, requireRole } from '@/lib/session';
 
@@ -66,6 +67,15 @@ export async function PATCH(
     await broadcastTripUpdate(tripId);
     if (recompute.arrivedFiredNow) {
       await broadcastRankedTrips(existing.schoolId, existing.pickupPointId);
+      try {
+        await sendPushToUser(existing.parentId, {
+          title: 'Llegaste al colegio',
+          body: 'El colegio sabe que llegaste',
+          data: { type: 'arrived-geofence', tripId },
+        });
+      } catch {
+        // no bloquear si el push falla
+      }
     } else if (recompute.recomputed) {
       await broadcastRankedTrips(existing.schoolId, existing.pickupPointId);
     }

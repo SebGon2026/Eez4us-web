@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { sendPushToUser } from '@/lib/push';
 import { broadcastRankedTrips, broadcastTripUpdate } from '@/lib/pusher-channels';
 import { jsonError, requireRole } from '@/lib/session';
 
@@ -16,7 +17,7 @@ export async function POST(
 
     const trip = await prisma.trip.findUnique({
       where: { id: tripId },
-      select: { id: true, schoolId: true, pickupPointId: true, status: true },
+      select: { id: true, schoolId: true, pickupPointId: true, status: true, parentId: true },
     });
     if (!trip) {
       return Response.json({ error: 'TRIP_NOT_FOUND' }, { status: 404 });
@@ -48,6 +49,11 @@ export async function POST(
     await Promise.allSettled([
       broadcastTripUpdate(tripId),
       broadcastRankedTrips(trip.schoolId, trip.pickupPointId),
+      sendPushToUser(trip.parentId, {
+        title: 'Entrega completada',
+        body: 'Tu hijo fue entregado',
+        data: { type: 'trip-delivered', tripId },
+      }),
     ]);
 
     return Response.json({ ok: true });

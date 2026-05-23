@@ -49,6 +49,10 @@ model User {
   // tickets
   ticketsReported SupportTicket[]
 
+  // push + alerts
+  pushTokens   PushToken[]
+  alertsTarget Alert[]     @relation("AlertTargetUser")
+
   @@index([schoolId])
   @@map("users")
 }
@@ -121,6 +125,7 @@ model School {
   subscription      Subscription?
   tickets           SupportTicket[]
   enrolledByVendors VendorSchool[]
+  alerts            Alert[]
 
   @@map("schools")
 }
@@ -455,4 +460,54 @@ model SupportTicket {
   @@index([status])
   @@index([schoolId])
   @@map("support_tickets")
+}
+
+// ============================================
+// Push notifications + alerts
+// ============================================
+
+model PushToken {
+  id             String   @id @default(cuid())
+  userId         String
+  expoPushToken  String   @unique
+  platform       String   // ios | android
+  createdAt      DateTime @default(now())
+  lastSeenAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_tokens")
+}
+
+enum AlertType {
+  TRIP_OVERDUE
+  ARRIVED_NOT_DELIVERED
+  INVITATION_STALE
+}
+
+enum AlertSeverity {
+  info
+  warning
+  critical
+}
+
+model Alert {
+  id           String        @id @default(cuid())
+  schoolId     String
+  type         AlertType
+  targetUserId String?
+  targetRole   String?
+  payload      Json
+  severity     AlertSeverity @default(info)
+  readAt       DateTime?
+  createdAt    DateTime      @default(now())
+
+  school     School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  targetUser User?  @relation("AlertTargetUser", fields: [targetUserId], references: [id])
+
+  @@index([schoolId, readAt])
+  @@index([targetUserId, readAt])
+  @@index([type, createdAt])
+  @@map("alerts")
 }

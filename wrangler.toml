@@ -1,11 +1,15 @@
 name = "eez4us-web"
-main = ".open-next/worker.js"
+main = "worker-entry.mjs"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
+
+# Cron Triggers: alertas (overdue trips / arrived-not-delivered / stale invitations)
+[triggers]
+crons = ["*/1 * * * *"]
 
 # Secrets a setear vía `wrangler secret put NAME` (NO en este archivo):
 #   DATABASE_URL                     Accelerate (prisma+postgres://...)
@@ -16,6 +20,8 @@ binding = "ASSETS"
 #   PUSHER_SECRET
 #   PUSHER_ENCRYPTION_MASTER_KEY     openssl rand -base64 32  (ortogonal a PUSHER_SECRET)
 #   GOOGLE_MAPS_BACKEND_KEY          solo Directions/Geocoding, restricted by API
+#   EXPO_ACCESS_TOKEN                token de cuenta Expo para push (https://expo.dev/accounts/[acc]/settings/access-tokens)
+#   CRON_SECRET                      openssl rand -base64 32 (auth del scheduled handler)
 
 [vars]
 PUSHER_CLUSTER = "mt1"

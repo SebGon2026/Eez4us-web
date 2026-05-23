@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { auth } from '@/lib/auth';
 import { claimInvitation } from '@/lib/invitations';
+import { sendPushToSchoolRoles } from '@/lib/push';
 import { HttpError, jsonError } from '@/lib/session';
 
 export const runtime = 'edge';
@@ -31,6 +32,16 @@ export async function POST(req: Request): Promise<Response> {
       jwt = (tokenResponse as { token?: string } | null)?.token ?? null;
     } catch {
       jwt = null;
+    }
+
+    try {
+      await sendPushToSchoolRoles(result.schoolId, ['director', 'super_admin'], {
+        title: 'Padre claimeó invitación',
+        body: `${body.name} se unió`,
+        data: { type: 'invitation-claimed', userId: result.userId },
+      });
+    } catch {
+      // no bloquear el claim si el push falla
     }
 
     const res = Response.json({
