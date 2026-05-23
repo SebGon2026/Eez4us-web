@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { onStudentActivationChanged, onStudentDeactivated } from '@/lib/billing-hooks';
 import { prisma } from '@/lib/db';
 import { jsonError, requireSchool } from '@/lib/session';
 
@@ -24,7 +25,7 @@ const patchSchema = z.object({
 async function loadStudent(schoolId: string, studentId: string) {
   const s = await prisma.student.findUnique({
     where: { id: studentId },
-    select: { schoolId: true, externalId: true },
+    select: { schoolId: true, externalId: true, active: true },
   });
   return s?.schoolId === schoolId ? s : null;
 }
@@ -81,6 +82,9 @@ export async function PATCH(
         active: true,
       },
     });
+    if (body.active !== undefined) {
+      await onStudentActivationChanged(schoolId, current.active, body.active);
+    }
     return Response.json({ student });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -105,6 +109,9 @@ export async function DELETE(
       where: { id: studentId },
       data: { active: false },
     });
+    if (current.active) {
+      await onStudentDeactivated(schoolId);
+    }
     return Response.json({ ok: true });
   } catch (err) {
     return jsonError(err);

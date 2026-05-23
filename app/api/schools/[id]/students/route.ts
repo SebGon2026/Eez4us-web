@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { onStudentCreated } from '@/lib/billing-hooks';
 import { prisma } from '@/lib/db';
 import { jsonError, requireSchool } from '@/lib/session';
 
@@ -60,6 +61,7 @@ export async function POST(
       },
       select: { id: true, firstName: true, lastName: true, externalId: true, gradeId: true },
     });
+    await onStudentCreated(schoolId);
     return Response.json({ student });
   } catch (err) {
     if (err instanceof z.ZodError) {

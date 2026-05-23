@@ -19,8 +19,13 @@ const ITEMS: SidebarItem[] = [
   { href: '/admin/grades', label: 'Grados' },
   { href: '/admin/students', label: 'Alumnos' },
   { href: '/admin/invitations', label: 'Invitaciones' },
+  { href: '/admin/reports/operational', label: 'Reporte operativo', roles: ['director', 'super_admin'] },
+  { href: '/admin/reports/school', label: 'Reporte de escuela', roles: ['director', 'super_admin'] },
+  { href: '/admin/reports/financial', label: 'Reporte financiero', roles: ['super_admin'] },
   { href: '/admin/billing', label: 'Facturación', roles: ['director', 'super_admin'] },
   { href: '/admin/vendors', label: 'Vendors', roles: ['super_admin'] },
+  { href: '/admin/support', label: 'Soporte' },
+  { href: '/admin/support/admin', label: 'Tickets (admin)', roles: ['super_admin'] },
 ];
 
 interface SidebarProps {
