@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,6 +12,7 @@ interface DeleteButtonProps {
   label?: string;
   title?: string;
   description?: string;
+  successMessage?: string;
   size?: 'default' | 'sm';
 }
 
@@ -19,27 +21,27 @@ export function DeleteButton({
   label = 'Eliminar',
   title = 'Confirmar eliminación',
   description = 'Esta acción no se puede deshacer.',
+  successMessage = 'Eliminado correctamente',
   size = 'sm',
 }: DeleteButtonProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function onConfirm() {
     setSubmitting(true);
-    setError(null);
     try {
       const res = await fetch(url, { method: 'DELETE' });
       if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        setError(data.error ?? 'No se pudo eliminar');
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error(data.error ?? 'No se pudo eliminar');
         return;
       }
+      toast.success(successMessage);
       setOpen(false);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error inesperado');
+      toast.error(e instanceof Error ? e.message : 'Error inesperado');
     } finally {
       setSubmitting(false);
     }
@@ -55,7 +57,6 @@ export function DeleteButton({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
             Cancelar
