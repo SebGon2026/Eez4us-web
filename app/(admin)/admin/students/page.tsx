@@ -1,9 +1,11 @@
+import { GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { type Column,DataTable } from '@/components/admin/data-table';
 import { DeleteButton } from '@/components/admin/delete-button';
 import { StudentsFilters } from '@/components/admin/students-filters';
+import { EmptyState } from '@/components/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { prisma } from '@/lib/db';
@@ -155,6 +157,31 @@ export default async function StudentsPage({
         total={total}
         baseUrl="/admin/students"
         queryParams={{ q, gradeId }}
+        empty={
+          q || gradeId ? (
+            <EmptyState
+              icon={GraduationCap}
+              title="Sin alumnos que coincidan"
+              description="Probá quitar filtros o cambiar el término de búsqueda."
+            />
+          ) : (
+            <EmptyState
+              icon={GraduationCap}
+              title="Aún no agregaste alumnos"
+              description="Cargá un Excel con la lista de padres + alumnos o creá uno manualmente."
+              action={
+                <div className="flex gap-2">
+                  <Link href="/admin/students/import">
+                    <Button variant="outline">Importar Excel</Button>
+                  </Link>
+                  <Link href="/admin/students/new">
+                    <Button>Nuevo alumno</Button>
+                  </Link>
+                </div>
+              }
+            />
+          )
+        }
       />
     </div>
   );

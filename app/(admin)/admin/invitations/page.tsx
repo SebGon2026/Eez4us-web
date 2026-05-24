@@ -1,10 +1,14 @@
 import type { InvitationStatus } from '@prisma/client';
+import { Mail } from 'lucide-react';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { type Column,DataTable } from '@/components/admin/data-table';
 import { InvitationsFilters } from '@/components/admin/invitations-filters';
 import { ResendButton } from '@/components/admin/resend-button';
+import { EmptyState } from '@/components/empty-state';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
 
@@ -178,6 +182,26 @@ export default async function InvitationsPage({
         total={total}
         baseUrl="/admin/invitations"
         queryParams={{ status: status }}
+        empty={
+          status ? (
+            <EmptyState
+              icon={Mail}
+              title="Sin invitaciones con ese estado"
+              description="Probá cambiar el filtro arriba."
+            />
+          ) : (
+            <EmptyState
+              icon={Mail}
+              title="Aún no enviaste invitaciones"
+              description="Importá un Excel con padres y alumnos — desde ahí se generan las invitaciones automáticas."
+              action={
+                <Link href="/admin/students/import">
+                  <Button>Importar Excel</Button>
+                </Link>
+              }
+            />
+          )
+        }
       />
     </div>
   );
