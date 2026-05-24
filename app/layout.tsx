@@ -2,6 +2,7 @@ import './globals.css';
 
 import type { Metadata } from 'next';
 import { Nunito } from 'next/font/google';
+import { Toaster } from 'sonner';
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -18,7 +19,20 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${nunito.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            classNames: {
+              toast: 'rounded-2xl border-2 font-sans',
+              title: 'font-semibold',
+            },
+          }}
+        />
+      </body>
     </html>
   );
 }
