@@ -1,6 +1,9 @@
+import { MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import { EmptyState } from '@/components/empty-state';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
@@ -37,15 +40,16 @@ export default async function DashboardHomePage() {
       </div>
 
       {pickupPoints.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            No hay puntos de recogida activos. Configurá uno en{' '}
-            <Link href="/admin/pickup-points" className="font-bold text-primary underline">
-              Puntos de recogida
+        <EmptyState
+          icon={MapPin}
+          title="Ningún punto de recogida configurado"
+          description="Configurá al menos un punto para empezar a recibir viajes en este tablero."
+          action={
+            <Link href="/admin/pickup-points/new">
+              <Button>Crear punto de recogida</Button>
             </Link>
-            .
-          </CardContent>
-        </Card>
+          }
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {pickupPoints.map((pp) => {

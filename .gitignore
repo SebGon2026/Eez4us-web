@@ -43,3 +43,4 @@ prisma/generated/
 # Cache
 .eslintcache
 .cache/
+tsconfig.tsbuildinfo

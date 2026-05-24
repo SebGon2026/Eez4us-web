@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AdminHomeTiles } from '@/components/admin/admin-home-tiles';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
 
@@ -38,18 +39,7 @@ export default async function AdminHomePage() {
         <p className="text-sm text-muted-foreground">Resumen rápido de la escuela.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {tiles.map((t) => (
-          <Link key={t.label} href={t.href}>
-            <Card className="transition-transform hover:-translate-y-0.5">
-              <CardHeader>
-                <CardDescription>{t.label}</CardDescription>
-                <CardTitle className="text-4xl text-primary">{t.value}</CardTitle>
-              </CardHeader>
-            </Card>
-          </Link>
-        ))}
-      </div>
+      <AdminHomeTiles tiles={tiles} />
 
       <Card>
         <CardHeader>

@@ -1,7 +1,9 @@
+import { MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { DeleteButton } from '@/components/admin/delete-button';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -46,25 +48,30 @@ export default async function PickupPointsPage() {
         </Link>
       </div>
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Coordenadas</TableHead>
-              <TableHead>Radio</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pickupPoints.length === 0 ? (
+      {pickupPoints.length === 0 ? (
+        <EmptyState
+          icon={MapPin}
+          title="Aún no hay puntos de recogida"
+          description="Creá el primero con su ubicación en el mapa y radio en metros."
+          action={
+            <Link href="/admin/pickup-points/new">
+              <Button>Crear primer punto</Button>
+            </Link>
+          }
+        />
+      ) : (
+        <Card>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
-                  Aún no hay puntos.
-                </TableCell>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Coordenadas</TableHead>
+                <TableHead>Radio</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
-            ) : (
-              pickupPoints.map((pp) => (
+            </TableHeader>
+            <TableBody>
+              {pickupPoints.map((pp) => (
                 <TableRow key={pp.id}>
                   <TableCell className="font-bold">{pp.name}</TableCell>
                   <TableCell className="font-mono text-xs">
@@ -81,15 +88,16 @@ export default async function PickupPointsPage() {
                       <DeleteButton
                         url={`/api/schools/${schoolId}/pickup-points/${pp.id}`}
                         description="Se desactiva el punto. No se eliminan viajes históricos."
+                        successMessage="Punto eliminado"
                       />
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </div>
   );
 }
