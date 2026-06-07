@@ -21,8 +21,11 @@ model User {
 
   // Eez4us custom fields
   schoolId  String?
-  role      String  @default("parent") // parent | director | support_staff | vendor | super_admin
+  role      String  @default("parent") // parent | director | support_staff | logistics | vendor | super_admin
   phoneE164 String?
+  // false = acceso revocado. Soft-disable: el director da de baja personal sin
+  // borrar la cuenta (preserva la atribución de entregas / prueba de entrega).
+  active    Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -38,7 +41,8 @@ model User {
   trips              Trip[]             @relation("TripParent")
 
   // staff
-  finalizedTrips Trip[] @relation("TripFinalizedBy")
+  finalizedTrips        Trip[]        @relation("TripFinalizedBy")
+  finalizedTripStudents TripStudent[] @relation("TripStudentFinalizedBy")
 
   // invitations claimed
   claimedInvitation Invitation? @relation("InvitationClaimedBy")
@@ -52,6 +56,21 @@ model User {
   // push + alerts
   pushTokens   PushToken[]
   alertsTarget Alert[]     @relation("AlertTargetUser")
+
+  // messaging
+  conversationsAsParent Conversation[] @relation("ConvParent")
+  messagesSent          Message[]      @relation("MessageSender")
+
+  // temporary authorizations
+  tempAuthsCreated TemporaryAuthorization[] @relation("TempAuthParent")
+  tempAuthsUsed    TemporaryAuthorization[] @relation("TempAuthUsedBy")
+
+  // audit & imports
+  auditLogs       AuditLog[]    @relation("AuditActor")
+  importJobs      ImportJob[]   @relation("ImportJobCreator")
+
+  // notifications
+  notifications Notification[] @relation("UserNotifications")
 
   @@index([schoolId])
   @@map("users")
@@ -98,6 +117,15 @@ model Verification {
   @@map("verifications")
 }
 
+model Jwks {
+  id         String   @id @default(cuid())
+  publicKey  String
+  privateKey String
+  createdAt  DateTime @default(now())
+
+  @@map("jwks")
+}
+
 // ============================================
 // Schools + pickup points + grades + students
 // ============================================
@@ -109,6 +137,16 @@ model School {
   addressText  String?
   addressLat   Float?
   addressLng   Float?
+
+  // branding del colegio (login + admin)
+  logoUrl           String?
+  brandHue          Int?    // tonalidad HSL (0-360) para color primario en su login
+  brandHueSecondary Int?    // tonalidad HSL (0-360) para color de acento (íconos, bandas)
+
+  // localización del panel admin: "es-MX" (default) | "es-AR" (voseo)
+  locale        String  @default("es-MX")
+  // densidad de la UI del panel admin: "comfortable" (default) | "compact" | "spacious"
+  density       String  @default("comfortable")
 
   stripeCustomerId String? @unique
 
@@ -126,6 +164,12 @@ model School {
   tickets           SupportTicket[]
   enrolledByVendors VendorSchool[]
   alerts            Alert[]
+
+  conversations           Conversation[]
+  temporaryAuthorizations TemporaryAuthorization[]
+  importJobs              ImportJob[]
+  commissions             Commission[]             @relation("SchoolCommissions")
+  invoices                Invoice[]                @relation("SchoolInvoices")
 
   @@map("schools")
 }
@@ -149,16 +193,30 @@ model PickupPoint {
 }
 
 model Grade {
-  id        String   @id @default(cuid())
-  schoolId  String
-  name      String   // "Primero A"
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  schoolId      String
+  name          String   // "Primero A"
+  level         String?  // INICIAL | PRIMARIA | SECUNDARIA
+  dismissalTime String?  // "12:30" — hora local de salida
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
 
   school   School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   students Student[]
 
   @@unique([schoolId, name])
+  @@index([schoolId, dismissalTime])
   @@map("grades")
+}
+
+enum PickupMode {
+  PRIVATE_VEHICLE // recogido por un representante en su vehículo particular
+  TRANSPORT // transporte escolar/privado (van o bus)
+}
+
+enum TransportVehicleType {
+  BUS
+  VAN
 }
 
 model Student {
@@ -170,6 +228,14 @@ model Student {
   birthDate  DateTime?
   externalId String? // matrícula interna de la escuela
   active     Boolean   @default(true)
+
+  // Modo de recogida
+  pickupMode           PickupMode            @default(PRIVATE_VEHICLE)
+  transportName        String? // responsable del transporte (van/bus)
+  transportPlate       String? // placa del vehículo de transporte
+  transportPhone       String?
+  transportVehicleType TransportVehicleType?
+
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
@@ -301,8 +367,14 @@ model Trip {
   schoolId           String
   pickupPointId      String
   parentId           String
-  vehicleId          String
+  // null = walk-up: alguien llega a la puerta con la tarjeta del alumno sin que el padre
+  // haya arrancado un viaje (sin vehículo ni GPS). Ver isWalkup.
+  vehicleId          String?
   authorizedFamilyId String?
+
+  // Viaje sintético creado por la miss al escanear una tarjeta sin recogida en curso
+  // (§A7-ter, walk-up puro). Se excluye de los flujos del padre; vive solo para el portón.
+  isWalkup Boolean @default(false)
 
   status            TripStatus @default(EN_CAMINO)
   startedAt         DateTime   @default(now())
@@ -328,7 +400,7 @@ model Trip {
   school           School            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   pickupPoint      PickupPoint       @relation(fields: [pickupPointId], references: [id])
   parent           User              @relation("TripParent", fields: [parentId], references: [id])
-  vehicle          Vehicle           @relation(fields: [vehicleId], references: [id])
+  vehicle          Vehicle?          @relation(fields: [vehicleId], references: [id])
   authorizedFamily AuthorizedFamily? @relation(fields: [authorizedFamilyId], references: [id])
   finalizedBy      User?             @relation("TripFinalizedBy", fields: [finalizedByUserId], references: [id])
 
@@ -338,6 +410,7 @@ model Trip {
   @@index([schoolId, status])
   @@index([pickupPointId, status])
   @@index([parentId, startedAt])
+  @@index([parentId, status])
   @@map("trips")
 }
 
@@ -346,11 +419,18 @@ model TripStudent {
   tripId    String
   studentId String
 
-  trip    Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  student Student @relation(fields: [studentId], references: [id])
+  // Entrega por-alumno: un viaje puede traer hermanos y se entregan por separado.
+  // El Trip pasa a ENTREGADO solo cuando TODOS sus TripStudent tienen deliveredAt.
+  deliveredAt       DateTime?
+  finalizedByUserId String? // miss/staff que entregó a ESTE alumno
+
+  trip        Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  student     Student @relation(fields: [studentId], references: [id])
+  finalizedBy User?   @relation("TripStudentFinalizedBy", fields: [finalizedByUserId], references: [id])
 
   @@unique([tripId, studentId])
   @@index([studentId])
+  @@index([finalizedByUserId])
   @@map("trip_students")
 }
 
@@ -380,6 +460,7 @@ model Vendor {
 
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   enrolledSchools VendorSchool[]
+  commissions     Commission[]   @relation("VendorCommissions")
 
   @@map("vendors")
 }
@@ -510,4 +591,246 @@ model Alert {
   @@index([targetUserId, readAt])
   @@index([type, createdAt])
   @@map("alerts")
+}
+
+// ============================================
+// Messaging (school <-> parent)
+// ============================================
+
+model Conversation {
+  id        String   @id @default(cuid())
+  schoolId  String
+  parentId  String
+  subject   String?
+  lastMessageAt DateTime @default(now())
+  unreadStaff   Int      @default(0)
+  unreadParent  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  school   School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  parent   User      @relation("ConvParent", fields: [parentId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([schoolId, parentId])
+  @@index([schoolId, lastMessageAt])
+  @@map("conversations")
+}
+
+enum MessageSenderType {
+  PARENT
+  STAFF
+  SYSTEM
+}
+
+model Message {
+  id             String            @id @default(cuid())
+  conversationId String
+  senderId       String?
+  senderType     MessageSenderType
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime          @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?        @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+// ============================================
+// Temporary authorizations (niñera, ocasionales)
+// ============================================
+
+model TemporaryAuthorization {
+  id            String   @id @default(cuid())
+  schoolId      String
+  parentId      String
+  personName    String
+  documentId    String?
+  vehicleInfo   String?
+  validDate     DateTime
+  code          String   @unique
+  studentIds    String[]
+  usedAt        DateTime?
+  usedByStaffId String?
+  revokedAt     DateTime?
+  createdAt     DateTime @default(now())
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  parent User   @relation("TempAuthParent", fields: [parentId], references: [id], onDelete: Cascade)
+  usedByStaff User? @relation("TempAuthUsedBy", fields: [usedByStaffId], references: [id])
+
+  @@index([schoolId, validDate])
+  @@index([parentId])
+  @@map("temporary_authorizations")
+}
+
+// ============================================
+// Audit log
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  schoolId  String?
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([schoolId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// Import jobs (Excel)
+// ============================================
+
+enum ImportJobStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+model ImportJob {
+  id          String          @id @default(cuid())
+  schoolId    String
+  createdById String
+  filename    String
+  status      ImportJobStatus @default(PENDING)
+  totalRows   Int             @default(0)
+  successRows Int             @default(0)
+  errorRows   Int             @default(0)
+  warnings    Int             @default(0)
+  report      Json?
+  createdAt   DateTime        @default(now())
+  finishedAt  DateTime?
+
+  school    School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdBy User   @relation("ImportJobCreator", fields: [createdById], references: [id])
+
+  @@index([schoolId, createdAt])
+  @@map("import_jobs")
+}
+
+// ============================================
+// Route cache (Google Directions)
+// ============================================
+
+model RouteCache {
+  id           String   @id @default(cuid())
+  cacheKey     String   @unique
+  originLat    Float
+  originLng    Float
+  destLat      Float
+  destLng      Float
+  durationSec  Int
+  distanceMet  Int
+  polyline     String
+  createdAt    DateTime @default(now())
+  hitCount     Int      @default(0)
+
+  @@index([destLat, destLng])
+  @@map("route_cache")
+}
+
+// ============================================
+// Permission restrictions (custodia)
+// ============================================
+
+model PermissionRestriction {
+  id          String   @id @default(cuid())
+  schoolId    String
+  studentId   String
+  blockedUserId String?
+  description String
+  documentUrl String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([schoolId])
+  @@index([studentId])
+  @@map("permission_restrictions")
+}
+
+// ============================================
+// Notifications (mobile push history)
+// ============================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?
+  sentAt    DateTime @default(now())
+
+  user User @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+// ============================================
+// Commissions & invoices
+// ============================================
+
+enum CommissionStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
+model Commission {
+  id          String           @id @default(cuid())
+  vendorId    String
+  schoolId    String
+  amount      Float
+  status      CommissionStatus @default(PENDING)
+  periodStart DateTime
+  periodEnd   DateTime
+  paidAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  vendor Vendor @relation("VendorCommissions", fields: [vendorId], references: [id], onDelete: Cascade)
+  school School @relation("SchoolCommissions", fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, status])
+  @@index([schoolId, periodStart])
+  @@map("commissions")
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+  VOID
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  schoolId        String
+  stripeInvoiceId String?       @unique
+  amount          Float
+  status          InvoiceStatus @default(PENDING)
+  periodStart     DateTime?
+  periodEnd       DateTime?
+  pdfUrl          String?
+  createdAt       DateTime      @default(now())
+  paidAt          DateTime?
+
+  school School @relation("SchoolInvoices", fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId, createdAt])
+  @@map("invoices")
 }
