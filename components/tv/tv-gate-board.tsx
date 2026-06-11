@@ -134,9 +134,9 @@ export function TvGateBoard({ initialEntries, schoolId, pickupPointId, vertical 
 
                   <div className="flex shrink-0 items-center gap-6">
                     {entry.vehicle ? (
-                      <span className="inline-flex items-center gap-3 text-2xl">
+                      <span className="inline-flex items-center gap-3 text-4xl">
                         <span
-                          className="inline-block h-5 w-5 rounded-full border"
+                          className="inline-block h-6 w-6 rounded-full border"
                           style={{ backgroundColor: entry.vehicle.color, borderColor: 'var(--tv-border)' }}
                         />
                         <span className="font-black tracking-wide tabular-nums" style={{ color: 'var(--tv-fg)' }}>
@@ -144,13 +144,13 @@ export function TvGateBoard({ initialEntries, schoolId, pickupPointId, vertical 
                         </span>
                       </span>
                     ) : (
-                      <span className="text-2xl" style={{ color: 'var(--tv-fg2)' }}>
+                      <span className="text-3xl" style={{ color: 'var(--tv-fg2)' }}>
                         {entry.origin === 'ESTOY_AFUERA'
                           ? 'Padre afuera · sin auto'
                           : 'Retiro en puerta · a pie'}
                       </span>
                     )}
-                    {!atGate && <TvEta etaSeconds={entry.etaSeconds} className="text-5xl" />}
+                    {!atGate && <TvEta etaSeconds={entry.etaSeconds} className="text-6xl" />}
                   </div>
                 </motion.div>
               );
