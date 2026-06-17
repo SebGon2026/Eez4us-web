@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 function hasSessionCookie(request: NextRequest): boolean {
-  return request.cookies.getAll().some((c) => c.name.startsWith('better-auth'));
+  // En producción (HTTPS) better-auth prefija la cookie de sesión con `__Secure-`
+  // (y podría usar `__Host-`), así que startsWith('better-auth') daba false y rebotaba
+  // a /login en loop. Matcheamos el nombre con o sin prefijo.
+  return request.cookies.getAll().some((c) => c.name.includes('better-auth.session_token'));
 }
 
 const PUBLIC_PATHS = new Set([
