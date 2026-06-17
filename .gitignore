@@ -47,6 +47,7 @@ tsconfig.tsbuildinfo
 
 # Dev scratch
 devlog*.txt
+obs_extract/
 
 # Entregables / capturas (binarios pesados regenerables, fuera del repo)
 docs/

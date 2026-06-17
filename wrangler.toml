@@ -2,7 +2,22 @@ name = "eez4us-web"
 main = "worker-entry.mjs"
 account_id = "3531a4c03f7e5c47c6d4dcb7ca7a9733"
 compatibility_date = "2025-04-01"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+# =========================================================================
+# CI/CD — Cloudflare Workers Builds (conectar el repo en el dashboard de Cloudflare)
+#   Settings > Build:
+#     Build command:                  pnpm run build:cf
+#     Deploy command (production):    pnpm run db:migrate:deploy && pnpm exec wrangler deploy
+#     Non-production deploy command:  pnpm exec wrangler versions upload
+#   Settings > Build > Build variables and secrets (build-time, NO disponibles en runtime):
+#     DIRECT_URL          requerida por `prisma migrate deploy` en el deploy de prod
+#     DATABASE_URL        si alguna page SSG/ISR consulta durante el build
+#     NEXT_PUBLIC_PUSHER_KEY, NEXT_PUBLIC_PUSHER_CLUSTER,
+#     NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY, NEXT_PUBLIC_APP_URL   (se inlinean en el build)
+#     PNPM_VERSION=10.33.2   para igualar packageManager (la imagen trae pnpm 10.11)
+#   Settings > Variables & Secrets (runtime del Worker): los Secrets listados abajo.
+# =========================================================================
 
 [assets]
 directory = ".open-next/assets"
@@ -21,12 +36,19 @@ crons = ["*/1 * * * *"]
 #   PUSHER_SECRET
 #   PUSHER_ENCRYPTION_MASTER_KEY     openssl rand -base64 32  (ortogonal a PUSHER_SECRET)
 #   GOOGLE_MAPS_BACKEND_KEY          solo Directions/Geocoding, restricted by API
+#   RESEND_API_KEY                   frs_... — Resend self-hosted (fork FreeResend), canal EMAIL
+#                                    (RESEND_BASE_URL y EMAIL_FROM van en [vars], no son secretos)
+#   STRIPE_SECRET_KEY                sk_live_... (+ STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID, STRIPE_PORTAL_RETURN_URL)
+#   N8N_WEBHOOK_URL                  webhook n8n (WhatsApp invitations / facturas)
 #   EXPO_ACCESS_TOKEN                token de cuenta Expo para push (https://expo.dev/accounts/[acc]/settings/access-tokens)
 #   CRON_SECRET                      openssl rand -base64 32 (auth del scheduled handler)
 
 [vars]
 PUSHER_CLUSTER = "mt1"
 NODE_ENV = "production"
+# Resend self-hosted (fork FreeResend) — no secretos, son endpoint + remitente
+RESEND_BASE_URL = "https://mail.tequio.work"
+EMAIL_FROM = "tequio-mail@eez4us.com"
 
 # KV namespace para cachear Directions API (60s TTL).
 # Crear con: wrangler kv namespace create CACHE

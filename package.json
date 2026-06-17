@@ -19,6 +19,7 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "postinstall": "prisma generate",
     "build:cf": "opennextjs-cloudflare build",
     "preview:cf": "opennextjs-cloudflare preview",
     "deploy:cf": "pnpm build:cf && wrangler deploy"
@@ -54,7 +55,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260523.1",
+    "@cloudflare/workers-types": "^4.20260617.1",
     "@opennextjs/cloudflare": "^1.19.11",
     "@types/node": "^22.10.5",
     "@types/react": "^19.2.0",
@@ -69,7 +70,7 @@
     "prisma": "^6.2.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
-    "wrangler": "^3.90.0"
+    "wrangler": "^4.101.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
