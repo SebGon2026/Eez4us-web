@@ -4,12 +4,16 @@ import { prisma } from '@/lib/db';
 import { createSchoolWithDirector, SchoolCreateError } from '@/lib/schools';
 import { jsonError, requireRole } from '@/lib/session';
 
+// Alta self-service de escuela de prueba por un VENDOR (o super_admin). El vendor crea la
+// escuela trial y queda auto-enrolado (VendorSchool) para su comisión. El super_admin sigue
+// pudiendo crear escuelas vía /api/admin/schools; acá es el camino del agente de venta.
+const ALLOWED_ROLES = ['vendor', 'super_admin'];
+
 const schema = z.object({
   name: z.string().trim().min(2).max(200),
   internalCode: z.string().trim().min(3).max(64),
   city: z.string().trim().max(120).optional(),
   country: z.string().trim().max(120).optional(),
-  // overrides opcionales; si faltan se derivan del país.
   currency: z.string().trim().length(3).optional(),
   timezone: z.string().trim().max(64).optional(),
   director: z.object({
@@ -24,22 +28,25 @@ const ERROR_STATUS: Record<string, number> = {
   DIRECTOR_EMAIL_ALREADY_USED: 409,
 };
 
-export async function GET(req: Request): Promise<Response> {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+): Promise<Response> {
   try {
-    await requireRole(req, ['super_admin']);
-    const schools = await prisma.school.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { subscription: true, _count: { select: { students: true, users: true } } },
-    });
-    return Response.json({ schools });
-  } catch (err) {
-    return jsonError(err);
-  }
-}
+    const session = await requireRole(req, ALLOWED_ROLES);
+    const { id: vendorId } = await params;
 
-export async function POST(req: Request): Promise<Response> {
-  try {
-    const session = await requireRole(req, ['super_admin']);
+    const vendor = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+      select: { id: true, userId: true, active: true },
+    });
+    if (!vendor) return Response.json({ error: 'VENDOR_NOT_FOUND' }, { status: 404 });
+    // Un vendor solo opera SU propio vendor; el super_admin puede operar cualquiera.
+    if (session.user.role !== 'super_admin' && vendor.userId !== session.user.id) {
+      return Response.json({ error: 'FORBIDDEN' }, { status: 403 });
+    }
+    if (!vendor.active) return Response.json({ error: 'VENDOR_INACTIVE' }, { status: 409 });
+
     const body = schema.parse(await req.json());
 
     const school = await createSchoolWithDirector({
@@ -51,6 +58,7 @@ export async function POST(req: Request): Promise<Response> {
       timezone: body.timezone,
       director: body.director,
       actorId: session.user.id,
+      vendorId: vendor.id,
     });
 
     return Response.json({ school }, { status: 201 });

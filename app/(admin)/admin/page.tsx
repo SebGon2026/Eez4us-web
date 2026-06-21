@@ -1,9 +1,10 @@
-import { FileSpreadsheet, MapPin, Tag, UserPlus } from 'lucide-react';
+import { ArrowRight, FileSpreadsheet, MapPin, Tag, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { AdminHomeTiles } from '@/components/admin/admin-home-tiles';
 import { prisma } from '@/lib/db';
+import { getSchoolReadiness } from '@/lib/onboarding';
 import { getCurrentSession } from '@/lib/session';
 
 export default async function AdminHomePage() {
@@ -15,6 +16,8 @@ export default async function AdminHomePage() {
     where: { schoolId, active: true },
   });
   if (pickupCount === 0) redirect('/admin/setup');
+
+  const readiness = await getSchoolReadiness(schoolId);
 
   const [studentsCount, invitationsPending, tripsActive, tripsInZone, gradesCount] =
     await Promise.all([
@@ -90,6 +93,27 @@ export default async function AdminHomePage() {
           Resumen rápido de la actividad del colegio.
         </p>
       </div>
+
+      {!readiness.isReady && (
+        <Link
+          href="/admin/onboarding"
+          className="group flex items-center gap-4 rounded-xl border-[1.5px] border-primary/40 bg-primary/5 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/60"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+            <ArrowRight className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold leading-tight">Terminá de configurar tu escuela</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {readiness.studentsCount === 0
+                ? 'Faltan alumnos y padres invitados para operar.'
+                : readiness.invitedParentsCount === 0
+                  ? 'Cargá padres por Excel para que reciban su invitación.'
+                  : 'Revisá los pasos pendientes del alta.'}
+            </p>
+          </div>
+        </Link>
+      )}
 
       <AdminHomeTiles tiles={tiles} />
 
