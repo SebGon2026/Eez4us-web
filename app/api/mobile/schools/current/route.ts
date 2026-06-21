@@ -17,6 +17,11 @@ export async function GET(req: Request): Promise<Response> {
         addressLng: true,
         internalCode: true,
         active: true,
+        // Multi-país: el mobile arma el prefijo telefónico, el default de documento y el
+        // formato de fechas/hora a partir de estos campos.
+        country: true,
+        timezone: true,
+        currency: true,
         // Branding para theming por escuela en mobile (paridad con el web)
         logoUrl: true,
         brandHue: true,
