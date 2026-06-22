@@ -12,7 +12,9 @@ export async function GET(
       expiresAt: true,
       recipientName: true,
       studentIds: true,
-      school: { select: { name: true } },
+      // country: el mobile lo usa para prefijar el teléfono por país ya en el registro
+      // (antes de claimear), evitando un PHONE_INVALID al enviar.
+      school: { select: { name: true, country: true } },
     },
   });
   if (!invitation) {
@@ -31,6 +33,7 @@ export async function GET(
 
   return Response.json({
     schoolName: invitation.school.name,
+    schoolCountry: invitation.school.country,
     parentName: invitation.recipientName,
     studentNames: students.map((s) => `${s.firstName} ${s.lastName}`.trim()),
     status,
