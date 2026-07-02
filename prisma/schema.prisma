@@ -26,6 +26,9 @@ model User {
   // false = acceso revocado. Soft-disable: el director da de baja personal sin
   // borrar la cuenta (preserva la atribución de entregas / prueba de entrega).
   active    Boolean @default(true)
+  // 2FA por email (plugin twoFactor de better-auth, TOTP deshabilitado). Obligatorio
+  // para director/super_admin — se fuerza al crear el usuario, no es opt-in.
+  twoFactorEnabled Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,8 +75,26 @@ model User {
   // notifications
   notifications Notification[] @relation("UserNotifications")
 
+  // 2FA (better-auth twoFactor)
+  twoFactors TwoFactor[]
+
   @@index([schoolId])
   @@map("users")
+}
+
+// Tabla del plugin twoFactor de better-auth. Con TOTP deshabilitado solo se usa si
+// algún día se habilita TOTP/backup codes; el flujo OTP-por-email vive en Verification.
+model TwoFactor {
+  id          String  @id @default(cuid())
+  secret      String
+  backupCodes String
+  userId      String
+  verified    Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("two_factors")
 }
 
 model Session {
@@ -535,6 +556,9 @@ model Subscription {
   openpayCardId          String?
   openpayDeviceSessionId String?
   nextChargeAt           DateTime?
+  // Fin del periodo de prueba, configurable por colegio por el super_admin (Netflix-style).
+  // Al guardar tarjeta, nextChargeAt = max(now, trialEndsAt): los días gratis se respetan.
+  trialEndsAt          DateTime?
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
   cancelAt             DateTime?
