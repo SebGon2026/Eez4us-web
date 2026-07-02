@@ -29,11 +29,13 @@ function initials(name: string): string {
 }
 
 export default function LoginPage() {
-  const [step, setStep] = useState<'code' | 'creds'>('code');
+  const [step, setStep] = useState<'code' | 'creds' | 'otp'>('code');
   const [code, setCode] = useState('');
   const [school, setSchool] = useState<SchoolBrand | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [trustDevice, setTrustDevice] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -98,13 +100,49 @@ export default function LoginPage() {
         setError(result.error.message ?? 'No se pudo iniciar sesión');
         return;
       }
+      // Staff con 2FA: better-auth no crea sesión todavía, pide el código por email.
+      if ((result.data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) {
+        const sent = await authClient.twoFactor.sendOtp();
+        if (sent.error) {
+          setError('No pudimos enviarte el código. Intentá de nuevo.');
+          return;
+        }
+        setOtp('');
+        setStep('otp');
+        return;
+      }
       // Hard navigation: evita el flicker de back/forward cache y la cadena
       // /login → / → /admin. El server-side router resuelve todo en una sola pasada.
       window.location.replace('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado');
+    } finally {
       setPending(false);
     }
+  }
+
+  async function onSubmitOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setPending(true);
+    try {
+      const result = await authClient.twoFactor.verifyOtp({ code: otp.trim(), trustDevice });
+      if (result.error) {
+        setError('Código incorrecto o vencido. Revisá tu correo e intentá de nuevo.');
+        return;
+      }
+      window.location.replace('/admin');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error inesperado');
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function resendOtp() {
+    setError(null);
+    const sent = await authClient.twoFactor.sendOtp();
+    if (sent.error) setError('No pudimos reenviar el código.');
   }
 
   function switchSchool() {
@@ -184,6 +222,86 @@ export default function LoginPage() {
                     ¿Dónde consigo mi código?
                   </button>
                 </p>
+              </form>
+            </div>
+          ) : step === 'otp' ? (
+            <div className="space-y-8 rounded-2xl bg-card p-10 shadow-pop border border-border">
+              <div className="text-center space-y-3">
+                <Image
+                  src="/logo.png"
+                  alt="Eez4us"
+                  width={180}
+                  height={90}
+                  priority
+                  className="mx-auto h-auto w-[180px]"
+                />
+                <div>
+                  <h1 className="text-xl font-bold text-foreground">Revisá tu correo</h1>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Te enviamos un código de 6 dígitos a{' '}
+                    <span className="font-semibold text-foreground">{email}</span>
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Puede tardar hasta un minuto (revisá spam). Si no llega, reenvialo o
+                    escribí a soporte.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={onSubmitOtp} className="space-y-4">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  required
+                  placeholder="000000"
+                  autoComplete="one-time-code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  autoFocus
+                  className="w-full rounded-lg border border-input bg-white px-3 py-3 text-center text-2xl font-bold tracking-[0.5em] outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/40"
+                />
+
+                <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={trustDevice}
+                    onChange={(e) => setTrustDevice(e.target.checked)}
+                    className="h-4 w-4 rounded border-input accent-[hsl(var(--primary))]"
+                  />
+                  Confiar en este dispositivo por 30 días
+                </label>
+
+                {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+
+                <button
+                  type="submit"
+                  disabled={pending || otp.length !== 6}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
+                >
+                  {pending ? 'Verificando…' : 'Verificar código'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={resendOtp}
+                  className="block w-full text-center text-xs font-semibold text-primary hover:underline"
+                >
+                  Reenviar código
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('creds');
+                    setOtp('');
+                    setError(null);
+                  }}
+                  className="block w-full text-center text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ← Volver
+                </button>
               </form>
             </div>
           ) : (

@@ -1,8 +1,9 @@
 import { prismaAdapter } from '@better-auth/prisma-adapter';
 import { betterAuth } from 'better-auth';
-import { bearer, jwt } from 'better-auth/plugins';
+import { bearer, jwt, twoFactor } from 'better-auth/plugins';
 
 import { prisma } from './db';
+import { sendResetPasswordEmail, sendStaffOtpEmail } from './mailer';
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -12,14 +13,8 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
     sendResetPassword: async ({ user, url }) => {
-      // En dev escribimos el link a stdout — en prod enchufar Resend / n8n.
       // El cliente solo recibe un genérico "si existe el email te mandamos un link".
-      console.log(
-        `\n=================== RESET PASSWORD ===================\n` +
-          `User : ${user.email}\n` +
-          `Link : ${url}\n` +
-          `======================================================\n`,
-      );
+      await sendResetPasswordEmail({ email: user.email, link: url });
     },
   },
   user: {
@@ -35,6 +30,18 @@ export const auth = betterAuth({
   },
   plugins: [
     bearer(),
+    // 2FA por email para staff del panel (director/super_admin). TOTP deshabilitado: el
+    // único método es el OTP de 6 dígitos por correo. Se fuerza con User.twoFactorEnabled
+    // al crear el usuario — no hay flujo de opt-in. Los parents nunca lo tienen activo.
+    twoFactor({
+      totpOptions: { disable: true },
+      otpOptions: {
+        period: 5, // minutos de vida del código
+        sendOTP: async ({ user, otp }) => {
+          await sendStaffOtpEmail({ email: user.email, otp });
+        },
+      },
+    }),
     jwt({
       jwt: {
         definePayload: ({ user }) => ({
