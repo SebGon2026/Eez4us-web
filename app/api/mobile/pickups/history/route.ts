@@ -24,6 +24,7 @@ export async function GET(req: Request): Promise<Response> {
       trips: trips.map((t) => ({
         id: t.id,
         status: t.status,
+        origin: t.origin,
         startedAt: t.startedAt.toISOString(),
         arrivedAt: t.arrivedAt?.toISOString() ?? null,
         deliveredAt: t.deliveredAt?.toISOString() ?? null,

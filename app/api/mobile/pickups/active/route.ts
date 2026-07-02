@@ -21,6 +21,8 @@ export async function GET(req: Request): Promise<Response> {
       trip: {
         id: trip.id,
         status: trip.status,
+        // El device que no originó el viaje lo usa para NO arrancar GPS (ESTOY_AFUERA no trackea).
+        origin: trip.origin,
         startedAt: trip.startedAt.toISOString(),
         arrivedAt: trip.arrivedAt?.toISOString() ?? null,
         etaSeconds: trip.etaSeconds,

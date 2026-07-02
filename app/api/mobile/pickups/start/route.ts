@@ -56,6 +56,18 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
+    // El familiar autorizado debe ser del padre que arranca el viaje (paridad con
+    // /api/trips): sin esto se puede colgar el authorizedFamily de otro padre al trip.
+    if (body.authorizedFamilyId) {
+      const fam = await prisma.authorizedFamily.findFirst({
+        where: { id: body.authorizedFamilyId, parentId: session.user.id, active: true },
+        select: { id: true },
+      });
+      if (!fam) {
+        return Response.json({ error: 'AUTHORIZED_FAMILY_NOT_OWNED' }, { status: 403 });
+      }
+    }
+
     // Refuse if already an active trip. Los walk-up (creados por la miss) no cuentan: no
     // son viajes del padre y no deben bloquear que arranque el suyo.
     const active = await prisma.trip.findFirst({

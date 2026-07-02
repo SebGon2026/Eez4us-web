@@ -28,6 +28,23 @@ export async function POST(req: Request): Promise<Response> {
       return Response.json({ error: 'PICKUP_POINT_NOT_FOUND' }, { status: 404 });
     }
 
+    // El server es la autoridad contra viajes duplicados (el guard del mobile es solo UX).
+    // Mismo contrato que /api/mobile/pickups/start: 409 + tripId del viaje vigente.
+    const activeTrip = await prisma.trip.findFirst({
+      where: {
+        parentId: session.user.id,
+        status: { in: ['EN_CAMINO', 'EN_ZONA'] },
+        isWalkup: false,
+      },
+      select: { id: true },
+    });
+    if (activeTrip) {
+      return Response.json(
+        { error: 'TRIP_ALREADY_ACTIVE', tripId: activeTrip.id },
+        { status: 409 },
+      );
+    }
+
     // "Voy en camino" exige vehículo (la TV rankea por placa); "estoy afuera" no.
     if (body.mode === 'EN_CAMINO' && !body.vehicleId) {
       return Response.json({ error: 'VEHICLE_REQUIRED' }, { status: 400 });
@@ -54,13 +71,26 @@ export async function POST(req: Request): Promise<Response> {
 
     const ownedStudents = await prisma.parentStudent.findMany({
       where: { parentId: session.user.id, studentId: { in: body.studentIds } },
-      select: { studentId: true, student: { select: { schoolId: true } } },
+      select: { studentId: true, student: { select: { schoolId: true, pickupMode: true } } },
     });
     if (ownedStudents.length !== body.studentIds.length) {
       return Response.json({ error: 'STUDENT_NOT_OWNED' }, { status: 403 });
     }
     if (ownedStudents.some((s) => s.student.schoolId !== pickupPoint.schoolId)) {
       return Response.json({ error: 'STUDENT_SCHOOL_MISMATCH' }, { status: 400 });
+    }
+
+    // "Voy en camino" no aplica a alumnos de transporte (van/bus) — paridad con
+    // /api/mobile/pickups/start. "Estoy afuera" sí se permite: el padre está físicamente
+    // en la puerta y la miss decide la entrega.
+    if (body.mode === 'EN_CAMINO') {
+      const transport = ownedStudents.find((s) => s.student.pickupMode === 'TRANSPORT');
+      if (transport) {
+        return Response.json(
+          { error: 'STUDENT_NOT_PRIVATE_PICKUP', studentId: transport.studentId },
+          { status: 400 },
+        );
+      }
     }
 
     const estoyAfuera = body.mode === 'ESTOY_AFUERA';

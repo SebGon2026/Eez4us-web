@@ -20,7 +20,12 @@ export async function POST(req: Request): Promise<Response> {
       return Response.json({ error: 'INVALID_CREDENTIALS' }, { status: 401 });
     }
     const cookie = signIn.headers.get('set-cookie') ?? '';
-    const signInData = (await signIn.json()) as { token?: string };
+    const signInData = (await signIn.json()) as { token?: string; twoFactorRedirect?: boolean };
+    // Staff con 2FA intentando entrar por el app: el panel web es su lugar. Sin esto
+    // caería en AUTH_BACKEND_ERROR (better-auth no emite token hasta verificar el OTP).
+    if (signInData.twoFactorRedirect) {
+      return Response.json({ error: 'TWO_FACTOR_REQUIRED' }, { status: 403 });
+    }
     const sessionToken = signInData.token ?? null;
     if (!sessionToken) {
       // better-auth no devolvió session token: algo está roto del lado del server.
@@ -28,8 +33,11 @@ export async function POST(req: Request): Promise<Response> {
       return Response.json({ error: 'AUTH_BACKEND_ERROR' }, { status: 500 });
     }
     const jwtRes = await auth.api.getToken({ headers: new Headers({ cookie }) });
+    // better-auth normaliza el email a lowercase al autenticar y al crear usuarios; el
+    // lookup debe hacer lo mismo o un casing distinto saltea el check de ACCOUNT_DISABLED
+    // y devuelve user:null con sesión válida.
     const user = await prisma.user.findUnique({
-      where: { email: body.email },
+      where: { email: body.email.toLowerCase() },
       select: {
         id: true,
         email: true,
@@ -39,6 +47,18 @@ export async function POST(req: Request): Promise<Response> {
         phoneE164: true,
         emailVerified: true,
         active: true,
+        // Mismo shape de school que /api/mobile/auth/me: el mobile cachea
+        // country/timezone/currency last-write-wins de ambas fuentes.
+        school: {
+          select: {
+            id: true,
+            name: true,
+            addressText: true,
+            country: true,
+            timezone: true,
+            currency: true,
+          },
+        },
       },
     });
     // Cuenta dada de baja por el director: bloqueamos el acceso y limpiamos la
@@ -56,6 +76,7 @@ export async function POST(req: Request): Promise<Response> {
           schoolId: user.schoolId,
           phoneE164: user.phoneE164,
           emailVerified: user.emailVerified,
+          school: user.school,
         }
       : null;
     return Response.json({

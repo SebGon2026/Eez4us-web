@@ -47,6 +47,10 @@ export async function PATCH(
         lastPositionAt: now,
       },
     });
+    const recompute = await recomputeTripEta(tripId);
+
+    // El evento lleva el ETA vigente: el primer POSITION_UPDATE con etaSeconds es el
+    // "ETA inicial" del viaje (etaInitialSeconds en /api/mobile/pickups/{id}).
     await prisma.tripEvent.create({
       data: {
         tripId,
@@ -56,11 +60,10 @@ export async function PATCH(
           lng: body.lng,
           heading: body.heading ?? null,
           speed: body.speed ?? null,
+          etaSeconds: recompute.etaSeconds,
         },
       },
     });
-
-    const recompute = await recomputeTripEta(tripId);
 
     await broadcastTripUpdate(tripId);
     if (recompute.arrivedFiredNow) {

@@ -14,6 +14,7 @@ export async function GET(
         pickupPoint: true,
         vehicle: true,
         authorizedFamily: true,
+        parent: { select: { id: true, name: true } },
         finalizedBy: { select: { id: true, name: true } },
         tripStudents: { include: { student: true } },
         events: { orderBy: { timestamp: 'asc' } },
@@ -30,11 +31,25 @@ export async function GET(
       trip: {
         id: trip.id,
         status: trip.status,
+        origin: trip.origin,
         startedAt: trip.startedAt.toISOString(),
         arrivedAt: trip.arrivedAt?.toISOString() ?? null,
         deliveredAt: trip.deliveredAt?.toISOString() ?? null,
         endedAt: trip.endedAt?.toISOString() ?? null,
         etaSeconds: trip.etaSeconds,
+        // Primer ETA calculado del viaje (metadata del primer POSITION_UPDATE que lo trajo).
+        // null en viajes viejos o sin GPS (ESTOY_AFUERA).
+        etaInitialSeconds:
+          trip.events
+            .map((e) =>
+              e.type === 'POSITION_UPDATE' &&
+              e.metadata &&
+              typeof e.metadata === 'object' &&
+              typeof (e.metadata as { etaSeconds?: unknown }).etaSeconds === 'number'
+                ? ((e.metadata as { etaSeconds: number }).etaSeconds)
+                : null,
+            )
+            .find((v) => v != null) ?? null,
         etaUpdatedAt: trip.etaUpdatedAt?.toISOString() ?? null,
         lastLat: trip.lastLat,
         lastLng: trip.lastLng,
@@ -47,6 +62,12 @@ export async function GET(
         },
         vehicle: trip.vehicle,
         authorizedFamily: trip.authorizedFamily,
+        // Adulto que retiró (o retira) al alumno: el familiar autorizado del viaje, o el
+        // propio padre si no delegó. Distinto de finalizedBy (staff que entregó). En
+        // walk-ups (viaje sintético de la miss) no sabemos quién retiró: null.
+        pickedUpBy: trip.isWalkup
+          ? null
+          : (trip.authorizedFamily?.fullName ?? trip.parent?.name ?? null),
         // Staff que finalizó la entrega (prueba de entrega manual). null si aún no se entregó.
         finalizedBy: trip.finalizedBy
           ? { id: trip.finalizedBy.id, name: trip.finalizedBy.name }
