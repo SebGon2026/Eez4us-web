@@ -1,10 +1,16 @@
 import { redirect } from 'next/navigation';
 
 import { BillingActions } from '@/components/admin/billing-actions';
+import { OpenpayBillingActions } from '@/components/admin/openpay-billing-actions';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { openpayPricePerStudentMXN, resolveProvider } from '@/lib/billing';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
+
+function fmtMoney(n: number, currency: string): string {
+  return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2 })} ${currency}`;
+}
 
 const STATUS_BADGE: Record<
   string,
@@ -36,7 +42,7 @@ export default async function BillingPage() {
     prisma.student.count({ where: { schoolId, active: true } }),
     prisma.school.findUnique({
       where: { id: schoolId },
-      select: { name: true, stripeCustomerId: true },
+      select: { name: true, stripeCustomerId: true, country: true, currency: true },
     }),
     prisma.invoice.findFirst({
       where: { schoolId, status: 'PAID' },
@@ -58,7 +64,10 @@ export default async function BillingPage() {
     }),
   ]);
 
-  const pricePerStudent = sub?.pricePerStudent ?? 10;
+  const provider = resolveProvider(school ?? { country: null, currency: null });
+  const currencyCode = sub?.currency ?? (provider === 'openpay' ? 'MXN' : 'USD');
+  const pricePerStudent =
+    sub?.pricePerStudent ?? (provider === 'openpay' ? openpayPricePerStudentMXN() : 10);
   const amount = studentCount * pricePerStudent;
   const badge = sub ? STATUS_BADGE[sub.status] : null;
 
@@ -87,11 +96,9 @@ export default async function BillingPage() {
         <Card className="shadow-sm">
           <CardHeader>
             <CardDescription>Pago mensual a Eez4us</CardDescription>
-            <CardTitle className="text-4xl text-primary">
-              ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </CardTitle>
+            <CardTitle className="text-4xl text-primary">{fmtMoney(amount, currencyCode)}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              {studentCount} alumnos × ${pricePerStudent}/mes
+              {studentCount} alumnos × {fmtMoney(pricePerStudent, currencyCode)}/mes
             </p>
           </CardHeader>
         </Card>
@@ -108,7 +115,7 @@ export default async function BillingPage() {
             <CardTitle className="text-2xl">{fmtDate(lastPaidInvoice?.paidAt ?? null)}</CardTitle>
             {lastPaidInvoice && (
               <p className="text-xs text-muted-foreground">
-                ${lastPaidInvoice.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                {fmtMoney(lastPaidInvoice.amount, currencyCode)}
               </p>
             )}
           </CardHeader>
@@ -119,13 +126,19 @@ export default async function BillingPage() {
         <CardHeader>
           <CardTitle className="text-xl">Acciones</CardTitle>
           <CardDescription>
-            {sub
-              ? 'Administrá tu suscripción y método de pago vía el portal de Stripe.'
-              : 'Iniciá la suscripción para empezar a cobrar mensualmente por alumno activo.'}
+            {provider === 'openpay'
+              ? 'Cargá la tarjeta del colegio; Eez4us cobra cada mes por alumno activo vía Openpay (México).'
+              : sub
+                ? 'Administrá tu suscripción y método de pago vía el portal de Stripe.'
+                : 'Iniciá la suscripción para empezar a cobrar mensualmente por alumno activo.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <BillingActions hasSubscription={!!sub?.stripeSubscriptionId} />
+          {provider === 'openpay' ? (
+            <OpenpayBillingActions hasCard={!!sub?.openpayCardId} />
+          ) : (
+            <BillingActions hasSubscription={!!sub?.stripeSubscriptionId} />
+          )}
         </CardContent>
       </Card>
 
@@ -141,9 +154,7 @@ export default async function BillingPage() {
               {invoices.map((inv) => (
                 <li key={inv.id} className="flex items-center justify-between gap-3 py-3">
                   <div>
-                    <p className="font-bold">
-                      ${inv.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
+                    <p className="font-bold">{fmtMoney(inv.amount, currencyCode)}</p>
                     <p className="text-xs text-muted-foreground">
                       Emitida {fmtDate(inv.createdAt)}
                       {inv.paidAt ? ` · Pagada ${fmtDate(inv.paidAt)}` : ''}

@@ -1,8 +1,10 @@
 import { auth } from './auth';
+import { pricePerStudentFor, resolveProvider } from './billing';
 import { countryDefaults, normalizeCountry } from './country';
 import { prisma } from './db';
 
-const TRIAL_DAYS = 14;
+const DEFAULT_TRIAL_DAYS = 14;
+const MAX_TRIAL_DAYS = 365;
 
 export interface CreateSchoolArgs {
   name: string;
@@ -12,6 +14,9 @@ export interface CreateSchoolArgs {
   // overrides opcionales; si faltan se derivan del país (countryDefaults).
   currency?: string | null;
   timezone?: string | null;
+  // días de prueba de ESTA escuela (Netflix-style, lo decide el owner al crear;
+  // editable después vía /api/admin/schools/{id}/trial). Default 14.
+  trialDays?: number | null;
   director: { name: string; email: string; password: string };
   actorId: string;
   // vendor que da de alta la escuela de prueba (self-service). Se auto-enrola.
@@ -72,17 +77,26 @@ export async function createSchoolWithDirector(args: CreateSchoolArgs) {
     });
     await prisma.user.update({
       where: { email: args.director.email },
-      data: { role: 'director', schoolId: school.id, emailVerified: true },
+      // twoFactorEnabled: el 2FA por email es obligatorio para directores (requerimiento
+      // del dueño), se fuerza acá y no hay opt-out en UI.
+      data: { role: 'director', schoolId: school.id, emailVerified: true, twoFactorEnabled: true },
     });
 
+    const trialDays = Math.min(
+      Math.max(Math.trunc(args.trialDays ?? DEFAULT_TRIAL_DAYS), 1),
+      MAX_TRIAL_DAYS,
+    );
+    const trialEndsAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
     await prisma.subscription.create({
       data: {
         schoolId: school.id,
         status: 'TRIALING',
-        pricePerStudent: 10,
+        provider: resolveProvider({ country, currency }),
+        pricePerStudent: pricePerStudentFor(currency),
         currency,
+        trialEndsAt,
         currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
+        currentPeriodEnd: trialEndsAt,
       },
     });
 
@@ -105,6 +119,8 @@ export async function createSchoolWithDirector(args: CreateSchoolArgs) {
           directorEmail: args.director.email,
           currency,
           timezone,
+          trialDays,
+          trialEndsAt: trialEndsAt.toISOString(),
           ...(args.vendorId ? { vendorId: args.vendorId } : {}),
         },
       },

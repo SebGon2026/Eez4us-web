@@ -8,11 +8,15 @@ export default {
   async fetch(request, env, ctx) {
     return openNextDefault.fetch(request, env, ctx);
   },
-  async scheduled(_event, env, ctx) {
-    const baseUrl = env.BETTER_AUTH_URL || 'https://eez4us.com';
-    const url = `${baseUrl.replace(/\/$/, '')}/api/cron/check-alerts`;
+  async scheduled(event, env, ctx) {
+    const baseUrl = (env.BETTER_AUTH_URL || 'https://eez4us.com').replace(/\/$/, '');
     const secret = env.CRON_SECRET ?? '';
-    const req = new Request(url, {
+    // El cron diario corre el cobro mensual de Openpay; el de cada minuto, las alertas.
+    const path =
+      event?.cron === '0 9 * * *'
+        ? '/api/cron/run-openpay-charges'
+        : '/api/cron/check-alerts';
+    const req = new Request(`${baseUrl}${path}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${secret}`,
@@ -24,7 +28,7 @@ export default {
         if (!res.ok) {
           // log to Workers tail
           // eslint-disable-next-line no-console
-          console.error('check-alerts cron failed', res.status, await res.text());
+          console.error('cron failed', path, res.status, await res.text());
         }
       }),
     );

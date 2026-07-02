@@ -53,6 +53,10 @@ export default async function SchoolSettingsPage() {
             <code className="text-xs">{school.stripeCustomerId ?? '—'}</code>
           </p>
           <p>
+            <span className="font-bold">Openpay Customer:</span>{' '}
+            <code className="text-xs">{school.openpayCustomerId ?? '—'}</code>
+          </p>
+          <p>
             <span className="font-bold">Estado:</span>{' '}
             {school.active ? 'Activo' : 'Suspendido'}
           </p>

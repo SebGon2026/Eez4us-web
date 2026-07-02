@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
+import { TrialEditor } from '@/components/admin/trial-editor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
@@ -110,14 +111,40 @@ export default async function SchoolDetailPage({
             <>
               <p>
                 Estado: <span className="font-bold">{school.subscription.status}</span>
+                {school.subscription.status === 'PAST_DUE' && (
+                  <span className="ml-2 text-xs font-bold text-destructive">
+                    (trial vencido / pago pendiente — falta cargar tarjeta)
+                  </span>
+                )}
               </p>
-              <p>Precio por alumno: ${school.subscription.pricePerStudent} USD</p>
+              <p>
+                Precio por alumno: {school.subscription.pricePerStudent}{' '}
+                {school.subscription.currency}
+              </p>
+              {school.subscription.trialEndsAt && (
+                <p>
+                  Trial hasta:{' '}
+                  <span className="font-bold">
+                    {new Date(school.subscription.trialEndsAt).toLocaleDateString('es-MX')}
+                  </span>
+                  {new Date(school.subscription.trialEndsAt).getTime() < Date.now() && (
+                    <span className="ml-1 text-xs text-destructive">(vencido)</span>
+                  )}
+                </p>
+              )}
+              {school.subscription.nextChargeAt && (
+                <p>
+                  Próximo cobro:{' '}
+                  {new Date(school.subscription.nextChargeAt).toLocaleDateString('es-MX')}
+                </p>
+              )}
               {school.subscription.currentPeriodEnd && (
                 <p>
                   Período actual hasta:{' '}
                   {new Date(school.subscription.currentPeriodEnd).toLocaleDateString('es-MX')}
                 </p>
               )}
+              <TrialEditor schoolId={school.id} />
             </>
           ) : (
             <p className="text-muted-foreground">Sin suscripción.</p>

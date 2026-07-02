@@ -24,6 +24,7 @@ routes = [
 #     DATABASE_URL        si alguna page SSG/ISR consulta durante el build
 #     NEXT_PUBLIC_PUSHER_KEY, NEXT_PUBLIC_PUSHER_CLUSTER,
 #     NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY, NEXT_PUBLIC_APP_URL   (se inlinean en el build)
+#     NEXT_PUBLIC_OPENPAY_MERCHANT_ID, NEXT_PUBLIC_OPENPAY_PUBLIC_KEY, NEXT_PUBLIC_OPENPAY_SANDBOX (build-time)
 #     PNPM_VERSION=10.33.2   para igualar packageManager (la imagen trae pnpm 10.11)
 #   Settings > Variables & Secrets (runtime del Worker): los Secrets listados abajo.
 # =========================================================================
@@ -32,9 +33,11 @@ routes = [
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-# Cron Triggers: alertas (overdue trips / arrived-not-delivered / stale invitations)
+# Cron Triggers:
+#   */1 * * * *  → alertas (overdue trips / arrived-not-delivered / stale invitations)
+#   0 9 * * *    → cobro mensual Openpay (run-openpay-charges; el ruteo está en worker-entry.mjs)
 [triggers]
-crons = ["*/1 * * * *"]
+crons = ["*/1 * * * *", "0 9 * * *"]
 
 # Secrets a setear vía `wrangler secret put NAME` (NO en este archivo):
 #   DATABASE_URL                     Accelerate (prisma+postgres://...)
@@ -44,9 +47,13 @@ crons = ["*/1 * * * *"]
 #   PUSHER_SECRET
 #   PUSHER_ENCRYPTION_MASTER_KEY     openssl rand -base64 32  (ortogonal a PUSHER_SECRET)
 #   GOOGLE_MAPS_BACKEND_KEY          solo Directions/Geocoding, restricted by API
-#   RESEND_API_KEY                   frs_... — Resend self-hosted (fork FreeResend), canal EMAIL
+#   RESEND_API_KEY                   re_... — Resend oficial (api.resend.com), canal EMAIL
 #                                    (RESEND_BASE_URL y EMAIL_FROM van en [vars], no son secretos)
 #   STRIPE_SECRET_KEY                sk_live_... (+ STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID, STRIPE_PORTAL_RETURN_URL)
+#   OPENPAY_MERCHANT_ID              cobro México (+ OPENPAY_PRIVATE_KEY sk_..., OPENPAY_PRODUCTION,
+#                                    OPENPAY_WEBHOOK_USER, OPENPAY_WEBHOOK_PASSWORD, OPENPAY_MXN_PRICE_PER_STUDENT)
+#   USD_PRICE_PER_STUDENT            precio/alumno/mes USD fuera de MX (default 6.99; puede ir en [vars])
+#   BILLING_BLOCK_ON_PAST_DUE        "true" = bloquear panel con trial vencido sin tarjeta (hoy apagado)
 #   N8N_WEBHOOK_URL                  webhook n8n (WhatsApp invitations / facturas)
 #   EXPO_ACCESS_TOKEN                token de cuenta Expo para push (https://expo.dev/accounts/[acc]/settings/access-tokens)
 #   CRON_SECRET                      openssl rand -base64 32 (auth del scheduled handler)
@@ -56,8 +63,8 @@ PUSHER_CLUSTER = "mt1"
 NODE_ENV = "production"
 # URL canónica del app (apex, servido directo por el Worker). NO es secreto: es un host público.
 BETTER_AUTH_URL = "https://eez4us.com"
-# Resend self-hosted (fork FreeResend) — no secretos, son endpoint + remitente
-RESEND_BASE_URL = "https://mail.tequio.work"
+# Resend oficial — no secretos, son endpoint + remitente (dominio verificado en resend.com/domains)
+RESEND_BASE_URL = "https://api.resend.com"
 EMAIL_FROM = "tequio-mail@eez4us.com"
 
 # KV namespace para cachear Directions API (60s TTL).

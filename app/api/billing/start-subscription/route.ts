@@ -1,3 +1,4 @@
+import { resolveProvider } from '@/lib/billing';
 import { prisma } from '@/lib/db';
 import { jsonError, requireRole } from '@/lib/session';
 import { createCustomer, createSubscription } from '@/lib/stripe';
@@ -17,6 +18,8 @@ export async function POST(req: Request): Promise<Response> {
       select: {
         id: true,
         name: true,
+        country: true,
+        currency: true,
         stripeCustomerId: true,
         users: {
           where: { role: 'director' },
@@ -28,6 +31,10 @@ export async function POST(req: Request): Promise<Response> {
     });
     if (!school) {
       return Response.json({ error: 'SCHOOL_NOT_FOUND' }, { status: 404 });
+    }
+    // Las escuelas de México cobran por Openpay (tarjeta archivada), no por Stripe.
+    if (resolveProvider(school) === 'openpay') {
+      return Response.json({ error: 'OPENPAY_PROVIDER' }, { status: 400 });
     }
 
     const existing = await prisma.subscription.findUnique({

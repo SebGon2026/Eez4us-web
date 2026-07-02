@@ -12,6 +12,8 @@ const schema = z.object({
   // overrides opcionales; si faltan se derivan del país.
   currency: z.string().trim().length(3).optional(),
   timezone: z.string().trim().max(64).optional(),
+  // días de prueba de esta escuela (el owner decide al crear; default 14).
+  trialDays: z.number().int().min(1).max(365).optional(),
   director: z.object({
     name: z.string().trim().min(2).max(120),
     email: z.string().email(),
@@ -49,6 +51,7 @@ export async function POST(req: Request): Promise<Response> {
       country: body.country,
       currency: body.currency,
       timezone: body.timezone,
+      trialDays: body.trialDays,
       director: body.director,
       actorId: session.user.id,
     });

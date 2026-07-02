@@ -42,7 +42,11 @@ export function middleware(request: NextRequest) {
 
   // Páginas autenticadas: nunca cachear (evita back/forward cache stale).
   if (authed && !isPublic) {
-    const response = NextResponse.next();
+    // x-pathname: los layouts server-side no ven la URL; el gate de billing del layout
+    // admin lo necesita para no redirigir en loop sobre /admin/billing.
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-pathname', pathname);
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.headers.set('cache-control', 'no-store, must-revalidate');
     return response;
   }

@@ -6,6 +6,7 @@ import {
   Building2,
   Car,
   ChevronDown,
+  CreditCard,
   FileSpreadsheet,
   FileText,
   GraduationCap,
@@ -85,6 +86,7 @@ const SECTIONS: NavSection[] = [
     roles: ['director', 'super_admin'],
     items: [
       { href: '/admin/staff', label: 'Personal', icon: UserCog },
+      { href: '/admin/billing', label: 'Facturación', icon: CreditCard },
       { href: '/admin/settings', label: 'Configuración', icon: Settings },
     ],
   },

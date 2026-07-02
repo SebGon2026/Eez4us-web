@@ -14,6 +14,7 @@ export function NewSchoolForm() {
   const [internalCode, setInternalCode] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
+  const [trialDays, setTrialDays] = useState('14');
   const [directorName, setDirectorName] = useState('');
   const [directorEmail, setDirectorEmail] = useState('');
   const [directorPassword, setDirectorPassword] = useState('');
@@ -32,6 +33,7 @@ export function NewSchoolForm() {
           internalCode,
           city: city || undefined,
           country: country || undefined,
+          trialDays: trialDays ? Number(trialDays) : undefined,
           director: { name: directorName, email: directorEmail, password: directorPassword },
         }),
       });
@@ -74,6 +76,20 @@ export function NewSchoolForm() {
           <Label>País</Label>
           <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="México" />
         </div>
+      </div>
+      <div>
+        <Label>Días de prueba gratis</Label>
+        <Input
+          type="number"
+          min={1}
+          max={365}
+          value={trialDays}
+          onChange={(e) => setTrialDays(e.target.value)}
+          required
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          El colegio no paga hasta que venza. Se puede extender después desde su ficha.
+        </p>
       </div>
       <hr className="my-4" />
       <p className="text-sm font-bold uppercase text-muted-foreground">Director inicial</p>
