@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import { CopyInviteLink } from '@/components/admin/copy-invite-link';
 import { type Column,DataTable } from '@/components/admin/data-table';
 import { InvitationsFilters } from '@/components/admin/invitations-filters';
 import { ResendButton } from '@/components/admin/resend-button';
@@ -42,6 +43,7 @@ const STATUS_LABELS: Record<InvitationStatus, string> = {
 
 interface InvitationRow {
   id: string;
+  token: string;
   contactValue: string;
   channel: 'EMAIL' | 'WHATSAPP';
   status: InvitationStatus;
@@ -81,6 +83,7 @@ export default async function InvitationsPage({
       take: PAGE_SIZE,
       select: {
         id: true,
+        token: true,
         contactValue: true,
         channel: true,
         status: true,
@@ -116,6 +119,7 @@ export default async function InvitationsPage({
 
   const rows: InvitationRow[] = invitations.map((i) => ({
     id: i.id,
+    token: i.token,
     contactValue: i.contactValue,
     channel: i.channel,
     status: i.status,
@@ -199,7 +203,12 @@ export default async function InvitationsPage({
       header: '',
       className: 'text-right',
       cell: (r) =>
-        r.resendable ? <ResendButton schoolId={schoolId} invitationId={r.id} /> : null,
+        r.resendable ? (
+          <div className="flex items-center justify-end gap-2">
+            <CopyInviteLink token={r.token} />
+            <ResendButton schoolId={schoolId} invitationId={r.id} />
+          </div>
+        ) : null,
     },
   ];
 

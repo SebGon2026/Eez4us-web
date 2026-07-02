@@ -1,9 +1,14 @@
 import { prisma } from '@/lib/db';
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ token: string }> },
-): Promise<Response> {
+import { ClaimInvitation } from './claim-form';
+
+// Claim público de invitaciones: el link del email/WhatsApp del padre cae acá.
+// Sin sesión (middleware lo deja pasar); el token cuid es la credencial.
+export default async function InvitePage({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
   const { token } = await params;
   const invitation = await prisma.invitation.findUnique({
     where: { token },
@@ -14,13 +19,12 @@ export async function GET(
       studentIds: true,
       channel: true,
       contactValue: true,
-      // country: el mobile lo usa para prefijar el teléfono por país ya en el registro
-      // (antes de claimear), evitando un PHONE_INVALID al enviar.
       school: { select: { name: true, country: true } },
     },
   });
+
   if (!invitation) {
-    return Response.json({ error: 'NOT_FOUND' }, { status: 404 });
+    return <ClaimInvitation token={token} state="NOT_FOUND" />;
   }
 
   const expired = invitation.expiresAt.getTime() < Date.now();
@@ -33,21 +37,20 @@ export async function GET(
       })
     : [];
 
-  // Email con el que va a loguearse tras el claim (canal WHATSAPP usa email sintético,
-  // ver claimInvitation). El token es un cuid no adivinable que llegó a ese mismo contacto.
   const loginEmail =
     invitation.channel === 'EMAIL'
       ? invitation.contactValue
       : `${invitation.contactValue.replace(/[^\d]/g, '')}@whatsapp.eez4us.local`;
 
-  return Response.json({
-    schoolName: invitation.school.name,
-    schoolCountry: invitation.school.country,
-    parentName: invitation.recipientName,
-    studentNames: students.map((s) => `${s.firstName} ${s.lastName}`.trim()),
-    status,
-    expiresAt: invitation.expiresAt.toISOString(),
-    channel: invitation.channel,
-    loginEmail,
-  });
+  return (
+    <ClaimInvitation
+      token={token}
+      state={status === 'PENDING' || status === 'SENT' ? 'READY' : status}
+      schoolName={invitation.school.name}
+      schoolCountry={invitation.school.country}
+      parentName={invitation.recipientName}
+      studentNames={students.map((s) => `${s.firstName} ${s.lastName}`.trim())}
+      loginEmail={loginEmail}
+    />
+  );
 }

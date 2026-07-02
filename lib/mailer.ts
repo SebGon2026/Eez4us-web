@@ -61,6 +61,11 @@ export interface SendEmailArgs {
   devFallbackLog?: string;
 }
 
+// Remitente de emergencia de Resend: funciona sin dominio verificado, pero SOLO entrega
+// al email del dueño de la cuenta Resend. Mantiene vivo el 2FA del owner mientras
+// eez4us.com no esté verificado en resend.com/domains.
+const RESEND_FALLBACK_FROM = 'Eez4us <onboarding@resend.dev>';
+
 // Envío genérico vía Resend con retries. Toda pieza de email del sistema (invitaciones,
 // reset de contraseña, OTP de 2FA) pasa por acá para compartir auth, retries y fallback dev.
 export async function sendEmail(args: SendEmailArgs): Promise<void> {
@@ -77,13 +82,30 @@ export async function sendEmail(args: SendEmailArgs): Promise<void> {
     throw new Error('RESEND_API_KEY no configurado');
   }
 
-  const payload = {
-    from,
-    to: [args.to],
-    subject: args.subject,
-    html: args.html,
-  };
+  try {
+    await postResend(baseUrl, apiKey, { from, to: [args.to], subject: args.subject, html: args.html });
+  } catch (err) {
+    // Dominio sin verificar: reintento único con el remitente de emergencia antes de rendirme.
+    if (err instanceof Error && /not verified/i.test(err.message) && from !== RESEND_FALLBACK_FROM) {
+      // eslint-disable-next-line no-console
+      console.error(`[mailer] dominio de ${from} sin verificar en Resend; reintento con ${RESEND_FALLBACK_FROM}`);
+      await postResend(baseUrl, apiKey, {
+        from: RESEND_FALLBACK_FROM,
+        to: [args.to],
+        subject: args.subject,
+        html: args.html,
+      });
+      return;
+    }
+    throw err;
+  }
+}
 
+async function postResend(
+  baseUrl: string,
+  apiKey: string,
+  payload: { from: string; to: string[]; subject: string; html: string },
+): Promise<void> {
   let lastError: unknown;
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     let res: Response;

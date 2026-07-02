@@ -16,7 +16,8 @@ const PUBLIC_PATHS = new Set([
   '/privacy',
   '/terms',
 ]);
-const PUBLIC_PREFIXES = ['/dev/', '/api/public/'];
+// /invite/{token}: claim público de invitaciones de padres (el link del email cae acá).
+const PUBLIC_PREFIXES = ['/dev/', '/api/public/', '/invite/'];
 
 // Páginas de auth: si ya hay sesión, mandamos directo al panel.
 // Esto rompe la cadena /login → / → /admin y previene el "flicker" del

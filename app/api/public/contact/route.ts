@@ -94,43 +94,56 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'SEND_FAILED' }, { status: 500 });
   }
 
-  const payload = {
-    from,
+  const basePayload = {
     to: [CONTACT_TO],
     reply_to: parsed.data.email,
     subject: `Contacto landing: ${parsed.data.school}`,
     html: renderContactHtml(parsed.data),
   };
 
-  let lastStatus = 0;
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    let res: Response;
-    try {
-      res = await fetch(`${baseUrl}/emails`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-    } catch {
+  async function attemptSend(sender: string): Promise<{ ok: boolean; status: number; body: string }> {
+    let lastStatus = 0;
+    let lastBody = '';
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      let res: Response;
+      try {
+        res = await fetch(`${baseUrl}/emails`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ from: sender, ...basePayload }),
+        });
+      } catch {
+        if (attempt < MAX_RETRIES - 1) {
+          await new Promise((r) => setTimeout(r, 250 * 2 ** attempt));
+        }
+        continue;
+      }
+
+      if (res.ok) return { ok: true, status: res.status, body: '' };
+
+      lastStatus = res.status;
+      lastBody = await res.text().catch(() => '');
+      // 4xx (salvo 408/429) = request inválido, no transitorio: cortar sin reintentar.
+      if (res.status < 500 && res.status !== 408 && res.status !== 429) break;
       if (attempt < MAX_RETRIES - 1) {
         await new Promise((r) => setTimeout(r, 250 * 2 ** attempt));
       }
-      continue;
     }
-
-    if (res.ok) return Response.json({ ok: true });
-
-    lastStatus = res.status;
-    // 4xx (salvo 408/429) = request inválido, no transitorio: cortar sin reintentar.
-    if (res.status < 500 && res.status !== 408 && res.status !== 429) break;
-    if (attempt < MAX_RETRIES - 1) {
-      await new Promise((r) => setTimeout(r, 250 * 2 ** attempt));
-    }
+    return { ok: false, status: lastStatus, body: lastBody };
   }
 
-  console.error(`[contact] Resend falló (status ${lastStatus || 'red'})`);
+  let result = await attemptSend(from);
+  // Dominio sin verificar en Resend: remitente de emergencia (entrega porque CONTACT_TO
+  // es el dueño de la cuenta Resend). Se vuelve solo al dominio propio al verificarlo.
+  if (!result.ok && /not verified/i.test(result.body)) {
+    console.error(`[contact] dominio de ${from} sin verificar; reintento con onboarding@resend.dev`);
+    result = await attemptSend('Eez4us <onboarding@resend.dev>');
+  }
+  if (result.ok) return Response.json({ ok: true });
+
+  console.error(`[contact] Resend falló (status ${result.status || 'red'})`);
   return Response.json({ error: 'SEND_FAILED' }, { status: 502 });
 }
