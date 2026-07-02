@@ -11,6 +11,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.eez4us.com'),
   title: 'Eez4us Admin',
   description: 'Panel administrativo Eez4us',
   robots: { index: false, follow: false },
@@ -20,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="es"
-      className={`${nunito.variable} h-full scroll-smooth antialiased`}
+      className={`${nunito.variable} h-full antialiased motion-safe:scroll-smooth`}
       suppressHydrationWarning
     >
       <body className="min-h-full" suppressHydrationWarning>

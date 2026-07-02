@@ -26,8 +26,11 @@ decisión técnica del proyecto, no del jefe, pero ya está endosada.
 ## Identidad del producto
 
 - Mobile-first puro. Web SOLO panel admin.
-- Landing pública en "/" (pedida 2026-07-02): estática, `app/(landing)/`, formulario de
-  contacto que abre WhatsApp a +1 520-909-5510 (`lib/contact.ts`). Sin backend de contacto.
+- Landing pública en "/" (pedida 2026-07-02): estática, `app/(landing)/`, con precios visibles
+  ($99 MXN / $6.99 USD por alumno/mes — requisito de validación de Openpay). El formulario de
+  contacto pega a `POST /api/public/contact`, que reenvía por Resend a cesar.vargas@eez4us.com
+  (requiere eez4us.com verificado en resend.com/domains). Teléfono público +1 520-909-5510
+  (`lib/contact.ts`).
 - CERO versión web del producto para usuarios finales — el resto del web sigue siendo solo
   panel admin detrás de login.
 - **Modelo B2B2C**: Eez4us le cobra a las escuelas ($10 USD/alumno/mes vía Stripe). Las escuelas suman ~$40 USD a la colegiatura al padre. **Los padres NUNCA pagan directo a Eez4us** — solo a la escuela.

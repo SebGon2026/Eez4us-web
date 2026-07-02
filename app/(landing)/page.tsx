@@ -1,11 +1,10 @@
 import {
   BarChart3,
   Bell,
-  Car,
   Check,
-  ChevronDown,
-  Clock,
+  CreditCard,
   FileSpreadsheet,
+  Globe2,
   Lock,
   MapPin,
   MessagesSquare,
@@ -23,17 +22,23 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { ContactForm } from '@/components/landing/contact-form';
+import { CopyrightYear } from '@/components/landing/copyright-year';
+import { Faq } from '@/components/landing/faq';
+import { HeroMock } from '@/components/landing/hero-mock';
+import { MobileMenu } from '@/components/landing/mobile-menu';
+import { Reveal } from '@/components/landing/reveal';
+import { ScrollProgress } from '@/components/landing/scroll-progress';
 import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_E164, CONTACT_WHATSAPP_URL } from '@/lib/contact';
 
 export const metadata: Metadata = {
   title: 'Eez4us — La salida del colegio, en orden',
   description:
-    'Plataforma de coordinación de recogida vehicular en zonas escolares: el colegio ve cada vehículo en camino con su hora estimada de llegada y entrega a cada alumno con verificación por QR. Para colegios de Estados Unidos y México.',
+    'Plataforma de coordinación de recogida vehicular en zonas escolares: ETA en tiempo real para el portón, entrega verificada con QR y registro de cada recogida. Para colegios de México, Estados Unidos y Latinoamérica desde $99 MXN o $6.99 USD por alumno al mes.',
   robots: { index: true, follow: true },
   openGraph: {
     title: 'Eez4us — La salida del colegio, en orden',
     description:
-      'Coordinación de recogida vehicular en zonas escolares: ETA en tiempo real, entrega verificada con QR y registro de cada recogida.',
+      'Coordinación de recogida vehicular en zonas escolares: ETA en tiempo real, entrega verificada con QR y registro de cada recogida. México, Estados Unidos y Latinoamérica.',
     images: ['/logo.png'],
   },
 };
@@ -41,6 +46,7 @@ export const metadata: Metadata = {
 const NAV_LINKS = [
   { href: '#como-funciona', label: 'Cómo funciona' },
   { href: '#producto', label: 'Producto' },
+  { href: '#precios', label: 'Precios' },
   { href: '#seguridad', label: 'Seguridad' },
   { href: '#preguntas', label: 'Preguntas' },
   { href: '#contacto', label: 'Contacto' },
@@ -63,6 +69,53 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
       <BrandDots />
       {children}
     </p>
+  );
+}
+
+const MARQUEE_ITEMS = [
+  'Menos fila vehicular',
+  'ETA en tiempo real',
+  'Entrega verificada con QR',
+  'Tarjetas QR imprimibles',
+  'Círculo de confianza',
+  'Roster por cercanía',
+  'Reportes para dirección',
+  'México',
+  'Estados Unidos',
+  'Latinoamérica',
+];
+
+const MARQUEE_DOTS = [
+  'bg-[hsl(var(--brand-green))]',
+  'bg-[hsl(var(--brand-yellow))]',
+  'bg-[hsl(var(--brand-blue))]',
+  'bg-[hsl(var(--brand-pink))]',
+  'bg-[hsl(var(--brand-orange))]',
+];
+
+function Marquee() {
+  return (
+    <div className="overflow-hidden border-y border-border bg-background py-4">
+      <div className="animate-marquee flex w-max items-center">
+        {[0, 1].map((copy) => (
+          <div
+            key={copy}
+            aria-hidden={copy === 1}
+            className="flex items-center gap-8 pr-8 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground"
+          >
+            {MARQUEE_ITEMS.map((item, i) => (
+              <span key={item} className="flex items-center gap-8">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${MARQUEE_DOTS[i % MARQUEE_DOTS.length]}`}
+                  aria-hidden
+                />
+                {item}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -132,11 +185,58 @@ const ROLES = [
   },
 ];
 
+const PLAN_FEATURES = [
+  'App para las familias, sin límite de usuarios',
+  'Panel web para dirección y tablero del portón',
+  'Tarjetas QR por alumno, imprimibles',
+  'Invitaciones automáticas por email',
+  'Reportes operativos y financieros',
+  'Soporte en español',
+];
+
+const PLANS = [
+  {
+    country: 'México',
+    price: '$99',
+    currency: 'MXN',
+    payment: 'Suscripción mensual con tarjeta de crédito o débito vía Openpay (BBVA).',
+    highlight: true,
+  },
+  {
+    country: 'Estados Unidos',
+    price: '$6.99',
+    currency: 'USD',
+    payment: 'Suscripción mensual con tarjeta de crédito o débito vía Stripe.',
+    highlight: false,
+  },
+];
+
+const BUY_STEPS = [
+  {
+    icon: MessagesSquare,
+    chip: 'bg-[hsl(var(--brand-blue)/0.12)] text-[hsl(211_80%_40%)]',
+    title: '1. Escríbenos',
+    body: 'Cuéntanos de tu colegio y damos de alta tu cuenta con tu código de institución.',
+  },
+  {
+    icon: FileSpreadsheet,
+    chip: 'bg-[hsl(var(--brand-green)/0.12)] text-[hsl(104_45%_32%)]',
+    title: '2. Configura y carga tu lista de alumnos',
+    body: 'Marca tus puntos de recogida en el mapa y sube tus alumnos por Excel. Las familias reciben su invitación al instante.',
+  },
+  {
+    icon: CreditCard,
+    chip: 'bg-[hsl(var(--brand-pink)/0.12)] text-[hsl(326_70%_40%)]',
+    title: '3. Activa tu suscripción',
+    body: 'Pago mensual con tarjeta desde el panel: Openpay en México, Stripe en Estados Unidos. Cancelas cuando quieras.',
+  },
+];
+
 const SECURITY_ITEMS = [
   {
     icon: UserCheck,
     title: 'Solo por invitación',
-    body: 'No existe el registro abierto: cada cuenta de familia la emite el colegio con su nómina.',
+    body: 'No existe el registro abierto: cada cuenta de familia la emite el colegio con su lista de alumnos.',
   },
   {
     icon: QrCode,
@@ -151,7 +251,7 @@ const SECURITY_ITEMS = [
   {
     icon: MapPin,
     title: 'Ubicación solo durante el viaje',
-    body: 'La app comparte posición únicamente con el trayecto activo y se detiene al llegar. Nunca en segundo plano permanente.',
+    body: 'La app comparte posición únicamente durante el trayecto activo y se detiene al llegar. Nunca en segundo plano permanente.',
   },
   {
     icon: Lock,
@@ -159,7 +259,7 @@ const SECURITY_ITEMS = [
     body: 'Cada institución opera en su propio espacio y la información en tiempo real viaja cifrada.',
   },
   {
-    icon: Clock,
+    icon: Users,
     title: 'Todo queda registrado',
     body: 'Quién recogió a cada alumno, a qué hora y quién lo confirmó: trazabilidad completa de cada salida.',
   },
@@ -168,7 +268,11 @@ const SECURITY_ITEMS = [
 const FAQS = [
   {
     q: '¿Cuánto cuesta?',
-    a: 'Eez4us se contrata por institución, con un precio por alumno que se acuerda en el contrato comercial. Las familias nunca pagan a Eez4us.',
+    a: 'En México, $99 MXN por alumno al mes. En Estados Unidos, $6.99 USD por alumno al mes. Se factura al colegio por alumno activo; las familias nunca pagan a Eez4us.',
+  },
+  {
+    q: '¿Cómo se paga?',
+    a: 'Como suscripción mensual con tarjeta de crédito o débito desde el panel del colegio: en México los pagos los procesa Openpay (BBVA) y en Estados Unidos, Stripe. Puedes cancelar cuando quieras.',
   },
   {
     q: '¿La abuela necesita instalar la app?',
@@ -188,102 +292,9 @@ const FAQS = [
   },
   {
     q: '¿Dónde está disponible?',
-    a: 'Trabajamos con colegios de Estados Unidos y México.',
+    a: 'En México y Estados Unidos, y estamos habilitando el resto de Latinoamérica. Si tu colegio está en otro país, escríbenos y coordinamos la implementación.',
   },
 ];
-
-function MockLabel({ dot, children }: { dot: string; children: React.ReactNode }) {
-  return (
-    <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-      <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden />
-      {children}
-    </p>
-  );
-}
-
-function HeroMock() {
-  return (
-    <div className="mx-auto mt-14 grid max-w-5xl gap-4 md:grid-cols-3">
-      <div className="rounded-3xl border border-border bg-card p-5 shadow-elev transition-transform hover:-translate-y-1">
-        <MockLabel dot="bg-[hsl(var(--brand-blue))]">App de la familia</MockLabel>
-        <div className="mt-4 rounded-2xl border border-border bg-background p-4">
-          <p className="text-xs font-semibold text-muted-foreground">Hola, Ana</p>
-          <p className="mt-0.5 text-sm font-bold text-foreground">Mateo · 3.º A</p>
-          <div className="mt-3 flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-elev">
-            <Car className="h-4 w-4" />
-            Voy en camino
-          </div>
-          <div className="mt-3 flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 font-semibold text-muted-foreground">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-[hsl(var(--brand-green))]" />
-              Compartiendo trayecto
-            </span>
-            <span className="rounded-full bg-secondary px-2 py-0.5 font-bold text-foreground">
-              ETA 6 min
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-3xl border border-border bg-card p-5 shadow-elev transition-transform hover:-translate-y-1">
-        <MockLabel dot="bg-[hsl(var(--brand-green))]">Portón del colegio</MockLabel>
-        <ul className="mt-4 space-y-2">
-          {[
-            {
-              dot: 'bg-[hsl(var(--brand-green))]',
-              family: 'Familia Rodríguez',
-              student: 'Sofía · 1.º B',
-              eta: '2 min',
-            },
-            {
-              dot: 'bg-[hsl(var(--brand-yellow))]',
-              family: 'Familia Hernández',
-              student: 'Lucas · 5.º A',
-              eta: '7 min',
-            },
-            {
-              dot: 'bg-muted-foreground/40',
-              family: 'Familia García',
-              student: 'Emma · 3.º C',
-              eta: '15 min',
-            },
-          ].map((row) => (
-            <li
-              key={row.family}
-              className="flex items-center justify-between rounded-2xl border border-border bg-background px-3.5 py-2.5"
-            >
-              <span className="flex items-center gap-2.5">
-                <span className={`h-2.5 w-2.5 rounded-full ${row.dot}`} aria-hidden />
-                <span>
-                  <span className="block text-xs font-bold text-foreground">{row.family}</span>
-                  <span className="block text-[11px] font-medium text-muted-foreground">
-                    {row.student}
-                  </span>
-                </span>
-              </span>
-              <span className="text-xs font-black text-foreground">{row.eta}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="rounded-3xl border border-border bg-card p-5 shadow-elev transition-transform hover:-translate-y-1">
-        <MockLabel dot="bg-[hsl(var(--brand-pink))]">Entrega verificada</MockLabel>
-        <div className="mt-4 rounded-2xl border border-border bg-background p-4 text-center">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-dashed border-border bg-white">
-            <QrCode className="h-10 w-10 text-foreground" />
-          </div>
-          <p className="mt-3 text-sm font-bold text-foreground">Sofía Rodríguez</p>
-          <p className="text-[11px] font-medium text-muted-foreground">Tarjeta QR · 1.º B</p>
-          <p className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-green)/0.14)] px-3 py-1 text-[11px] font-bold text-[hsl(104_45%_30%)]">
-            <Check className="h-3.5 w-3.5" />
-            Entregada 14:32 · Miss Laura
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function LandingPage() {
   return (
@@ -302,7 +313,7 @@ export default function LandingPage() {
             />
           </Link>
 
-          <nav className="hidden items-center gap-7 lg:flex" aria-label="Principal">
+          <nav className="hidden items-center gap-6 lg:flex" aria-label="Principal">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
@@ -325,49 +336,62 @@ export default function LandingPage() {
               href="#contacto"
               className="rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-elev transition-all hover:-translate-y-0.5 hover:opacity-95 active:translate-y-0"
             >
-              Solicitar demo
+              Empezar ahora
             </a>
+            <MobileMenu links={NAV_LINKS} />
           </div>
         </div>
+        <ScrollProgress />
       </header>
 
       <main>
         {/* ── Hero ───────────────────────────────────────────────── */}
-        <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 text-center md:pt-24">
-          <Eyebrow>Recogida escolar coordinada</Eyebrow>
-          <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-black leading-[1.05] tracking-tight md:text-6xl">
-            La hora de salida del colegio, por fin en orden
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            Eez4us conecta a las familias con el personal del portón: el colegio ve cada vehículo en
-            camino con su hora estimada de llegada y entrega a cada alumno con verificación por QR.
-            Menos fila, menos espera, cero confusiones.
-          </p>
+        <section className="mx-auto max-w-6xl px-6 pb-16 pt-16 text-center md:pt-24">
+          <Reveal y={16}>
+            <Eyebrow>Recogida escolar coordinada</Eyebrow>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-black leading-[1.05] tracking-tight md:text-6xl">
+              La hora de salida del colegio, por fin en orden
+            </h1>
+          </Reveal>
+          <Reveal delay={0.16}>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+              Eez4us conecta a las familias con el personal del portón: el colegio ve cada vehículo
+              en camino con su hora estimada de llegada y entrega a cada alumno con verificación por
+              QR. Menos fila, menos espera, cero confusiones.
+            </p>
+          </Reveal>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="#contacto"
-              className="rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-elev transition-all hover:-translate-y-0.5 hover:opacity-95 active:translate-y-0"
-            >
-              Solicitar una demo
-            </a>
-            <a
-              href="#como-funciona"
-              className="rounded-full border border-border bg-white px-7 py-3.5 text-sm font-bold text-foreground shadow-card transition-all hover:-translate-y-0.5 hover:border-foreground/25 active:translate-y-0"
-            >
-              Ver cómo funciona
-            </a>
-          </div>
-          <p className="mt-5 text-xs font-semibold text-muted-foreground">
-            Para colegios de Estados Unidos y México · Sin costo para las familias
-          </p>
+          <Reveal delay={0.24}>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="#contacto"
+                className="rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-elev transition-all hover:-translate-y-0.5 hover:opacity-95 active:translate-y-0"
+              >
+                Empezar ahora
+              </a>
+              <a
+                href="#precios"
+                className="rounded-full border border-border bg-white px-7 py-3.5 text-sm font-bold text-foreground shadow-card transition-all hover:-translate-y-0.5 hover:border-foreground/25 active:translate-y-0"
+              >
+                Ver precios
+              </a>
+            </div>
+            <p className="mt-5 text-xs font-semibold text-muted-foreground">
+              Colegios de México, Estados Unidos y Latinoamérica · Sin costo para las familias
+            </p>
+          </Reveal>
 
           <HeroMock />
         </section>
 
+        {/* ── Marquee ────────────────────────────────────────────── */}
+        <Marquee />
+
         {/* ── Por qué ────────────────────────────────────────────── */}
-        <section className="border-y border-border bg-background">
-          <div className="mx-auto grid max-w-6xl gap-8 px-6 py-12 md:grid-cols-3 md:gap-6">
+        <section className="bg-background">
+          <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 md:grid-cols-3 md:gap-6">
             {[
               {
                 title: 'Menos fila vehicular',
@@ -381,39 +405,42 @@ export default function LandingPage() {
                 title: 'Cada entrega, registrada',
                 body: 'Quién recogió a cada alumno, a qué hora y quién lo confirmó. Respaldo para el colegio y para las familias.',
               },
-            ].map((item) => (
-              <div key={item.title}>
-                <h3 className="text-lg font-extrabold tracking-tight">{item.title}</h3>
+            ].map((item, i) => (
+              <Reveal key={item.title} delay={i * 0.1}>
+                <h2 className="text-lg font-extrabold tracking-tight">{item.title}</h2>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {/* ── Cómo funciona ──────────────────────────────────────── */}
-        <section id="como-funciona" className="scroll-mt-24">
+        <section id="como-funciona" className="scroll-mt-24 border-t border-border">
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
-            <div className="text-center">
-              <Eyebrow>Cómo funciona</Eyebrow>
-              <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
-                Del «ya salgo» a la entrega verificada
-              </h2>
-            </div>
+            <Reveal>
+              <div className="text-center">
+                <Eyebrow>Cómo funciona</Eyebrow>
+                <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
+                  Del «ya salgo» a la entrega verificada
+                </h2>
+              </div>
+            </Reveal>
 
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {STEPS.map((step) => (
-                <div
-                  key={step.n}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-elev"
-                >
-                  <span
-                    className={`flex h-10 w-10 items-center justify-center rounded-2xl text-lg font-black ${step.chip}`}
-                  >
-                    {step.n}
-                  </span>
-                  <h3 className="mt-4 text-base font-extrabold leading-snug">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
-                </div>
+              {STEPS.map((step, i) => (
+                <Reveal key={step.n} delay={i * 0.09} className="h-full">
+                  <div className="h-full rounded-3xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-elev">
+                    <span
+                      className={`flex h-10 w-10 items-center justify-center rounded-2xl text-lg font-black ${step.chip}`}
+                    >
+                      {step.n}
+                    </span>
+                    <h3 className="mt-4 text-base font-extrabold leading-snug">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {step.body}
+                    </p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -422,154 +449,263 @@ export default function LandingPage() {
         {/* ── Producto por rol ───────────────────────────────────── */}
         <section id="producto" className="scroll-mt-24 border-t border-border bg-background">
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
-            <div className="text-center">
-              <Eyebrow>Producto</Eyebrow>
-              <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
-                Una sola plataforma, tres puestos de trabajo
-              </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-                La familia avisa desde la app, el portón opera con su tablero en vivo y la dirección
-                administra todo desde el panel web.
-              </p>
-            </div>
+            <Reveal>
+              <div className="text-center">
+                <Eyebrow>Producto</Eyebrow>
+                <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
+                  Una sola plataforma, tres puestos de trabajo
+                </h2>
+                <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
+                  La familia avisa desde la app, el portón opera con su tablero en vivo y la
+                  dirección administra todo desde el panel web.
+                </p>
+              </div>
+            </Reveal>
 
             <div className="mt-12 grid gap-5 lg:grid-cols-3">
-              {ROLES.map((role) => (
-                <div
-                  key={role.title}
-                  className="flex flex-col rounded-3xl border border-border bg-card p-7 shadow-card transition-all hover:-translate-y-1 hover:shadow-elev"
-                >
-                  <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-2xl ${role.chip}`}
-                  >
-                    <role.icon className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-4 text-xl font-extrabold tracking-tight">{role.title}</h3>
-                  <p className="mt-1 text-sm font-medium text-muted-foreground">{role.sub}</p>
-                  <ul className="mt-5 space-y-3">
-                    {role.items.map((item) => (
-                      <li key={item} className="flex gap-2.5 text-sm leading-relaxed">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span className="text-foreground/85">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              {ROLES.map((role, i) => (
+                <Reveal key={role.title} delay={i * 0.1} className="h-full">
+                  <div className="flex h-full flex-col rounded-3xl border border-border bg-card p-7 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-elev">
+                    <span
+                      className={`flex h-11 w-11 items-center justify-center rounded-2xl ${role.chip}`}
+                    >
+                      <role.icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="mt-4 text-xl font-extrabold tracking-tight">{role.title}</h3>
+                    <p className="mt-1 text-sm font-medium text-muted-foreground">{role.sub}</p>
+                    <ul className="mt-5 space-y-3">
+                      {role.items.map((item) => (
+                        <li key={item} className="flex gap-2.5 text-sm leading-relaxed">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span className="text-foreground/85">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
               ))}
             </div>
 
-            <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs font-semibold text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <FileSpreadsheet className="h-3.5 w-3.5" /> Importación por Excel
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Bell className="h-3.5 w-3.5" /> Avisos automáticos
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Printer className="h-3.5 w-3.5" /> Tarjetas QR imprimibles
-              </span>
-              <span className="flex items-center gap-1.5">
-                <MessagesSquare className="h-3.5 w-3.5" /> Mensajes a familias
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5" /> Círculo de confianza
-              </span>
+            <Reveal delay={0.15}>
+              <div className="mx-auto mt-10 flex max-w-3xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs font-semibold text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <FileSpreadsheet className="h-3.5 w-3.5" /> Importación por Excel
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Bell className="h-3.5 w-3.5" /> Avisos automáticos
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Printer className="h-3.5 w-3.5" /> Tarjetas QR imprimibles
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <MessagesSquare className="h-3.5 w-3.5" /> Mensajes a familias
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5" /> Círculo de confianza
+                </span>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── Precios ────────────────────────────────────────────── */}
+        <section id="precios" className="scroll-mt-24 border-t border-border">
+          <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
+            <Reveal>
+              <div className="text-center">
+                <Eyebrow>Precios</Eyebrow>
+                <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
+                  Un precio simple, por alumno
+                </h2>
+                <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
+                  Se factura mensualmente al colegio por alumno activo. Todo incluido, sin
+                  instalación ni costos ocultos. Las familias nunca pagan a Eez4us.
+                </p>
+              </div>
+            </Reveal>
+
+            <div className="mx-auto mt-12 grid max-w-4xl gap-5 md:grid-cols-2">
+              {PLANS.map((plan, i) => (
+                <Reveal key={plan.country} delay={i * 0.12} className="h-full">
+                  <div
+                    className={`relative flex h-full flex-col rounded-3xl border bg-card p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-pop ${
+                      plan.highlight
+                        ? 'border-primary/60 shadow-elev ring-1 ring-primary/30'
+                        : 'border-border shadow-card'
+                    }`}
+                  >
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      {plan.country}
+                    </p>
+                    <p className="mt-4 flex items-baseline gap-2">
+                      <span className="text-5xl font-black tracking-tight">{plan.price}</span>
+                      <span className="text-lg font-extrabold text-muted-foreground">
+                        {plan.currency}
+                      </span>
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-muted-foreground">
+                      por alumno / mes
+                    </p>
+                    <p className="mt-4 flex items-start gap-2 text-xs font-medium leading-relaxed text-muted-foreground">
+                      <CreditCard className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      {plan.payment}
+                    </p>
+                    <ul className="mt-6 flex-1 space-y-2.5 border-t border-border pt-6">
+                      {PLAN_FEATURES.map((feature) => (
+                        <li key={feature} className="flex gap-2.5 text-sm leading-relaxed">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span className="text-foreground/85">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <a
+                      href="#contacto"
+                      className={`mt-7 inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-bold shadow-card transition-all hover:-translate-y-0.5 active:translate-y-0 ${
+                        plan.highlight
+                          ? 'bg-primary text-primary-foreground shadow-elev hover:opacity-95'
+                          : 'border border-border bg-white text-foreground hover:border-foreground/25'
+                      }`}
+                    >
+                      Empezar con mi colegio
+                    </a>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={0.1}>
+              <div className="mx-auto mt-6 flex max-w-4xl flex-wrap items-center justify-between gap-4 rounded-3xl border border-border bg-background px-7 py-5">
+                <p className="flex items-center gap-3 text-sm font-semibold text-foreground/85">
+                  <Globe2 className="h-5 w-5 shrink-0 text-[hsl(211_80%_40%)]" />
+                  ¿Tu colegio está en otro país de Latinoamérica? También llegamos.
+                </p>
+                <a href="#contacto" className="text-sm font-bold text-primary hover:underline">
+                  Escríbenos y lo coordinamos
+                </a>
+              </div>
+            </Reveal>
+
+            <div className="mt-14">
+              <Reveal>
+                <h3 className="text-center text-xl font-extrabold tracking-tight md:text-2xl">
+                  Así se contrata
+                </h3>
+              </Reveal>
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {BUY_STEPS.map((step, i) => (
+                  <Reveal key={step.title} delay={i * 0.1} className="h-full">
+                    <div className="h-full rounded-3xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-elev">
+                      <span
+                        className={`flex h-10 w-10 items-center justify-center rounded-2xl ${step.chip}`}
+                      >
+                        <step.icon className="h-5 w-5" />
+                      </span>
+                      <h4 className="mt-4 text-base font-extrabold">{step.title}</h4>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {step.body}
+                      </p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              <Reveal delay={0.12}>
+                <p className="mt-6 text-center text-xs font-medium text-muted-foreground">
+                  Pagos procesados por Openpay (BBVA) en México y Stripe en Estados Unidos ·
+                  Facturación mensual por alumno activo · Cancelas cuando quieras
+                </p>
+              </Reveal>
             </div>
           </div>
         </section>
 
         {/* ── Seguridad ──────────────────────────────────────────── */}
-        <section id="seguridad" className="scroll-mt-24 border-t border-border">
+        <section id="seguridad" className="scroll-mt-24 border-t border-border bg-background">
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
-            <div className="text-center">
-              <Eyebrow>Seguridad</Eyebrow>
-              <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
-                Diseñado alrededor de una sola pregunta: ¿quién puede recoger a este alumno?
-              </h2>
-            </div>
+            <Reveal>
+              <div className="text-center">
+                <Eyebrow>Seguridad</Eyebrow>
+                <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
+                  Diseñado alrededor de una sola pregunta: ¿quién puede recoger a este alumno?
+                </h2>
+              </div>
+            </Reveal>
 
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {SECURITY_ITEMS.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-card"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-foreground">
-                    <item.icon className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-4 text-base font-extrabold">{item.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                    {item.body}
-                  </p>
-                </div>
+              {SECURITY_ITEMS.map((item, i) => (
+                <Reveal key={item.title} delay={(i % 3) * 0.09} className="h-full">
+                  <div className="h-full rounded-3xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-elev">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-foreground">
+                      <item.icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="mt-4 text-base font-extrabold">{item.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                      {item.body}
+                    </p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
 
         {/* ── FAQ ────────────────────────────────────────────────── */}
-        <section id="preguntas" className="scroll-mt-24 border-t border-border bg-background">
+        <section id="preguntas" className="scroll-mt-24 border-t border-border">
           <div className="mx-auto max-w-3xl px-6 py-20 md:py-24">
-            <div className="text-center">
-              <Eyebrow>Preguntas frecuentes</Eyebrow>
-              <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
-                Lo que todo colegio nos pregunta
-              </h2>
-            </div>
+            <Reveal>
+              <div className="text-center">
+                <Eyebrow>Preguntas frecuentes</Eyebrow>
+                <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
+                  Lo que todo colegio nos pregunta
+                </h2>
+              </div>
+            </Reveal>
 
-            <div className="mt-10 space-y-3">
-              {FAQS.map((faq) => (
-                <details
-                  key={faq.q}
-                  className="group rounded-2xl border border-border bg-card px-5 py-4 shadow-card"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold text-foreground [&::-webkit-details-marker]:hidden">
-                    {faq.q}
-                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
-                  </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{faq.a}</p>
-                </details>
-              ))}
-            </div>
+            <Reveal delay={0.1}>
+              <div className="mt-10">
+                <Faq items={FAQS} />
+              </div>
+            </Reveal>
           </div>
         </section>
 
         {/* ── CTA ────────────────────────────────────────────────── */}
         <section className="border-t border-border">
           <div className="mx-auto max-w-6xl px-6 py-20">
-            <div className="rounded-[2.5rem] bg-foreground px-8 py-14 text-center shadow-pop md:py-16">
-              <BrandDots className="justify-center" />
-              <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-black tracking-tight text-white md:text-4xl">
-                Lleva Eez4us a tu colegio
-              </h2>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/70 md:text-base">
-                Agenda una demo en vivo de 20 minutos y mira el tablero funcionando con tu propia
-                zona de recogida.
-              </p>
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-                <a
-                  href="#contacto"
-                  className="rounded-full bg-white px-7 py-3.5 text-sm font-bold text-foreground shadow-elev transition-all hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  Solicitar una demo
-                </a>
-                <a
-                  href={CONTACT_WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/10"
-                >
-                  Escribir por WhatsApp
-                </a>
+            <Reveal>
+              <div className="rounded-[2.5rem] bg-foreground px-8 py-14 text-center shadow-pop md:py-16">
+                <BrandDots className="justify-center" />
+                <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-black tracking-tight text-white md:text-4xl">
+                  Lleva Eez4us a tu colegio
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/70 md:text-base">
+                  Desde $99 MXN o $6.99 USD por alumno al mes, todo incluido. Escríbenos y tu
+                  colegio queda operando en días.
+                </p>
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href="#contacto"
+                    className="rounded-full bg-white px-7 py-3.5 text-sm font-bold text-foreground shadow-elev transition-all hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    Empezar ahora
+                  </a>
+                  <a
+                    href={CONTACT_WHATSAPP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/10"
+                  >
+                    Escribir por WhatsApp
+                  </a>
+                </div>
               </div>
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* ── Contacto ───────────────────────────────────────────── */}
         <section id="contacto" className="scroll-mt-24 border-t border-border bg-background">
           <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:gap-14 md:py-24">
-            <div>
+            <Reveal>
               <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 <BrandDots />
                 Contacto
@@ -577,7 +713,7 @@ export default function LandingPage() {
               <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">Hablemos</h2>
               <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
                 Cuéntanos de tu institución y te mostramos Eez4us funcionando. Sin compromiso y sin
-                vueltas: una llamada, una demo y un plan para tu zona de recogida.
+                vueltas: una llamada, una demo en vivo y un plan para tu zona de recogida.
               </p>
 
               <a
@@ -600,8 +736,8 @@ export default function LandingPage() {
               <ul className="mt-8 space-y-2.5">
                 {[
                   'Demo en vivo de 20 minutos',
-                  'Implementación en días: solo necesitas tu nómina en Excel',
-                  'Precio por alumno acordado con cada institución',
+                  'Implementación en días: solo necesitas tu lista de alumnos en Excel',
+                  '$99 MXN o $6.99 USD por alumno al mes, todo incluido',
                 ].map((item) => (
                   <li
                     key={item}
@@ -612,9 +748,11 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </Reveal>
 
-            <ContactForm />
+            <Reveal delay={0.12}>
+              <ContactForm />
+            </Reveal>
           </div>
         </section>
       </main>
@@ -632,8 +770,8 @@ export default function LandingPage() {
                 className="h-auto w-[110px]"
               />
               <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
-                Coordinación de recogida vehicular en zonas escolares para colegios de Estados
-                Unidos y México.
+                Coordinación de recogida vehicular en zonas escolares para colegios de México,
+                Estados Unidos y Latinoamérica.
               </p>
             </div>
 
@@ -642,7 +780,7 @@ export default function LandingPage() {
                 Producto
               </p>
               <ul className="mt-3 space-y-2 text-sm font-semibold">
-                {NAV_LINKS.slice(0, 4).map((link) => (
+                {NAV_LINKS.slice(0, 5).map((link) => (
                   <li key={link.href}>
                     <a
                       href={link.href}
@@ -716,8 +854,8 @@ export default function LandingPage() {
 
           <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground">
             <p>
-              © {new Date().getFullYear()} Eez4us Technologies LLC · 30 N Gould St Ste N, Sheridan,
-              WY 82801, EE. UU.
+              © <CopyrightYear /> Eez4us Technologies LLC · 30 N Gould St Ste N, Sheridan, WY 82801,
+              EE. UU.
             </p>
             <p className="font-semibold">La salida del colegio, en orden.</p>
           </div>
