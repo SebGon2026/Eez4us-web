@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 function hasSessionCookie(request: NextRequest): boolean {
   // En producción (HTTPS) better-auth prefija la cookie de sesión con `__Secure-`
@@ -9,6 +9,7 @@ function hasSessionCookie(request: NextRequest): boolean {
 }
 
 const PUBLIC_PATHS = new Set([
+  '/',
   '/login',
   '/forgot-password',
   '/reset-password',
