@@ -26,8 +26,10 @@ decisión técnica del proyecto, no del jefe, pero ya está endosada.
 ## Identidad del producto
 
 - Mobile-first puro. Web SOLO panel admin.
-- CERO landing pública. CERO versión web del producto para usuarios finales.
-- "/" del web NO es navegable salvo login admin.
+- Landing pública en "/" (pedida 2026-07-02): estática, `app/(landing)/`, formulario de
+  contacto que abre WhatsApp a +1 520-909-5510 (`lib/contact.ts`). Sin backend de contacto.
+- CERO versión web del producto para usuarios finales — el resto del web sigue siendo solo
+  panel admin detrás de login.
 - **Modelo B2B2C**: Eez4us le cobra a las escuelas ($10 USD/alumno/mes vía Stripe). Las escuelas suman ~$40 USD a la colegiatura al padre. **Los padres NUNCA pagan directo a Eez4us** — solo a la escuela.
 - **Cinco roles** (todos en `User.role`):
   - **`parent`** (mobile): claimea invitación → vehículos + familiares autorizados → "voy en camino"
