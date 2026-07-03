@@ -63,10 +63,37 @@ function BrandDots({ className = '' }: { className?: string }) {
   );
 }
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
+// Cada sección se identifica con su propio color de cabecera (pedido de Cesar 2026-07-03):
+// texto en tono de marca + punto del mismo color. El hero conserva los 4 puntos multicolor.
+const EYEBROW_TONE = {
+  brand: 'text-muted-foreground',
+  blue: 'text-[hsl(211_72%_42%)]',
+  green: 'text-[hsl(104_45%_30%)]',
+  amber: 'text-[hsl(30_82%_34%)]',
+  purple: 'text-[hsl(280_52%_46%)]',
+  pink: 'text-[hsl(326_58%_46%)]',
+} as const;
+
+const EYEBROW_DOT = {
+  blue: 'bg-[hsl(var(--brand-blue))]',
+  green: 'bg-[hsl(var(--brand-green))]',
+  amber: 'bg-[hsl(var(--brand-orange))]',
+  purple: 'bg-[hsl(var(--brand-purple))]',
+  pink: 'bg-[hsl(var(--brand-pink))]',
+} as const;
+
+type EyebrowTone = keyof typeof EYEBROW_TONE;
+
+function Eyebrow({ children, tone = 'brand' }: { children: React.ReactNode; tone?: EyebrowTone }) {
   return (
-    <p className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-      <BrandDots />
+    <p
+      className={`flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.18em] ${EYEBROW_TONE[tone]}`}
+    >
+      {tone === 'brand' ? (
+        <BrandDots />
+      ) : (
+        <span className={`h-2 w-2 rounded-full ${EYEBROW_DOT[tone]}`} aria-hidden />
+      )}
       {children}
     </p>
   );
@@ -415,11 +442,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── Cómo funciona ──────────────────────────────────────── */}
-        <section id="como-funciona" className="scroll-mt-24 border-t border-border">
+        <section
+          id="como-funciona"
+          className="scroll-mt-24 border-t border-border bg-[hsl(211_100%_56%/0.045)]"
+        >
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
             <Reveal>
               <div className="text-center">
-                <Eyebrow>Cómo funciona</Eyebrow>
+                <Eyebrow tone="blue">Cómo funciona</Eyebrow>
                 <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
                   Del «ya salgo» a la entrega verificada
                 </h2>
@@ -447,11 +477,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── Producto por rol ───────────────────────────────────── */}
-        <section id="producto" className="scroll-mt-24 border-t border-border bg-background">
+        <section
+          id="producto"
+          className="scroll-mt-24 border-t border-border bg-[hsl(104_75%_51%/0.05)]"
+        >
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
             <Reveal>
               <div className="text-center">
-                <Eyebrow>Producto</Eyebrow>
+                <Eyebrow tone="green">Producto</Eyebrow>
                 <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
                   Una sola plataforma, tres puestos de trabajo
                 </h2>
@@ -509,11 +542,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── Precios ────────────────────────────────────────────── */}
-        <section id="precios" className="scroll-mt-24 border-t border-border">
+        <section
+          id="precios"
+          className="scroll-mt-24 border-t border-border bg-[hsl(38_100%_55%/0.055)]"
+        >
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
             <Reveal>
               <div className="text-center">
-                <Eyebrow>Precios</Eyebrow>
+                <Eyebrow tone="amber">Precios</Eyebrow>
                 <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
                   Un precio simple, por alumno
                 </h2>
@@ -619,11 +655,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── Seguridad ──────────────────────────────────────────── */}
-        <section id="seguridad" className="scroll-mt-24 border-t border-border bg-background">
+        <section
+          id="seguridad"
+          className="scroll-mt-24 border-t border-border bg-[hsl(280_70%_53%/0.045)]"
+        >
           <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
             <Reveal>
               <div className="text-center">
-                <Eyebrow>Seguridad</Eyebrow>
+                <Eyebrow tone="purple">Seguridad</Eyebrow>
                 <h2 className="mx-auto mt-3 max-w-2xl text-3xl font-black tracking-tight md:text-4xl">
                   Diseñado alrededor de una sola pregunta: ¿quién puede recoger a este alumno?
                 </h2>
@@ -649,11 +688,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── FAQ ────────────────────────────────────────────────── */}
-        <section id="preguntas" className="scroll-mt-24 border-t border-border">
+        <section
+          id="preguntas"
+          className="scroll-mt-24 border-t border-border bg-[hsl(326_90%_60%/0.038)]"
+        >
           <div className="mx-auto max-w-3xl px-6 py-20 md:py-24">
             <Reveal>
               <div className="text-center">
-                <Eyebrow>Preguntas frecuentes</Eyebrow>
+                <Eyebrow tone="pink">Preguntas frecuentes</Eyebrow>
                 <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
                   Lo que todo colegio nos pregunta
                 </h2>
@@ -703,11 +745,14 @@ export default function LandingPage() {
         </section>
 
         {/* ── Contacto ───────────────────────────────────────────── */}
-        <section id="contacto" className="scroll-mt-24 border-t border-border bg-background">
+        <section
+          id="contacto"
+          className="scroll-mt-24 border-t border-border bg-[hsl(104_75%_51%/0.045)]"
+        >
           <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-2 md:gap-14 md:py-24">
             <Reveal>
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                <BrandDots />
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[hsl(104_45%_30%)]">
+                <span className="h-2 w-2 rounded-full bg-[hsl(var(--brand-green))]" aria-hidden />
                 Contacto
               </p>
               <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">Hablemos</h2>
