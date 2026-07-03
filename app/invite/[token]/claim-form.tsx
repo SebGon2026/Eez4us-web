@@ -4,6 +4,7 @@ import { CheckCircle2, GraduationCap, Smartphone } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
+import { PasswordInput } from '@/components/ui/password-input';
 import { dialPrefixForCountry } from '@/lib/phone';
 
 // APK de producción publicado por el equipo mobile (v0.1.0).
@@ -210,26 +211,24 @@ export function ClaimInvitation({
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground">Contraseña (mínimo 8)</label>
-            <input
-              type="password"
+            <PasswordInput
+              wrapperClassName="mt-1"
               required
               minLength={8}
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-input bg-white px-3 py-2.5 text-sm font-medium outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground">Repetí la contraseña</label>
-            <input
-              type="password"
+            <PasswordInput
+              wrapperClassName="mt-1"
               required
               minLength={8}
               autoComplete="new-password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-input bg-white px-3 py-2.5 text-sm font-medium outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>

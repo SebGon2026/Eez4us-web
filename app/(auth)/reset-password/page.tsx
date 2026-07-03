@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
+import { PasswordInput } from '@/components/ui/password-input';
+
 function ResetForm() {
   const router = useRouter();
   const sp = useSearchParams();
@@ -80,24 +82,22 @@ function ResetForm() {
       <div className="space-y-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground">Contraseña nueva</label>
-          <input
-            type="password"
+          <PasswordInput
+            wrapperClassName="mt-1"
             required
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-input bg-white px-3 py-2.5 text-sm font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
         <div>
           <label className="text-xs font-semibold text-muted-foreground">Confirmar</label>
-          <input
-            type="password"
+          <PasswordInput
+            wrapperClassName="mt-1"
             required
             minLength={8}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-input bg-white px-3 py-2.5 text-sm font-medium outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
         </div>
       </div>
