@@ -37,12 +37,14 @@ export function middleware(request: NextRequest) {
   // hace window.location.replace('/admin') tras autenticar, así que no hay doble paso real.
 
   // Páginas autenticadas: nunca cachear (evita back/forward cache stale).
+  // OJO: NO reescribir los headers del request con NextResponse.next({ request: { headers } }).
+  // En OpenNext/Workers eso hacía que el layout server-side NO recibiera la cookie de sesión,
+  // así getCurrentSession() daba null y /admin rebotaba a /login pese a tener sesión válida.
+  // (Antes se inyectaba x-pathname para el bloqueo por mora del layout; ese bloqueo está
+  // apagado por flag y fail-open, así que no se pierde nada. Si se reactiva, detectar el
+  // pathname sin reescribir headers del request.)
   if (authed && !isPublic) {
-    // x-pathname: los layouts server-side no ven la URL; el gate de billing del layout
-    // admin lo necesita para no redirigir en loop sobre /admin/billing.
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-pathname', pathname);
-    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    const response = NextResponse.next();
     response.headers.set('cache-control', 'no-store, must-revalidate');
     return response;
   }
