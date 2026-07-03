@@ -9,6 +9,15 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
+  // El panel se sirve en apex Y www (dos Custom Domains directos, sin redirect — el mobile
+  // exige www sin 308). better-auth por defecto solo confía en baseURL (apex), así que un
+  // login desde www daba 403 "Invalid origin". Declaramos ambos hosts como confiables.
+  // BETTER_AUTH_URL cubre el caso dev (localhost).
+  trustedOrigins: [
+    'https://eez4us.com',
+    'https://www.eez4us.com',
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
