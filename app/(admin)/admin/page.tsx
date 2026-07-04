@@ -9,7 +9,13 @@ import { getCurrentSession } from '@/lib/session';
 
 export default async function AdminHomePage() {
   const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  if (!session) redirect('/login');
+  // El owner (super_admin) no está atado a un colegio: su home es el panel global, NO /login.
+  // Sin esto, un super_admin con schoolId null que caiga en /admin rebota a /login (parecía
+  // "login roto" tras el 2FA). Director/support_staff siempre tienen schoolId.
+  if (!session.user.schoolId) {
+    redirect(session.user.role === 'super_admin' ? '/admin/super' : '/login');
+  }
   const schoolId = session.user.schoolId;
 
   const pickupCount = await prisma.pickupPoint.count({
