@@ -1,16 +1,13 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 import { BroadcastForm } from './broadcast-form';
 
 export default async function MessagesPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { schoolId } = await requireSchoolPage();
 
   const conversations = await prisma.conversation.findMany({
     where: { schoolId },

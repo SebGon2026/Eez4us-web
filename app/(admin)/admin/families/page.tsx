@@ -2,15 +2,14 @@ import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 export default async function FamiliesPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!['director', 'support_staff', 'super_admin'].includes(session.user.role)) redirect('/admin');
 
   const { q } = await searchParams;
@@ -18,7 +17,7 @@ export default async function FamiliesPage({
 
   const parents = await prisma.user.findMany({
     where: {
-      schoolId: session.user.schoolId,
+      schoolId: schoolId,
       role: 'parent',
       ...(search
         ? {

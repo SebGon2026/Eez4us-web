@@ -1,6 +1,5 @@
 import { MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 import { DeleteButton } from '@/components/admin/delete-button';
 import { EmptyState } from '@/components/empty-state';
@@ -15,12 +14,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 export default async function PickupPointsPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { schoolId } = await requireSchoolPage();
 
   const pickupPoints = await prisma.pickupPoint.findMany({
     where: { schoolId, active: true },

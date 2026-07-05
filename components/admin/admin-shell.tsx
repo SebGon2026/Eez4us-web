@@ -12,6 +12,7 @@ interface AdminShellProps {
   schoolName: string | null;
   schoolLogo: string | null;
   internalCode: string | null;
+  hasSchool: boolean;
   children: React.ReactNode;
 }
 
@@ -23,6 +24,7 @@ export function AdminShell({
   schoolName,
   schoolLogo,
   internalCode,
+  hasSchool,
   children,
 }: AdminShellProps) {
   const pathname = usePathname();
@@ -64,6 +66,7 @@ export function AdminShell({
         role={role}
         schoolName={schoolName}
         schoolLogo={schoolLogo}
+        hasSchool={hasSchool}
         open={drawerOpen}
         collapsed={collapsed}
         onClose={() => setDrawerOpen(false)}

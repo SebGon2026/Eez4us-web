@@ -2,17 +2,16 @@ import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 import { SchoolSettingsForm } from './settings-form';
 
 export default async function SchoolSettingsPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!['director', 'super_admin'].includes(session.user.role)) redirect('/admin');
 
   const school = await prisma.school.findUnique({
-    where: { id: session.user.schoolId },
+    where: { id: schoolId },
   });
   if (!school) redirect('/login');
 

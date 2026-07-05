@@ -2,19 +2,18 @@ import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 import { ValidateCodeForm } from './validate-code-form';
 
 export default async function TempAuthsPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!['director', 'support_staff', 'super_admin'].includes(session.user.role)) {
     redirect('/admin');
   }
 
   const history = await prisma.temporaryAuthorization.findMany({
-    where: { schoolId: session.user.schoolId },
+    where: { schoolId },
     orderBy: { createdAt: 'desc' },
     take: 30,
     include: {
@@ -26,7 +25,7 @@ export default async function TempAuthsPage() {
   const allStudentIds = [...new Set(history.flatMap((h) => h.studentIds))];
   const students = allStudentIds.length
     ? await prisma.student.findMany({
-        where: { id: { in: allStudentIds }, schoolId: session.user.schoolId },
+        where: { id: { in: allStudentIds }, schoolId },
         select: { id: true, firstName: true, lastName: true, grade: { select: { name: true } } },
       })
     : [];

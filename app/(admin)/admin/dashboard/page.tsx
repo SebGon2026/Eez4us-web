@@ -1,8 +1,6 @@
-import { redirect } from 'next/navigation';
-
 import { LiveArrivalsBoard } from '@/components/admin/live-arrivals-board';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 interface DismissalBucket {
   time: string;
@@ -12,9 +10,7 @@ interface DismissalBucket {
 }
 
 export default async function DashboardHomePage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { session, schoolId } = await requireSchoolPage();
 
   const [pickupPoints, grades] = await Promise.all([
     prisma.pickupPoint.findMany({

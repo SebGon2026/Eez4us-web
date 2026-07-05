@@ -1,11 +1,8 @@
-import { redirect } from 'next/navigation';
-
 import { ExcelDropzone } from '@/components/admin/excel-dropzone';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 export default async function ImportStudentsPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { schoolId } = await requireSchoolPage();
 
   return (
     <div className="space-y-6">
@@ -16,7 +13,7 @@ export default async function ImportStudentsPage() {
           (email si tiene, sino WhatsApp).
         </p>
       </div>
-      <ExcelDropzone schoolId={session.user.schoolId} />
+      <ExcelDropzone schoolId={schoolId} />
     </div>
   );
 }

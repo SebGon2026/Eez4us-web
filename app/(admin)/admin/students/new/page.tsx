@@ -1,13 +1,9 @@
-import { redirect } from 'next/navigation';
-
 import { StudentForm } from '@/components/admin/student-form';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 export default async function NewStudentPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { schoolId } = await requireSchoolPage();
 
   const grades = await prisma.grade.findMany({
     where: { schoolId },

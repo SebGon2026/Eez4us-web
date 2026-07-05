@@ -2,12 +2,10 @@ import { redirect } from 'next/navigation';
 
 import { SetupWizard } from '@/components/admin/setup-wizard';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 export default async function SetupPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { schoolId } = await requireSchoolPage();
 
   const school = await prisma.school.findUnique({
     where: { id: schoolId },

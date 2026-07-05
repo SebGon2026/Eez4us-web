@@ -2,22 +2,21 @@ import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 import { LiveMap } from './live-map';
 
 export default async function LiveMapPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!['director', 'support_staff', 'super_admin'].includes(session.user.role)) redirect('/admin');
 
   const [school, pickupPoints] = await Promise.all([
     prisma.school.findUnique({
-      where: { id: session.user.schoolId },
+      where: { id: schoolId },
       select: { name: true, addressLat: true, addressLng: true },
     }),
     prisma.pickupPoint.findMany({
-      where: { schoolId: session.user.schoolId, active: true },
+      where: { schoolId: schoolId, active: true },
       select: {
         id: true,
         name: true,

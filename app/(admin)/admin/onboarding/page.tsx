@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSchoolReadiness, type ReadinessStepKey } from '@/lib/onboarding';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 const STEP_META: Record<
   ReadinessStepKey,
@@ -43,11 +43,10 @@ const STEP_META: Record<
 };
 
 export default async function OnboardingPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!['director', 'super_admin'].includes(session.user.role)) redirect('/admin');
 
-  const readiness = await getSchoolReadiness(session.user.schoolId);
+  const readiness = await getSchoolReadiness(schoolId);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

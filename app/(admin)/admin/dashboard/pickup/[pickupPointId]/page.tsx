@@ -1,19 +1,17 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { RankedTripsBoard } from '@/components/admin/ranked-trips-board';
 import { prisma } from '@/lib/db';
 import { buildRankedTrips } from '@/lib/pusher-channels';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 interface PageProps {
   params: Promise<{ pickupPointId: string }>;
 }
 
 export default async function PickupDashboardPage({ params }: PageProps) {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { session, schoolId } = await requireSchoolPage();
 
   const { pickupPointId } = await params;
 

@@ -1,13 +1,11 @@
 import { redirect } from 'next/navigation';
 
 import { SchoolReport } from '@/components/admin/school-report';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 export default async function SchoolReportPage() {
-  const session = await getCurrentSession();
-  if (!session) redirect('/login');
+  const { session } = await requireSchoolPage();
   if (!['director', 'super_admin'].includes(session.user.role)) redirect('/admin');
-  if (!session.user.schoolId) redirect('/admin');
 
   return (
     <div className="space-y-6">

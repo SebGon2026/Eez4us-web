@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { openpayPricePerStudentMXN, resolveProvider } from '@/lib/billing';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 function fmtMoney(n: number, currency: string): string {
   return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2 })} ${currency}`;
@@ -32,10 +32,8 @@ function fmtDate(d: Date | null): string {
 }
 
 export default async function BillingPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!['director', 'super_admin'].includes(session.user.role)) redirect('/admin');
-  const schoolId = session.user.schoolId;
 
   const [sub, studentCount, school, lastPaidInvoice, invoices] = await Promise.all([
     prisma.subscription.findUnique({ where: { schoolId } }),

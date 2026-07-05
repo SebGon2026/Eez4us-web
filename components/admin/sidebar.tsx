@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  ArrowLeft,
   BarChart3,
   Building2,
   Car,
@@ -42,11 +43,15 @@ interface NavItem {
 interface NavSection {
   title?: string;
   roles?: string[];
+  // Secciones que operan sobre UN colegio. Se ocultan al super_admin en vista global
+  // (schoolId null): el owner entra a un colegio con "Ver como director" (impersonate).
+  requiresSchool?: boolean;
   items: NavItem[];
 }
 
 const SECTIONS: NavSection[] = [
   {
+    requiresSchool: true,
     items: [
       { href: '/admin', label: 'Inicio', icon: Home },
       { href: '/admin/dashboard', label: 'Llegadas en vivo', icon: LayoutDashboard },
@@ -54,6 +59,7 @@ const SECTIONS: NavSection[] = [
   },
   {
     title: 'Personas',
+    requiresSchool: true,
     items: [
       { href: '/admin/students', label: 'Alumnos', icon: GraduationCap },
       { href: '/admin/grades', label: 'Grados', icon: Tag },
@@ -64,6 +70,7 @@ const SECTIONS: NavSection[] = [
   },
   {
     title: 'Operación',
+    requiresSchool: true,
     items: [
       { href: '/admin/pickup-points', label: 'Puntos de recogida', icon: MapPin },
       { href: '/admin/temp-auths', label: 'Autoriz. temporales', icon: KeyRound },
@@ -74,6 +81,7 @@ const SECTIONS: NavSection[] = [
   {
     title: 'Reportes',
     roles: ['director', 'super_admin'],
+    requiresSchool: true,
     items: [
       { href: '/admin/imports', label: 'Importaciones', icon: FileSpreadsheet },
       { href: '/admin/reports/operational', label: 'Operativo', icon: BarChart3 },
@@ -84,6 +92,7 @@ const SECTIONS: NavSection[] = [
   {
     title: 'Colegio',
     roles: ['director', 'super_admin'],
+    requiresSchool: true,
     items: [
       { href: '/admin/staff', label: 'Personal', icon: UserCog },
       { href: '/admin/billing', label: 'Facturación', icon: CreditCard },
@@ -106,6 +115,9 @@ interface SidebarProps {
   role: string;
   schoolName: string | null;
   schoolLogo: string | null;
+  // true si hay un colegio activo en la sesión (director/support_staff siempre; super_admin
+  // solo mientras impersona con "Ver como director"). Controla qué nav escolar se muestra.
+  hasSchool: boolean;
   open: boolean;
   collapsed: boolean;
   onClose: () => void;
@@ -116,6 +128,7 @@ export function Sidebar({
   role,
   schoolName,
   schoolLogo,
+  hasSchool,
   open,
   collapsed,
   onClose,
@@ -219,9 +232,30 @@ export function Sidebar({
           </div>
         </div>
 
+        {/* Salir de impersonación: solo el super_admin mientras ve un colegio como director */}
+        {role === 'super_admin' && hasSchool && (
+          <form
+            action="/api/admin/schools/exit-impersonation"
+            method="POST"
+            className={cn('border-b border-border px-3 py-2.5', collapsed && 'lg:px-2')}
+          >
+            <button
+              type="submit"
+              title={collapsed ? 'Volver a vista global' : undefined}
+              className={cn(
+                'flex w-full items-center gap-2 rounded-lg border-[1.5px] border-primary/40 bg-primary/10 px-3 py-2 text-xs font-bold text-primary transition-colors hover:bg-primary/15',
+                collapsed && 'lg:justify-center lg:px-0',
+              )}
+            >
+              <ArrowLeft className="h-4 w-4 shrink-0" />
+              <span className={cn('truncate', hideOnCollapse)}>Volver a vista global</span>
+            </button>
+          </form>
+        )}
+
         {/* Nav agrupada */}
         <nav className={cn('flex-1 overflow-y-auto px-3 py-4', collapsed && 'lg:px-2')}>
-          {SECTIONS.filter((s) => canSee(s.roles)).map((section, idx) => {
+          {SECTIONS.filter((s) => canSee(s.roles) && (!s.requiresSchool || hasSchool)).map((section, idx) => {
             const items = section.items.filter((it) => canSee(it.roles));
             if (items.length === 0) return null;
             return (

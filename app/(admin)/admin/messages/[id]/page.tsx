@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 import { ReplyForm } from './reply-form';
 
@@ -13,8 +13,7 @@ export default async function ConversationPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { schoolId } = await requireSchoolPage();
 
   const conv = await prisma.conversation.findUnique({
     where: { id },
@@ -26,7 +25,7 @@ export default async function ConversationPage({
       },
     },
   });
-  if (!conv || conv.schoolId !== session.user.schoolId) notFound();
+  if (!conv || conv.schoolId !== schoolId) notFound();
 
   await prisma.conversation.update({ where: { id }, data: { unreadStaff: 0 } });
 

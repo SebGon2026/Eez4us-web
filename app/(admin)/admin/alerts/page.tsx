@@ -2,18 +2,17 @@ import { redirect } from 'next/navigation';
 
 import { type AlertItem,AlertsBoard } from '@/components/admin/alerts-board';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 const STAFF_ROLES = new Set(['director', 'support_staff', 'super_admin']);
 
 export default async function AlertsPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!STAFF_ROLES.has(session.user.role)) redirect('/login');
 
   const alerts = await prisma.alert.findMany({
     where: {
-      schoolId: session.user.schoolId,
+      schoolId,
       OR: [
         { targetUserId: session.user.id },
         { targetUserId: null, targetRole: session.user.role },

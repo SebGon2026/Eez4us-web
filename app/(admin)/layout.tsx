@@ -92,6 +92,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         schoolName={schoolName}
         schoolLogo={schoolLogo}
         internalCode={internalCode}
+        hasSchool={!!session.user.schoolId}
       >
         {billingBanner}
         {children}

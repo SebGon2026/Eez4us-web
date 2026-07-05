@@ -1,16 +1,12 @@
-import { redirect } from 'next/navigation';
-
 import { PickupPointForm } from '@/components/admin/pickup-point-form';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 const DEFAULT_LAT = 19.4326;
 const DEFAULT_LNG = -99.1332;
 
 export default async function NewPickupPointPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { schoolId } = await requireSchoolPage();
 
   const school = await prisma.school.findUnique({
     where: { id: schoolId },

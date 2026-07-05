@@ -2,13 +2,11 @@ import { redirect } from 'next/navigation';
 
 import { StaffManager } from '@/components/admin/staff-manager';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 export default async function StaffPage() {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
+  const { session, schoolId } = await requireSchoolPage();
   if (!['director', 'super_admin'].includes(session.user.role)) redirect('/admin');
-  const schoolId = session.user.schoolId;
 
   const staff = await prisma.user.findMany({
     where: { schoolId, role: { in: ['support_staff', 'logistics'] } },

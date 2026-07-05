@@ -1,7 +1,5 @@
 import { GraduationCap } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-
 import { type Column,DataTable } from '@/components/admin/data-table';
 import { DeleteButton } from '@/components/admin/delete-button';
 import { StudentsFilters } from '@/components/admin/students-filters';
@@ -9,7 +7,7 @@ import { EmptyState } from '@/components/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 const PAGE_SIZE = 25;
 
@@ -27,9 +25,7 @@ export default async function StudentsPage({
 }: {
   searchParams: Promise<{ page?: string; q?: string; gradeId?: string }>;
 }) {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { schoolId } = await requireSchoolPage();
   const { page: pageParam, q, gradeId } = await searchParams;
   const page = Math.max(1, Number(pageParam ?? '1') || 1);
 

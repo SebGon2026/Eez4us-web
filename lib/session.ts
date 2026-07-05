@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 import { auth } from './auth';
 
@@ -39,6 +40,24 @@ export async function getCurrentSession(): Promise<AuthedSession | null> {
 export async function getSessionFromRequest(req: Request): Promise<AuthedSession | null> {
   const raw = await auth.api.getSession({ headers: req.headers });
   return normalize(raw);
+}
+
+/**
+ * Guard para páginas del panel que operan sobre UN colegio (schoolId obligatorio).
+ * - Sin sesión → /login.
+ * - super_admin sin colegio (owner en vista global, antes de "Ver como director") → /admin/super,
+ *   NUNCA /login. Expulsarlo al login era el BUG que parecía "login roto" tras el 2FA: el owner
+ *   no está atado a un colegio, así que toda página escolar lo rebotaba.
+ * - Cualquier otro rol sin colegio → /login (no debería pasar: director/support_staff siempre lo tienen).
+ * Devuelve la sesión y el schoolId ya garantizado no-nulo para usar en las queries.
+ */
+export async function requireSchoolPage(): Promise<{ session: AuthedSession; schoolId: string }> {
+  const session = await getCurrentSession();
+  if (!session) redirect('/login');
+  if (!session.user.schoolId) {
+    redirect(session.user.role === 'super_admin' ? '/admin/super' : '/login');
+  }
+  return { session, schoolId: session.user.schoolId };
 }
 
 export class HttpError extends Error {

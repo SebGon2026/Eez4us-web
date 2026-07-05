@@ -1,7 +1,6 @@
 import type { InvitationStatus } from '@prisma/client';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 import { CopyInviteLink } from '@/components/admin/copy-invite-link';
 import { type Column,DataTable } from '@/components/admin/data-table';
@@ -11,7 +10,7 @@ import { EmptyState } from '@/components/empty-state';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
+import { requireSchoolPage } from '@/lib/session';
 
 const PAGE_SIZE = 25;
 
@@ -60,9 +59,7 @@ export default async function InvitationsPage({
 }: {
   searchParams: Promise<{ page?: string; status?: string }>;
 }) {
-  const session = await getCurrentSession();
-  if (!session || !session.user.schoolId) redirect('/login');
-  const schoolId = session.user.schoolId;
+  const { schoolId } = await requireSchoolPage();
   const { page: pageParam, status } = await searchParams;
   const page = Math.max(1, Number(pageParam ?? '1') || 1);
   const statusFilter = VALID_STATUSES.includes(status as InvitationStatus)
