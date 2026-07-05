@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { intlLocaleOf } from '@/lib/locale';
 
 type TicketType = 'BUG' | 'IMPROVEMENT' | 'SUPPORT';
 type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
@@ -39,24 +41,20 @@ interface Ticket {
   school?: { id: string; name: string } | null;
 }
 
-const TYPE_BADGE: Record<
-  TicketType,
-  { label: string; variant: 'default' | 'destructive' | 'warning' | 'secondary' }
-> = {
-  BUG: { label: 'Bug', variant: 'destructive' },
-  IMPROVEMENT: { label: 'Mejora', variant: 'warning' },
-  SUPPORT: { label: 'Soporte', variant: 'secondary' },
+const TYPE_VARIANT: Record<TicketType, 'default' | 'destructive' | 'warning' | 'secondary'> = {
+  BUG: 'destructive',
+  IMPROVEMENT: 'warning',
+  SUPPORT: 'secondary',
 };
 
-const STATUS_BADGE: Record<
-  TicketStatus,
-  { label: string; variant: 'default' | 'success' | 'warning' | 'secondary' }
-> = {
-  OPEN: { label: 'Abierto', variant: 'default' },
-  IN_PROGRESS: { label: 'En curso', variant: 'warning' },
-  RESOLVED: { label: 'Resuelto', variant: 'success' },
-  CLOSED: { label: 'Cerrado', variant: 'secondary' },
+const STATUS_VARIANT: Record<TicketStatus, 'default' | 'success' | 'warning' | 'secondary'> = {
+  OPEN: 'default',
+  IN_PROGRESS: 'warning',
+  RESOLVED: 'success',
+  CLOSED: 'secondary',
 };
+
+const TICKET_STATUSES: TicketStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
 
 interface SupportBoardProps {
   scope: 'mine' | 'all';
@@ -64,6 +62,9 @@ interface SupportBoardProps {
 }
 
 export function SupportBoard({ scope, canAdmin }: SupportBoardProps) {
+  const t = useTranslations('comms');
+  const tc = useTranslations('common');
+  const intlLocale = intlLocaleOf(useLocale());
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -78,8 +79,8 @@ export function SupportBoard({ scope, canAdmin }: SupportBoardProps) {
         return res.json() as Promise<{ tickets: Ticket[] }>;
       })
       .then((d) => setTickets(d.tickets))
-      .catch((err) => setError(err instanceof Error ? err.message : 'Error'));
-  }, [scope, statusFilter]);
+      .catch((err) => setError(err instanceof Error ? err.message : t('support.errorFallback')));
+  }, [scope, statusFilter, t]);
 
   useEffect(() => {
     load();
@@ -99,7 +100,7 @@ export function SupportBoard({ scope, canAdmin }: SupportBoardProps) {
       }
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error');
+      setError(err instanceof Error ? err.message : t('support.errorFallback'));
     }
   }
 
@@ -113,15 +114,16 @@ export function SupportBoard({ scope, canAdmin }: SupportBoardProps) {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="h-10 w-44"
             >
-              <option value="">Todos los estados</option>
-              <option value="OPEN">Abiertos</option>
-              <option value="IN_PROGRESS">En curso</option>
-              <option value="RESOLVED">Resueltos</option>
-              <option value="CLOSED">Cerrados</option>
+              <option value="">{t('support.statusFilter.all')}</option>
+              {TICKET_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {t(`support.statusFilter.${status}`)}
+                </option>
+              ))}
             </Select>
           )}
         </div>
-        <Button onClick={() => setOpenCreate(true)}>Reportar</Button>
+        <Button onClick={() => setOpenCreate(true)}>{t('support.report')}</Button>
       </div>
 
       {error && (
@@ -134,12 +136,12 @@ export function SupportBoard({ scope, canAdmin }: SupportBoardProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Título</TableHead>
-              {canAdmin && <TableHead>Reportado por</TableHead>}
-              <TableHead>Estado</TableHead>
-              <TableHead>Fecha</TableHead>
-              {canAdmin && <TableHead className="text-right">Cambiar</TableHead>}
+              <TableHead>{t('support.table.type')}</TableHead>
+              <TableHead>{t('support.table.title')}</TableHead>
+              {canAdmin && <TableHead>{t('support.table.reportedBy')}</TableHead>}
+              <TableHead>{tc('fields.status')}</TableHead>
+              <TableHead>{tc('fields.date')}</TableHead>
+              {canAdmin && <TableHead className="text-right">{t('support.table.change')}</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -149,50 +151,55 @@ export function SupportBoard({ scope, canAdmin }: SupportBoardProps) {
                   colSpan={canAdmin ? 6 : 4}
                   className="py-10 text-center text-sm text-muted-foreground"
                 >
-                  No hay tickets.
+                  {t('support.emptyTable')}
                 </TableCell>
               </TableRow>
             ) : (
-              tickets.map((t) => {
-                const tb = TYPE_BADGE[t.type];
-                const sb = STATUS_BADGE[t.status];
+              tickets.map((ticket) => {
                 return (
-                  <TableRow key={t.id}>
+                  <TableRow key={ticket.id}>
                     <TableCell>
-                      <Badge variant={tb.variant}>{tb.label}</Badge>
+                      <Badge variant={TYPE_VARIANT[ticket.type]}>
+                        {t(`support.ticketType.${ticket.type}`)}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="font-bold">{t.title}</div>
+                      <div className="font-bold">{ticket.title}</div>
                       <div className="text-xs text-muted-foreground line-clamp-2">
-                        {t.description}
+                        {ticket.description}
                       </div>
                     </TableCell>
                     {canAdmin && (
                       <TableCell className="text-xs">
-                        <div className="font-bold">{t.reportedBy.name ?? '—'}</div>
-                        <div className="text-muted-foreground">{t.reportedBy.email}</div>
-                        {t.school && (
-                          <div className="text-muted-foreground">{t.school.name}</div>
+                        <div className="font-bold">{ticket.reportedBy.name ?? '—'}</div>
+                        <div className="text-muted-foreground">{ticket.reportedBy.email}</div>
+                        {ticket.school && (
+                          <div className="text-muted-foreground">{ticket.school.name}</div>
                         )}
                       </TableCell>
                     )}
                     <TableCell>
-                      <Badge variant={sb.variant}>{sb.label}</Badge>
+                      <Badge variant={STATUS_VARIANT[ticket.status]}>
+                        {t(`support.status.${ticket.status}`)}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {new Date(t.createdAt).toLocaleDateString('es-MX')}
+                      {new Date(ticket.createdAt).toLocaleDateString(intlLocale)}
                     </TableCell>
                     {canAdmin && (
                       <TableCell className="text-right">
                         <Select
-                          value={t.status}
-                          onChange={(e) => updateStatus(t.id, e.target.value as TicketStatus)}
+                          value={ticket.status}
+                          onChange={(e) =>
+                            updateStatus(ticket.id, e.target.value as TicketStatus)
+                          }
                           className="h-9 w-36"
                         >
-                          <option value="OPEN">Abierto</option>
-                          <option value="IN_PROGRESS">En curso</option>
-                          <option value="RESOLVED">Resuelto</option>
-                          <option value="CLOSED">Cerrado</option>
+                          {TICKET_STATUSES.map((status) => (
+                            <option key={status} value={status}>
+                              {t(`support.status.${status}`)}
+                            </option>
+                          ))}
                         </Select>
                       </TableCell>
                     )}
@@ -223,6 +230,8 @@ interface CreateDialogProps {
 }
 
 function CreateTicketDialog({ open, onOpenChange, onCreated }: CreateDialogProps) {
+  const t = useTranslations('comms');
+  const tc = useTranslations('common');
   const [type, setType] = useState<TicketType>('BUG');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -249,7 +258,7 @@ function CreateTicketDialog({ open, onOpenChange, onCreated }: CreateDialogProps
       setType('BUG');
       onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error');
+      setError(err instanceof Error ? err.message : t('support.errorFallback'));
     } finally {
       setSubmitting(false);
     }
@@ -258,26 +267,24 @@ function CreateTicketDialog({ open, onOpenChange, onCreated }: CreateDialogProps
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogHeader>
-        <DialogTitle>Reportar ticket</DialogTitle>
-        <DialogDescription>
-          Contanos el problema, sugerencia o pedido. El equipo lo verá inmediatamente.
-        </DialogDescription>
+        <DialogTitle>{t('support.dialog.title')}</DialogTitle>
+        <DialogDescription>{t('support.dialog.description')}</DialogDescription>
       </DialogHeader>
       <form onSubmit={submit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="t-type">Tipo</Label>
+          <Label htmlFor="t-type">{t('support.dialog.typeLabel')}</Label>
           <Select
             id="t-type"
             value={type}
             onChange={(e) => setType(e.target.value as TicketType)}
           >
-            <option value="BUG">Bug</option>
-            <option value="IMPROVEMENT">Mejora</option>
-            <option value="SUPPORT">Soporte</option>
+            <option value="BUG">{t('support.ticketType.BUG')}</option>
+            <option value="IMPROVEMENT">{t('support.ticketType.IMPROVEMENT')}</option>
+            <option value="SUPPORT">{t('support.ticketType.SUPPORT')}</option>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="t-title">Título</Label>
+          <Label htmlFor="t-title">{t('support.dialog.titleLabel')}</Label>
           <Input
             id="t-title"
             value={title}
@@ -288,7 +295,7 @@ function CreateTicketDialog({ open, onOpenChange, onCreated }: CreateDialogProps
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="t-desc">Descripción</Label>
+          <Label htmlFor="t-desc">{t('support.dialog.descriptionLabel')}</Label>
           <Textarea
             id="t-desc"
             value={description}
@@ -311,10 +318,10 @@ function CreateTicketDialog({ open, onOpenChange, onCreated }: CreateDialogProps
             onClick={() => onOpenChange(false)}
             disabled={submitting}
           >
-            Cancelar
+            {tc('actions.cancel')}
           </Button>
           <Button type="submit" disabled={submitting}>
-            {submitting ? 'Enviando…' : 'Enviar'}
+            {submitting ? tc('actions.sending') : tc('actions.send')}
           </Button>
         </DialogFooter>
       </form>

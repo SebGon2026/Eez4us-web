@@ -1,7 +1,9 @@
+import { getLocale, getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 import { SchoolSettingsForm } from './settings-form';
@@ -16,13 +18,14 @@ export default async function SchoolSettingsPage() {
   });
   if (!school) redirect('/login');
 
+  const t = await getTranslations('schools');
+  const dateLocale = intlLocaleOf(await getLocale());
+
   return (
     <div className="shell-gap">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Configuración del colegio</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Identidad, apariencia, idioma y datos técnicos.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('settings.subtitle')}</p>
       </div>
 
       <SchoolSettingsForm
@@ -42,7 +45,7 @@ export default async function SchoolSettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Datos técnicos</CardTitle>
+          <CardTitle className="text-xl">{t('settings.technicalData')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
@@ -57,19 +60,19 @@ export default async function SchoolSettingsPage() {
             <code className="text-xs">{school.openpayCustomerId ?? '—'}</code>
           </p>
           <p>
-            <span className="font-bold">Estado:</span>{' '}
-            {school.active ? 'Activo' : 'Suspendido'}
+            <span className="font-bold">{t('settings.statusLabel')}</span>{' '}
+            {school.active ? t('settings.active') : t('settings.suspended')}
           </p>
           <p>
-            <span className="font-bold">Creado:</span>{' '}
-            {new Date(school.createdAt).toLocaleString('es-AR')}
+            <span className="font-bold">{t('settings.createdLabel')}</span>{' '}
+            {new Date(school.createdAt).toLocaleString(dateLocale)}
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Legales</CardTitle>
+          <CardTitle className="text-xl">{t('settings.legal')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2 text-sm">
           <a
@@ -78,7 +81,7 @@ export default async function SchoolSettingsPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-semibold hover:bg-secondary transition-colors"
           >
-            Política de privacidad
+            {t('settings.privacyPolicy')}
           </a>
           <a
             href="/terms"
@@ -86,7 +89,7 @@ export default async function SchoolSettingsPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 font-semibold hover:bg-secondary transition-colors"
           >
-            Términos del servicio
+            {t('settings.termsOfService')}
           </a>
         </CardContent>
       </Card>

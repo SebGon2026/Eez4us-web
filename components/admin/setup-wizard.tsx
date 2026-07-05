@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -35,6 +36,8 @@ const DEFAULT_LAT = 19.4326;
 const DEFAULT_LNG = -99.1332;
 
 export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
+  const t = useTranslations('schools');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
@@ -48,7 +51,7 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
   });
   const [internalCode, setInternalCode] = useState(initial.internalCode || generateCode());
 
-  const [pickupName, setPickupName] = useState('Puerta principal');
+  const [pickupName, setPickupName] = useState(t('setup.defaultPickupName'));
   const [pickupTouched, setPickupTouched] = useState(false);
   const [pickupMap, setPickupMap] = useState<PickupPointMapValue>({
     centerLat: initial.addressLat ?? DEFAULT_LAT,
@@ -92,7 +95,7 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
       });
       if (!patchRes.ok) {
         const data = (await patchRes.json()) as { error?: string };
-        setError(data.error ?? 'No se pudo guardar la escuela');
+        setError(data.error ?? t('setup.saveSchoolFailed'));
         return;
       }
 
@@ -108,14 +111,14 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
       });
       if (!ppRes.ok) {
         const data = (await ppRes.json()) as { error?: string };
-        setError(data.error ?? 'No se pudo crear el punto de recogida');
+        setError(data.error ?? t('setup.createPickupFailed'));
         return;
       }
 
       router.push('/admin');
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error inesperado');
+      setError(e instanceof Error ? e.message : t('setup.unexpectedError'));
     } finally {
       setSubmitting(false);
     }
@@ -124,11 +127,9 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div>
-        <p className="text-sm font-bold text-primary">Paso {step} de 3</p>
-        <h1 className="text-3xl font-black">Configurá tu escuela</h1>
-        <p className="text-sm text-muted-foreground">
-          Esto solo lo hacés una vez. Después podés editar todo desde el panel.
-        </p>
+        <p className="text-sm font-bold text-primary">{t('setup.stepOf', { step, total: 3 })}</p>
+        <h1 className="text-3xl font-black">{t('setup.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('setup.subtitle')}</p>
       </div>
 
       <div className="flex gap-1">
@@ -145,17 +146,21 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
       {step === 1 && (
         <div className="space-y-6 rounded-3xl border bg-card p-6 shadow-sm">
           <div className="space-y-2">
-            <Label htmlFor="school-name">Nombre de la escuela</Label>
+            <Label htmlFor="school-name">{t('setup.schoolName')}</Label>
             <Input
               id="school-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Instituto X"
+              placeholder={t('setup.schoolNamePlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label>Dirección</Label>
-            <AddressPicker value={address} onChange={setAddress} placeholder="Calle, número, ciudad" />
+            <Label>{t('setup.address')}</Label>
+            <AddressPicker
+              value={address}
+              onChange={setAddress}
+              placeholder={t('setup.addressPlaceholder')}
+            />
           </div>
         </div>
       )}
@@ -163,11 +168,8 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
       {step === 2 && (
         <div className="space-y-6 rounded-3xl border bg-card p-6 shadow-sm">
           <div className="space-y-2">
-            <Label htmlFor="internal-code">Código interno</Label>
-            <p className="text-xs text-muted-foreground">
-              4 a 12 caracteres, mayúsculas o números. Lo usás cuando un padre te dice &quot;estoy
-              registrándome&quot;.
-            </p>
+            <Label htmlFor="internal-code">{t('setup.internalCode')}</Label>
+            <p className="text-xs text-muted-foreground">{t('setup.internalCodeHint')}</p>
             <div className="flex gap-3">
               <Input
                 id="internal-code"
@@ -181,11 +183,11 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
                 type="button"
                 onClick={() => setInternalCode(generateCode())}
               >
-                Sugerir
+                {t('setup.suggest')}
               </Button>
             </div>
             {!step2Valid() && (
-              <p className="text-xs text-destructive">Solo A-Z y 0-9, entre 4 y 12.</p>
+              <p className="text-xs text-destructive">{t('setup.internalCodeError')}</p>
             )}
           </div>
         </div>
@@ -194,7 +196,7 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
       {step === 3 && (
         <div className="space-y-6 rounded-3xl border bg-card p-6 shadow-sm">
           <div className="space-y-2">
-            <Label htmlFor="pp-name">Nombre del punto</Label>
+            <Label htmlFor="pp-name">{t('setup.pickupName')}</Label>
             <Input
               id="pp-name"
               value={pickupName}
@@ -202,7 +204,7 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Ubicación y radio</Label>
+            <Label>{t('setup.locationRadius')}</Label>
             <PickupPointMap
               value={pickupMap}
               onChange={(v) => {
@@ -224,7 +226,7 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
           onClick={() => setStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3) : s))}
           disabled={step === 1 || submitting}
         >
-          Volver
+          {tCommon('actions.back')}
         </Button>
         {step < 3 ? (
           <Button
@@ -232,11 +234,11 @@ export function SetupWizard({ schoolId, initial }: SetupWizardProps) {
             onClick={() => setStep((s) => ((s + 1) as 1 | 2 | 3))}
             disabled={(step === 1 && !step1Valid()) || (step === 2 && !step2Valid())}
           >
-            Continuar
+            {t('setup.continue')}
           </Button>
         ) : (
           <Button type="button" onClick={onFinish} disabled={!step3Valid() || submitting}>
-            {submitting ? 'Guardando…' : 'Finalizar'}
+            {submitting ? tCommon('actions.saving') : t('setup.finish')}
           </Button>
         )}
       </div>

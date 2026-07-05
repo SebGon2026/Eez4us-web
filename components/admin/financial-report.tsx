@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -41,6 +42,8 @@ function fmt(v: number): string {
 }
 
 export function FinancialReport() {
+  const t = useTranslations('reports');
+  const tCommon = useTranslations('common');
   const [data, setData] = useState<FinancialData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,26 +64,26 @@ export function FinancialReport() {
       </p>
     );
   }
-  if (!data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
+  if (!data) return <p className="text-sm text-muted-foreground">{tCommon('states.loading')}</p>;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Facturado/mes</CardDescription>
+            <CardDescription>{t('financial.billedPerMonth')}</CardDescription>
             <CardTitle className="text-3xl text-primary">{fmt(data.totalBilled)}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Comisiones</CardDescription>
+            <CardDescription>{t('financial.commissions')}</CardDescription>
             <CardTitle className="text-3xl text-amber-600">{fmt(data.totalCommissions)}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Neto</CardDescription>
+            <CardDescription>{t('financial.net')}</CardDescription>
             <CardTitle className="text-3xl text-emerald-600">{fmt(data.net)}</CardTitle>
           </CardHeader>
         </Card>
@@ -88,12 +91,12 @@ export function FinancialReport() {
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Revenue por escuela</CardTitle>
+          <CardTitle className="text-xl">{t('financial.revenueBySchool')}</CardTitle>
         </CardHeader>
         <CardContent className="h-80">
           {data.perSchool.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
-              No hay suscripciones activas.
+              {t('financial.noActiveSubscriptions')}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -121,17 +124,17 @@ export function FinancialReport() {
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Detalle</CardTitle>
+          <CardTitle className="text-xl">{t('financial.detail')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Escuela</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Alumnos</TableHead>
-                <TableHead className="text-right">Revenue</TableHead>
-                <TableHead className="text-right">Comisión</TableHead>
+                <TableHead>{t('table.school')}</TableHead>
+                <TableHead>{tCommon('fields.status')}</TableHead>
+                <TableHead className="text-right">{tCommon('fields.students')}</TableHead>
+                <TableHead className="text-right">{t('financial.revenue')}</TableHead>
+                <TableHead className="text-right">{t('financial.commission')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -149,7 +152,7 @@ export function FinancialReport() {
               {data.perSchool.length > 0 && (
                 <TableRow>
                   <TableCell colSpan={3} className="text-right font-bold">
-                    Total
+                    {t('table.total')}
                   </TableCell>
                   <TableCell className="text-right font-mono font-black text-primary">
                     {fmt(data.totalBilled)}

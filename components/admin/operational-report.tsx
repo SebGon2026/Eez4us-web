@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -31,6 +32,8 @@ function minutesLabel(v: number | null): string {
 }
 
 export function OperationalReport({ isSuper }: { isSuper: boolean }) {
+  const t = useTranslations('reports');
+  const tCommon = useTranslations('common');
   const [data, setData] = useState<OperationalData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,32 +54,32 @@ export function OperationalReport({ isSuper }: { isSuper: boolean }) {
       </p>
     );
   }
-  if (!data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
+  if (!data) return <p className="text-sm text-muted-foreground">{tCommon('states.loading')}</p>;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Alumnos activos</CardDescription>
+            <CardDescription>{t('operational.activeStudents')}</CardDescription>
             <CardTitle className="text-4xl text-primary">{data.studentsActive}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Viajes este mes</CardDescription>
+            <CardDescription>{t('operational.tripsThisMonth')}</CardDescription>
             <CardTitle className="text-4xl text-primary">{data.tripsThisMonth}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>% entregados</CardDescription>
+            <CardDescription>{t('operational.deliveredPct')}</CardDescription>
             <CardTitle className="text-4xl text-emerald-600">{data.deliveredPct}%</CardTitle>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>% cancelados</CardDescription>
+            <CardDescription>{t('operational.canceledPct')}</CardDescription>
             <CardTitle className="text-4xl text-destructive">{data.canceledPct}%</CardTitle>
           </CardHeader>
         </Card>
@@ -85,44 +88,46 @@ export function OperationalReport({ isSuper }: { isSuper: boolean }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Duración promedio de recogida</CardDescription>
+            <CardDescription>{t('operational.avgPickupDuration')}</CardDescription>
             <CardTitle className="text-4xl text-primary">
               {minutesLabel(data.avgPickupMinutes)}
             </CardTitle>
-            <CardDescription>“Voy en camino” → entrega, este mes</CardDescription>
+            <CardDescription>{t('operational.avgPickupDurationHint')}</CardDescription>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Espera promedio afuera</CardDescription>
+            <CardDescription>{t('operational.avgOutsideWait')}</CardDescription>
             <CardTitle className="text-4xl text-primary">
               {minutesLabel(data.avgOutsideWaitMinutes)}
             </CardTitle>
-            <CardDescription>“Estoy afuera” (sin GPS) → entrega</CardDescription>
+            <CardDescription>{t('operational.avgOutsideWaitHint')}</CardDescription>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Padres con la app móvil</CardDescription>
+            <CardDescription>{t('operational.parentsWithApp')}</CardDescription>
             <CardTitle className="text-4xl text-primary">
               {data.mobileUsers.withApp}
               <span className="text-xl text-muted-foreground"> / {data.mobileUsers.total}</span>
             </CardTitle>
-            <CardDescription>Con dispositivo registrado</CardDescription>
+            <CardDescription>{t('operational.withRegisteredDevice')}</CardDescription>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Usan “Estoy afuera”</CardDescription>
+            <CardDescription>{t('operational.useImOutside')}</CardDescription>
             <CardTitle className="text-4xl text-primary">{data.outsideUsage.parents}</CardTitle>
-            <CardDescription>{data.outsideUsage.trips} usos este mes</CardDescription>
+            <CardDescription>
+              {t('operational.usesThisMonth', { count: data.outsideUsage.trips })}
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Viajes por día — últimos 30</CardTitle>
+          <CardTitle className="text-xl">{t('operational.tripsPerDayLast30')}</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           <ResponsiveContainer width="100%" height="100%">
@@ -140,14 +145,14 @@ export function OperationalReport({ isSuper }: { isSuper: boolean }) {
       {isSuper && data.breakdown.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-xl">Breakdown por escuela</CardTitle>
+            <CardTitle className="text-xl">{t('operational.breakdownBySchool')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Escuela</TableHead>
-                  <TableHead className="text-right">Viajes mes</TableHead>
+                  <TableHead>{t('table.school')}</TableHead>
+                  <TableHead className="text-right">{t('operational.tripsMonth')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -158,7 +163,7 @@ export function OperationalReport({ isSuper }: { isSuper: boolean }) {
                   </TableRow>
                 ))}
                 <TableRow>
-                  <TableCell className="text-right font-bold">Total</TableCell>
+                  <TableCell className="text-right font-bold">{t('table.total')}</TableCell>
                   <TableCell className="text-right font-mono font-black text-primary">
                     {data.breakdown.reduce((a, b) => a + b.trips, 0)}
                   </TableCell>

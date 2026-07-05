@@ -1,0 +1,43 @@
+{
+  "list": {
+    "title": "Puntos de recogida",
+    "subtitle": "Cada punto tiene su propio geofence circular.",
+    "newPoint": "Nuevo punto",
+    "emptyTitle": "Aún no hay puntos de recogida",
+    "emptyDescription": "Creá el primero con su ubicación en el mapa y radio en metros.",
+    "createFirst": "Crear primer punto",
+    "coordinates": "Coordenadas",
+    "radius": "Radio",
+    "deleteDescription": "Se desactiva el punto. No se eliminan viajes históricos.",
+    "deleteSuccess": "Punto eliminado"
+  },
+  "new": {
+    "title": "Nuevo punto de recogida",
+    "subtitle": "Arrastrá el marker para reubicar el centro."
+  },
+  "edit": {
+    "title": "Editar punto"
+  },
+  "form": {
+    "namePlaceholder": "Puerta principal",
+    "locationAndRadius": "Ubicación y radio",
+    "manualCoords": "Coordenadas manuales",
+    "manualCoordsHint": "Podés fijar el punto tipeando latitud y longitud, aunque el mapa no cargue. También se actualizan al arrastrar el marker.",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "radiusMeters": "Radio (metros)",
+    "saveError": "No se pudo guardar",
+    "unexpectedError": "Error inesperado"
+  },
+  "map": {
+    "missingKey": "Configurá NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY para ver el mapa.",
+    "loadError": "No se pudo cargar Google Maps.",
+    "geofenceRadius": "Radio del geofence",
+    "dragHint": "Arrastrá el marker para reubicar el centro. El círculo dispara \"Llegué\" cuando el padre entra."
+  },
+  "address": {
+    "searchPlaceholder": "Buscar dirección",
+    "placeholder": "Dirección",
+    "searchHint": "Buscá una dirección para ver el mapa."
+  }
+}

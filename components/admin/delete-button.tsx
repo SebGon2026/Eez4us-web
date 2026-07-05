@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -18,12 +19,14 @@ interface DeleteButtonProps {
 
 export function DeleteButton({
   url,
-  label = 'Eliminar',
-  title = 'Confirmar eliminación',
-  description = 'Esta acción no se puede deshacer.',
-  successMessage = 'Eliminado correctamente',
+  label,
+  title,
+  description,
+  successMessage,
   size = 'sm',
 }: DeleteButtonProps) {
+  const t = useTranslations('nav');
+  const tc = useTranslations('common');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -34,14 +37,14 @@ export function DeleteButton({
       const res = await fetch(url, { method: 'DELETE' });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        toast.error(data.error ?? 'No se pudo eliminar');
+        toast.error(data.error ?? t('deleteButton.deleteFailed'));
         return;
       }
-      toast.success(successMessage);
+      toast.success(successMessage ?? t('deleteButton.deletedSuccess'));
       setOpen(false);
       router.refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Error inesperado');
+      toast.error(e instanceof Error ? e.message : t('deleteButton.unexpectedError'));
     } finally {
       setSubmitting(false);
     }
@@ -50,19 +53,19 @@ export function DeleteButton({
   return (
     <>
       <Button variant="destructive" size={size} onClick={() => setOpen(true)}>
-        {label}
+        {label ?? tc('actions.delete')}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{title ?? t('deleteButton.confirmTitle')}</DialogTitle>
+          <DialogDescription>{description ?? tc('confirmDialog.irreversible')}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
-            Cancelar
+            {tc('actions.cancel')}
           </Button>
           <Button variant="destructive" onClick={onConfirm} disabled={submitting}>
-            {submitting ? 'Eliminando…' : 'Eliminar'}
+            {submitting ? tc('actions.deleting') : tc('actions.delete')}
           </Button>
         </DialogFooter>
       </Dialog>

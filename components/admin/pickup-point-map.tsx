@@ -7,6 +7,7 @@ import {
   useMap,
   useMapsLibrary,
 } from '@vis.gl/react-google-maps';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 const DEMO_MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? 'DEMO_MAP_ID';
@@ -119,6 +120,7 @@ function MapBody({ value, onChange }: PickupPointMapProps) {
 }
 
 export function PickupPointMap({ value, onChange, className }: PickupPointMapProps) {
+  const t = useTranslations('pickupPoints');
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY;
   const [hasError, setHasError] = useState(false);
 
@@ -126,7 +128,7 @@ export function PickupPointMap({ value, onChange, className }: PickupPointMapPro
     return (
       <div className={className}>
         <div className="flex h-full items-center justify-center rounded-2xl border-2 border-dashed text-sm text-muted-foreground">
-          Configurá NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY para ver el mapa.
+          {t('map.missingKey')}
         </div>
       </div>
     );
@@ -138,7 +140,7 @@ export function PickupPointMap({ value, onChange, className }: PickupPointMapPro
         <APIProvider apiKey={apiKey} onError={() => setHasError(true)}>
           {hasError ? (
             <div className="flex h-full items-center justify-center text-sm text-destructive">
-              No se pudo cargar Google Maps.
+              {t('map.loadError')}
             </div>
           ) : (
             <MapBody value={value} onChange={onChange} />
@@ -147,7 +149,7 @@ export function PickupPointMap({ value, onChange, className }: PickupPointMapPro
       </div>
       <div className="mt-4 space-y-2">
         <div className="flex items-center justify-between text-sm font-bold">
-          <span>Radio del geofence</span>
+          <span>{t('map.geofenceRadius')}</span>
           <span className="text-primary">{value.radiusMeters} m</span>
         </div>
         <input
@@ -161,9 +163,7 @@ export function PickupPointMap({ value, onChange, className }: PickupPointMapPro
           }
           className="w-full accent-primary"
         />
-        <p className="text-xs text-muted-foreground">
-          Arrastrá el marker para reubicar el centro. El círculo dispara &quot;Llegué&quot; cuando el padre entra.
-        </p>
+        <p className="text-xs text-muted-foreground">{t('map.dragHint')}</p>
       </div>
     </div>
   );

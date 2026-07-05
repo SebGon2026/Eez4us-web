@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useEncryptedChannel } from '@/lib/pusher-subscribe';
@@ -28,6 +29,7 @@ function compareEntries(a: RosterEntry, b: RosterEntry): number {
 }
 
 export function TvGateBoard({ initialEntries, schoolId, pickupPointId, vertical = false }: TvGateBoardProps) {
+  const t = useTranslations('tv');
   const [entries, setEntries] = useState<RosterEntry[]>(initialEntries);
 
   const channelName = useMemo(
@@ -68,10 +70,10 @@ export function TvGateBoard({ initialEntries, schoolId, pickupPointId, vertical 
     return (
       <div className="flex h-full flex-col items-center justify-center text-center">
         <p className="text-4xl font-black" style={{ color: 'var(--tv-fg2)' }}>
-          Sin alumnos pendientes
+          {t('gate.emptyTitle')}
         </p>
         <p className="mt-3 text-xl" style={{ color: 'var(--tv-fg3)' }}>
-          Los alumnos en camino aparecerán acá ordenados por cercanía.
+          {t('gate.emptyHint')}
         </p>
       </div>
     );
@@ -145,9 +147,7 @@ export function TvGateBoard({ initialEntries, schoolId, pickupPointId, vertical 
                       </span>
                     ) : (
                       <span className="text-3xl" style={{ color: 'var(--tv-fg2)' }}>
-                        {entry.origin === 'ESTOY_AFUERA'
-                          ? 'Padre afuera · sin auto'
-                          : 'Retiro en puerta · a pie'}
+                        {entry.origin === 'ESTOY_AFUERA' ? t('gate.parentOutside') : t('gate.walkUp')}
                       </span>
                     )}
                     {!atGate && <TvEta etaSeconds={entry.etaSeconds} className="text-6xl" />}
@@ -161,7 +161,7 @@ export function TvGateBoard({ initialEntries, schoolId, pickupPointId, vertical 
 
       {totalPages > 1 && (
         <p className="mt-auto pt-1 text-center text-lg font-bold" style={{ color: 'var(--tv-fg3)' }}>
-          Página {page + 1} de {totalPages} · {flat.length} alumnos pendientes
+          {t('gate.pageFooter', { page: page + 1, total: totalPages, count: flat.length })}
         </p>
       )}
     </div>

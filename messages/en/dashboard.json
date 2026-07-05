@@ -1,0 +1,122 @@
+{
+  "home": {
+    "title": "Home",
+    "subtitle": "A quick summary of your school's activity.",
+    "onboarding": {
+      "title": "Finish setting up your school",
+      "needStudents": "You still need students and invited parents to operate.",
+      "needInvitations": "Upload parents via Excel so they receive their invitation.",
+      "pendingSteps": "Review the remaining setup steps."
+    },
+    "tiles": {
+      "activeStudents": "Active students",
+      "gradesConfigured": "{count, plural, one {# grade configured} other {# grades configured}}",
+      "pendingInvitations": "Pending invitations",
+      "unclaimedParents": "Parents haven't claimed yet",
+      "allCaughtUp": "All caught up",
+      "activeTrips": "Trips in progress",
+      "atTheGate": "{count} at the gate",
+      "noActiveArrivals": "No active arrivals"
+    },
+    "shortcuts": {
+      "heading": "Shortcuts",
+      "importParents": "Import parents from Excel",
+      "importParentsDesc": "Bulk-upload parents and students with the official template.",
+      "addPickupPoint": "Add pickup point",
+      "addPickupPointDesc": "Set the geofence and schedules for a new entrance.",
+      "manageGrades": "Manage grades",
+      "manageGradesDesc": "Add, rename, or remove the school's grades.",
+      "newStudent": "New student",
+      "newStudentDesc": "Manually add a student and link them to their parents."
+    }
+  },
+  "pickup": {
+    "backToDashboard": "← Dashboard",
+    "subtitle": "Active trips ranked by ETA. Geofence: {radius} m."
+  },
+  "liveMap": {
+    "title": "Live map",
+    "subtitle": "Real-time positions of parents on the way to the school.",
+    "center": "Center: {lat}, {lng}",
+    "loadError": "Google Maps could not be loaded. Check that the API key is valid and has the Maps JavaScript API enabled.",
+    "missingKey": "Set NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY to see the map.",
+    "pickupPointsHeading": "Pickup points",
+    "liveVehiclesHeading": "Live vehicles ({count})",
+    "pointMeta": "{lat}, {lng} · Geofence {radius}m",
+    "noPickupPoints": "No pickup points configured.",
+    "noOneOnTheWay": "No one is on the way right now.",
+    "minutes": "{count} min",
+    "etaLabel": "ETA:"
+  },
+  "arrivals": {
+    "title": "Live arrivals",
+    "subtitle": "Parents on the way to the school, sorted by estimated time of arrival.",
+    "refreshEvery": "Updates every 5s",
+    "eta": {
+      "arrived": "Arrived",
+      "minutes": "{count} min"
+    },
+    "time": {
+      "secondsAgo": "{count}s ago",
+      "minutes": "{count} min",
+      "passed": "passed",
+      "fewMinutesAgo": "a few minutes ago",
+      "inMinutes": "in {count} min",
+      "inHours": "in {hours}h {minutes}"
+    },
+    "nextDismissal": {
+      "next": "Next dismissal",
+      "lastOfDay": "Last dismissal of the day",
+      "students": "{count, plural, one {# student} other {# students}}",
+      "mixed": "Mixed"
+    },
+    "todaySchedule": "Today's dismissal times",
+    "stats": {
+      "enRoute": "On the way (GPS)",
+      "atGate": "At the gate (GPS)",
+      "outsideNoGps": "Parents outside (no GPS)",
+      "activePoints": "Active pickup points"
+    },
+    "table": {
+      "eta": "ETA",
+      "parentVehicle": "Parent / Vehicle",
+      "students": "Student(s)",
+      "point": "Pickup point",
+      "noVehicle": "No vehicle",
+      "loadingTrips": "Loading trips…",
+      "emptyTitle": "No parents on the way",
+      "emptyHint": "When a parent taps \"On my way\" in the mobile app, they will show up here."
+    },
+    "badges": {
+      "walkup": "Gate pickup",
+      "outside": "Outside (no GPS)",
+      "atGate": "At the gate",
+      "onTheWay": "On the way"
+    },
+    "confirmHandoff": "Confirm the student handoff?",
+    "handoffConfirmed": "Handoff confirmed",
+    "handoffFailed": "Could not confirm"
+  },
+  "ranked": {
+    "emptyTitle": "No active trips at this pickup point.",
+    "emptyHint": "When a parent taps \"on my way\" it will show up here."
+  },
+  "tripCard": {
+    "unnamedParent": "Unnamed parent",
+    "parentOutside": "Parent outside · no GPS",
+    "walkup": "Gate pickup · on foot",
+    "parentFallback": "the parent"
+  },
+  "tripEta": {
+    "arriving": "Arriving"
+  },
+  "finalize": {
+    "studentFallback": "the student",
+    "button": "Complete handoff",
+    "confirmTitle": "Confirm handoff?",
+    "confirmBody": "Mark <b>{students}</b> as handed off to <b>{parent}</b>.",
+    "finalizing": "Completing…",
+    "yesConfirm": "Yes, confirm",
+    "unknownError": "Unknown error"
+  }
+}

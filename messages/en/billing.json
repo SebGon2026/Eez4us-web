@@ -1,0 +1,62 @@
+{
+  "title": "Billing",
+  "subtitle": "Eez4us charges the school ({school}) per active student.",
+  "yourSchool": "your school",
+  "status": {
+    "TRIALING": "On trial",
+    "ACTIVE": "Active",
+    "PAST_DUE": "Past due",
+    "CANCELED": "Canceled",
+    "PAUSED": "Paused"
+  },
+  "noSubscription": "No subscription",
+  "monthlyPayment": "Monthly payment to Eez4us",
+  "perStudentBreakdown": "{count, plural, one {# student} other {# students}} × {price}/mo",
+  "cutoffDate": "Cutoff date",
+  "currentPeriodClose": "End of the current period",
+  "lastPayment": "Last payment",
+  "openpayDescription": "Add the school's card; Eez4us charges every month per active student via Openpay (Mexico).",
+  "stripeManageDescription": "Manage your subscription and payment method through the Stripe portal.",
+  "startSubscriptionDescription": "Start the subscription to begin charging monthly per active student.",
+  "paymentHistory": "Payment history",
+  "noInvoices": "No invoices issued yet.",
+  "invoiceIssued": "Issued {date}",
+  "invoicePaid": " · Paid {date}",
+  "invoiceStatus": {
+    "PAID": "Paid",
+    "FAILED": "Failed",
+    "VOID": "Voided",
+    "PENDING": "Pending"
+  },
+  "unknownError": "Unknown error",
+  "portal": {
+    "opening": "Opening portal…",
+    "manageCards": "Add or remove cards and payment methods",
+    "starting": "Starting…",
+    "startSubscription": "Start subscription"
+  },
+  "openpay": {
+    "missingKeys": "Openpay public keys are missing (NEXT_PUBLIC_OPENPAY_*).",
+    "loadFailed": "Could not load Openpay.js",
+    "notReady": "Openpay is not ready yet.",
+    "cardValidationFailed": "The card could not be validated",
+    "cardOnFile": "A card is already on file. Add a new one to replace it.",
+    "holderPlaceholder": "Cardholder name",
+    "numberPlaceholder": "Card number",
+    "monthPlaceholder": "MM",
+    "yearPlaceholder": "YY",
+    "cvvPlaceholder": "CVV",
+    "replaceCard": "Replace card",
+    "saveCardActivate": "Save card and activate",
+    "loading": "Loading Openpay…",
+    "disclaimer": "Processed by Openpay (BBVA). Card details never pass through our servers."
+  },
+  "trial": {
+    "updated": "Trial updated",
+    "adjust": "Adjust trial",
+    "extendDays": "Extend (days)",
+    "extend": "Extend",
+    "orSetExactDate": "or set an exact date",
+    "set": "Set"
+  }
+}

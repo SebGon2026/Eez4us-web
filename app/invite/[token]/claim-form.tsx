@@ -1,9 +1,11 @@
 'use client';
 
 import { CheckCircle2, GraduationCap, Smartphone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useState } from 'react';
 
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { PasswordInput } from '@/components/ui/password-input';
 import { dialPrefixForCountry } from '@/lib/phone';
 
@@ -22,24 +24,13 @@ interface Props {
   loginEmail?: string;
 }
 
-const DEAD_STATES: Record<Exclude<PageState, 'READY'>, { title: string; body: string }> = {
-  CLAIMED: {
-    title: 'Esta invitación ya fue usada',
-    body: 'Tu cuenta ya está creada. Abrí la app de Eez4us y entrá con tu email y contraseña. Si no la recordás, usá "¿La olvidaste?" en la app.',
-  },
-  EXPIRED: {
-    title: 'Esta invitación venció',
-    body: 'Pedile a la escuela que te reenvíe una invitación nueva.',
-  },
-  REVOKED: {
-    title: 'Esta invitación fue revocada',
-    body: 'Pedile a la escuela que te genere una invitación nueva.',
-  },
-  NOT_FOUND: {
-    title: 'Invitación no encontrada',
-    body: 'El link no es válido. Revisá que lo hayas copiado completo o pedile uno nuevo a la escuela.',
-  },
-};
+const CLAIM_ERROR_CODES = new Set([
+  'PHONE_INVALID',
+  'INVITATION_ALREADY_USED',
+  'INVITATION_EXPIRED',
+  'INVITATION_NOT_FOUND',
+  'SIGNUP_FAILED',
+]);
 
 export function ClaimInvitation({
   token,
@@ -50,6 +41,7 @@ export function ClaimInvitation({
   studentNames = [],
   loginEmail,
 }: Props) {
+  const t = useTranslations('invitations.claim');
   const prefix = dialPrefixForCountry(schoolCountry) ?? '+';
   const [name, setName] = useState(parentName ?? '');
   const [password, setPassword] = useState('');
@@ -63,11 +55,11 @@ export function ClaimInvitation({
     e.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.');
+      setError(t('validation.passwordTooShort'));
       return;
     }
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.');
+      setError(t('validation.passwordMismatch'));
       return;
     }
     // A E.164 estricto: el server valida /^\+[1-9]\d{6,14}$/, sin espacios ni guiones.
@@ -86,19 +78,16 @@ export function ClaimInvitation({
       });
       const data = await res.json();
       if (!res.ok) {
-        const msgs: Record<string, string> = {
-          PHONE_INVALID: `El teléfono no es válido para el país de la escuela (prefijo ${prefix}).`,
-          INVITATION_ALREADY_USED: 'Esta invitación ya fue usada.',
-          INVITATION_EXPIRED: 'Esta invitación venció. Pedí una nueva a la escuela.',
-          INVITATION_NOT_FOUND: 'Invitación no encontrada.',
-          SIGNUP_FAILED: 'No pudimos crear la cuenta. Puede que ya exista una con este email.',
-        };
-        setError(msgs[data.error] ?? 'No pudimos crear tu cuenta. Intentá de nuevo.');
+        setError(
+          CLAIM_ERROR_CODES.has(data.error)
+            ? t(`errors.${data.error}`, { prefix })
+            : t('errors.fallback'),
+        );
         return;
       }
       setDone(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado');
+      setError(err instanceof Error ? err.message : t('errors.unexpected'));
     } finally {
       setPending(false);
     }
@@ -107,13 +96,13 @@ export function ClaimInvitation({
   const card = 'space-y-6 rounded-2xl bg-card p-8 sm:p-10 shadow-pop border border-border';
 
   if (state !== 'READY') {
-    const dead = DEAD_STATES[state];
     return (
-      <main className="auth-bg flex min-h-screen items-center justify-center px-4 py-8">
+      <main className="auth-bg relative flex min-h-screen items-center justify-center px-4 py-8">
+        <LanguageSwitcher className="absolute right-4 top-4 z-10" />
         <div className={`w-full max-w-md text-center ${card}`}>
           <Image src="/logo.png" alt="Eez4us" width={160} height={80} priority className="mx-auto h-auto w-[160px]" />
-          <h1 className="text-xl font-bold text-foreground">{dead.title}</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">{dead.body}</p>
+          <h1 className="text-xl font-bold text-foreground">{t(`dead.${state}.title`)}</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">{t(`dead.${state}.body`)}</p>
         </div>
       </main>
     );
@@ -121,14 +110,18 @@ export function ClaimInvitation({
 
   if (done) {
     return (
-      <main className="auth-bg flex min-h-screen items-center justify-center px-4 py-8">
+      <main className="auth-bg relative flex min-h-screen items-center justify-center px-4 py-8">
+        <LanguageSwitcher className="absolute right-4 top-4 z-10" />
         <div className={`w-full max-w-md ${card}`}>
           <div className="text-center space-y-3">
             <CheckCircle2 className="mx-auto h-14 w-14 text-primary" />
-            <h1 className="text-2xl font-black text-foreground">¡Cuenta creada!</h1>
+            <h1 className="text-2xl font-black text-foreground">{t('done.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              Ya podés coordinar la recogida de {studentNames.length > 1 ? 'tus hijos' : 'tu hijo'} con{' '}
-              <span className="font-bold text-foreground">{schoolName}</span>.
+              {t.rich('done.subtitle', {
+                count: studentNames.length,
+                school: schoolName ?? '',
+                b: (chunks) => <span className="font-bold text-foreground">{chunks}</span>,
+              })}
             </p>
           </div>
 
@@ -136,24 +129,29 @@ export function ClaimInvitation({
             <li className="flex gap-3 rounded-xl border border-border bg-secondary/40 p-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-black text-primary-foreground">1</span>
               <span>
-                Descargá la app de Eez4us en tu Android:{' '}
-                <a href={APK_URL} className="font-bold text-primary underline break-all">
-                  descargar APK
-                </a>{' '}
-                (permití &quot;instalar de fuentes desconocidas&quot; si te lo pide).
+                {t.rich('done.step1', {
+                  apk: (chunks) => (
+                    <a href={APK_URL} className="font-bold text-primary underline break-all">
+                      {chunks}
+                    </a>
+                  ),
+                })}
               </span>
             </li>
             <li className="flex gap-3 rounded-xl border border-border bg-secondary/40 p-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-black text-primary-foreground">2</span>
               <span>
-                Abrila y entrá con el email{' '}
-                <span className="font-mono font-bold text-foreground break-all">{loginEmail}</span> y la
-                contraseña que acabás de crear.
+                {t.rich('done.step2', {
+                  email: loginEmail ?? '',
+                  mono: (chunks) => (
+                    <span className="font-mono font-bold text-foreground break-all">{chunks}</span>
+                  ),
+                })}
               </span>
             </li>
             <li className="flex gap-3 rounded-xl border border-border bg-secondary/40 p-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-black text-primary-foreground">3</span>
-              <span>Cuando vayas a buscarlo al colegio, tocá &quot;Voy en camino&quot; y listo.</span>
+              <span>{t('done.step3')}</span>
             </li>
           </ol>
 
@@ -162,7 +160,7 @@ export function ClaimInvitation({
             className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary px-6 py-3 text-sm font-bold text-primary transition-all hover:bg-primary/5"
           >
             <Smartphone className="h-4 w-4" />
-            Ya tengo la app instalada
+            {t('done.haveApp')}
           </a>
         </div>
       </main>
@@ -170,17 +168,20 @@ export function ClaimInvitation({
   }
 
   return (
-    <main className="auth-bg flex min-h-screen items-center justify-center px-4 py-8">
+    <main className="auth-bg relative flex min-h-screen items-center justify-center px-4 py-8">
+      <LanguageSwitcher className="absolute right-4 top-4 z-10" />
       <div className={`w-full max-w-md ${card}`}>
         <div className="text-center space-y-3">
           <Image src="/logo.png" alt="Eez4us" width={160} height={80} priority className="mx-auto h-auto w-[160px]" />
           <div>
             <h1 className="text-xl font-bold text-foreground">
-              {parentName ? `Hola ${parentName}` : 'Hola'}
+              {parentName ? t('hello', { name: parentName }) : t('helloAnon')}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              <span className="font-bold text-foreground">{schoolName}</span> te invitó a coordinar la
-              recogida con Eez4us. Creá tu cuenta para empezar.
+              {t.rich('intro', {
+                school: schoolName ?? '',
+                b: (chunks) => <span className="font-bold text-foreground">{chunks}</span>,
+              })}
             </p>
           </div>
           {studentNames.length > 0 && (
@@ -200,7 +201,7 @@ export function ClaimInvitation({
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-muted-foreground">Tu nombre</label>
+            <label className="text-xs font-semibold text-muted-foreground">{t('form.name')}</label>
             <input
               type="text"
               required
@@ -210,7 +211,7 @@ export function ClaimInvitation({
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground">Contraseña (mínimo 8)</label>
+            <label className="text-xs font-semibold text-muted-foreground">{t('form.password')}</label>
             <PasswordInput
               wrapperClassName="mt-1"
               required
@@ -221,7 +222,7 @@ export function ClaimInvitation({
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-muted-foreground">Repetí la contraseña</label>
+            <label className="text-xs font-semibold text-muted-foreground">{t('form.confirm')}</label>
             <PasswordInput
               wrapperClassName="mt-1"
               required
@@ -233,7 +234,7 @@ export function ClaimInvitation({
           </div>
           <div>
             <label className="text-xs font-semibold text-muted-foreground">
-              Teléfono (opcional, {prefix}…)
+              {t('form.phone', { prefix })}
             </label>
             <input
               type="tel"
@@ -251,7 +252,7 @@ export function ClaimInvitation({
             disabled={pending}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
           >
-            {pending ? 'Creando cuenta…' : 'Crear mi cuenta'}
+            {pending ? t('form.submitting') : t('form.submit')}
           </button>
         </form>
       </div>

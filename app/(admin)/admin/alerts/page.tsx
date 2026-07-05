@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { type AlertItem,AlertsBoard } from '@/components/admin/alerts-board';
 import { prisma } from '@/lib/db';
@@ -10,6 +11,7 @@ export default async function AlertsPage() {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
   if (!STAFF_ROLES.has(session.user.role)) redirect('/login');
+  const t = await getTranslations('comms');
 
   const alerts = await prisma.alert.findMany({
     where: {
@@ -48,11 +50,8 @@ export default async function AlertsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black">Alertas</h1>
-        <p className="text-sm text-muted-foreground">
-          Eventos que requieren atención: viajes demorados, entregas pendientes e invitaciones sin
-          aceptar.
-        </p>
+        <h1 className="text-3xl font-black">{t('alerts.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('alerts.subtitle')}</p>
       </div>
       <AlertsBoard initial={initial} />
     </div>

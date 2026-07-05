@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -69,17 +70,17 @@ export default async function VendorsPage() {
 
   const totalCommission = rows.reduce((acc, r) => acc + r.commission, 0);
 
+  const t = await getTranslations('schools');
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black">Agentes de venta</h1>
-          <p className="text-sm text-muted-foreground">
-            Comisión calculada sobre facturación mensual de las escuelas que enrolaron.
-          </p>
+          <h1 className="text-3xl font-black">{t('vendors.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('vendors.subtitle')}</p>
         </div>
         <Link href="/admin/vendors/new">
-          <Button>Crear agente de venta</Button>
+          <Button>{t('vendors.create')}</Button>
         </Link>
       </div>
 
@@ -87,19 +88,19 @@ export default async function VendorsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Agente de venta</TableHead>
-              <TableHead>Comisión</TableHead>
-              <TableHead>Duración</TableHead>
-              <TableHead>Escuelas</TableHead>
-              <TableHead className="text-right">Facturación/mes</TableHead>
-              <TableHead className="text-right">Comisión/mes</TableHead>
+              <TableHead>{t('vendors.vendor')}</TableHead>
+              <TableHead>{t('vendors.commission')}</TableHead>
+              <TableHead>{t('vendors.duration')}</TableHead>
+              <TableHead>{t('vendors.schools')}</TableHead>
+              <TableHead className="text-right">{t('vendors.billingPerMonth')}</TableHead>
+              <TableHead className="text-right">{t('vendors.commissionPerMonth')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  Aún no hay agentes de venta.
+                  {t('vendors.empty')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -112,8 +113,8 @@ export default async function VendorsPage() {
                   <TableCell>{(r.commissionPct * 100).toFixed(0)}%</TableCell>
                   <TableCell>
                     {r.commissionMonths
-                      ? `${r.commissionMonths} ${r.commissionMonths === 1 ? 'mes' : 'meses'}`
-                      : 'Sin límite'}
+                      ? t('vendors.monthsCount', { count: r.commissionMonths })
+                      : t('vendors.noLimit')}
                   </TableCell>
                   <TableCell>{r.schools}</TableCell>
                   <TableCell className="text-right font-mono">
@@ -128,7 +129,7 @@ export default async function VendorsPage() {
             {rows.length > 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="text-right font-bold">
-                  Total
+                  {t('vendors.total')}
                 </TableCell>
                 <TableCell className="text-right font-mono font-black text-primary">
                   ${totalCommission.toLocaleString('en-US', { minimumFractionDigits: 2 })}

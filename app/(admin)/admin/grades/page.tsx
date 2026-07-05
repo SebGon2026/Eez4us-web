@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { GradesManager } from '@/components/admin/grades-manager';
@@ -7,6 +8,7 @@ import { getCurrentSession } from '@/lib/session';
 export default async function GradesPage() {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
+  const t = await getTranslations('students');
   const schoolId = session.user.schoolId;
 
   const grades = await prisma.grade.findMany({
@@ -22,10 +24,8 @@ export default async function GradesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Grados</h1>
-        <p className="text-sm text-muted-foreground">
-          Agrupá a los alumnos. El nombre es libre — &quot;Primero A&quot;, &quot;Kínder&quot;, etc.
-        </p>
+        <h1 className="text-3xl font-black">{t('grades.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('grades.subtitle')}</p>
       </div>
 
       <GradesManager

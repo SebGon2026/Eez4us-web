@@ -1,10 +1,12 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 
 export function BillingActions({ hasSubscription }: { hasSubscription: boolean }) {
+  const t = useTranslations('billing');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -20,7 +22,7 @@ export function BillingActions({ hasSubscription }: { hasSubscription: boolean }
         }
         onSuccess?.(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setError(err instanceof Error ? err.message : t('unknownError'));
       }
     });
   }
@@ -42,11 +44,11 @@ export function BillingActions({ hasSubscription }: { hasSubscription: boolean }
     <div className="flex flex-wrap items-center gap-3">
       {hasSubscription ? (
         <Button onClick={openPortal} disabled={isPending}>
-          {isPending ? 'Abriendo portal…' : 'Agregar/quitar tarjetas y formas de pago'}
+          {isPending ? t('portal.opening') : t('portal.manageCards')}
         </Button>
       ) : (
         <Button onClick={startSubscription} disabled={isPending}>
-          {isPending ? 'Iniciando…' : 'Iniciar suscripción'}
+          {isPending ? t('portal.starting') : t('portal.startSubscription')}
         </Button>
       )}
       {error && (

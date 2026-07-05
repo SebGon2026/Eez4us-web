@@ -1,6 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
+
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 import { TvClock } from './tv-clock';
 import { TvConnectionIndicator } from './tv-connection-indicator';
@@ -16,9 +19,9 @@ interface TvKioskShellProps {
   children: React.ReactNode;
 }
 
-const VIEW_LABEL: Record<'arrivals' | 'gate', string> = {
-  arrivals: 'Llegadas',
-  gate: 'Portón',
+const VIEW_KEY: Record<'arrivals' | 'gate', 'viewArrivals' | 'viewGate'> = {
+  arrivals: 'viewArrivals',
+  gate: 'viewGate',
 };
 
 const DARK_VARS = {
@@ -68,6 +71,8 @@ const LIGHT_VARS = {
 } as unknown as React.CSSProperties;
 
 export function TvKioskShell({ schoolName, pickupName, view, theme = 'dark', children }: TvKioskShellProps) {
+  const t = useTranslations('tv');
+
   useEffect(() => {
     type WakeLockLike = { request(_type: 'screen'): Promise<{ release(): Promise<void> }> };
     const wl = (navigator as { wakeLock?: WakeLockLike }).wakeLock;
@@ -106,17 +111,18 @@ export function TvKioskShell({ schoolName, pickupName, view, theme = 'dark', chi
         style={{ borderColor: 'var(--tv-border)' }}
       >
         <div className="min-w-0">
-          <p className="truncate text-2xl font-black tracking-tight">{schoolName ?? 'Colegio'}</p>
+          <p className="truncate text-2xl font-black tracking-tight">{schoolName ?? t('shell.schoolFallback')}</p>
           <p
             className="text-base font-bold tracking-[0.06em]"
             style={{ color: 'var(--tv-fg2)' }}
           >
-            {VIEW_LABEL[view]} · {pickupName}
+            {t(`shell.${VIEW_KEY[view]}`)} · {pickupName}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-6">
           <TvConnectionIndicator />
           <TvClock />
+          <LanguageSwitcher className="opacity-70" />
           <TvFullscreenButton />
         </div>
       </header>

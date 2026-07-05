@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { StaffManager } from '@/components/admin/staff-manager';
@@ -24,14 +25,16 @@ export default async function StaffPage() {
     },
   });
 
+  const t = await getTranslations('schools');
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Personal</h1>
+        <h1 className="text-3xl font-black">{t('staff.title')}</h1>
         <p className="text-sm text-muted-foreground">
-          Cuentas de tu colegio. El <span className="font-semibold">portón</span> usa la app móvil
-          para ver llegadas y confirmar entregas; <span className="font-semibold">soporte</span>{' '}
-          usa el tablero web.
+          {t.rich('staff.subtitle', {
+            b: (chunks) => <span className="font-semibold">{chunks}</span>,
+          })}
         </p>
       </div>
 

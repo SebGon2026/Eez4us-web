@@ -1,0 +1,59 @@
+{
+  "table": {
+    "school": "School",
+    "total": "Total"
+  },
+  "financial": {
+    "title": "Financial report",
+    "subtitle": "Current recurring billing, sales agent commissions, and per-school breakdown.",
+    "billedPerMonth": "Billed/mo",
+    "commissions": "Commissions",
+    "net": "Net",
+    "revenueBySchool": "Revenue by school",
+    "noActiveSubscriptions": "No active subscriptions.",
+    "detail": "Detail",
+    "revenue": "Revenue",
+    "commission": "Commission"
+  },
+  "invitations": {
+    "title": "Invitations report",
+    "subtitle": "Parent onboarding coverage for the school.",
+    "total": "Total",
+    "claimed": "Successful sign-ups",
+    "claimedRate": "% signed up",
+    "channel": "{channel} channel",
+    "byStatus": "By status",
+    "status": {
+      "PENDING": "Pending send",
+      "SENT": "Sent, not signed up",
+      "CLAIMED": "Signed up",
+      "EXPIRED": "Expired",
+      "REVOKED": "Revoked"
+    }
+  },
+  "operational": {
+    "title": "Operational report",
+    "subtitle": "Active students, trips this month, and 30-day trend.",
+    "activeStudents": "Active students",
+    "tripsThisMonth": "Trips this month",
+    "deliveredPct": "% delivered",
+    "canceledPct": "% canceled",
+    "avgPickupDuration": "Average pickup duration",
+    "avgPickupDurationHint": "“On my way” → delivery, this month",
+    "avgOutsideWait": "Average wait outside",
+    "avgOutsideWaitHint": "“I’m outside” (no GPS) → delivery",
+    "parentsWithApp": "Parents with the mobile app",
+    "withRegisteredDevice": "With a registered device",
+    "useImOutside": "Use “I’m outside”",
+    "usesThisMonth": "{count, plural, one {# use this month} other {# uses this month}}",
+    "tripsPerDayLast30": "Trips per day — last 30",
+    "breakdownBySchool": "Breakdown by school",
+    "tripsMonth": "Trips/mo"
+  },
+  "school": {
+    "title": "My school report",
+    "subtitle": "Delivery history by day.",
+    "totalDeliveriesPerDay": "Total deliveries per day",
+    "byChild": "By child"
+  }
+}

@@ -2,26 +2,22 @@ import type { InvitationStatus } from '@prisma/client';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { CopyInviteLink } from '@/components/admin/copy-invite-link';
-import { type Column,DataTable } from '@/components/admin/data-table';
+import { type Column, DataTable } from '@/components/admin/data-table';
 import { InvitationsFilters } from '@/components/admin/invitations-filters';
 import { ResendButton } from '@/components/admin/resend-button';
 import { EmptyState } from '@/components/empty-state';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 const PAGE_SIZE = 25;
 
-const VALID_STATUSES: InvitationStatus[] = [
-  'PENDING',
-  'SENT',
-  'CLAIMED',
-  'EXPIRED',
-  'REVOKED',
-];
+const VALID_STATUSES: InvitationStatus[] = ['PENDING', 'SENT', 'CLAIMED', 'EXPIRED', 'REVOKED'];
 
 const STATUS_VARIANTS: Record<InvitationStatus, BadgeProps['variant']> = {
   PENDING: 'warning',
@@ -29,16 +25,6 @@ const STATUS_VARIANTS: Record<InvitationStatus, BadgeProps['variant']> = {
   CLAIMED: 'success',
   EXPIRED: 'secondary',
   REVOKED: 'destructive',
-};
-
-// "Estado" habla del ENVÍO; el registro del padre en la app va aparte (columna Registro).
-// Pendiente de envío ≠ enviada ≠ enviada y registrada.
-const STATUS_LABELS: Record<InvitationStatus, string> = {
-  PENDING: 'Pendiente de envío',
-  SENT: 'Enviada',
-  CLAIMED: 'Enviada',
-  EXPIRED: 'Expirada',
-  REVOKED: 'Revocada',
 };
 
 interface InvitationRow {
@@ -62,6 +48,8 @@ export default async function InvitationsPage({
 }) {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
+  const t = await getTranslations('invitations');
+  const intlLocale = intlLocaleOf(await getLocale());
   const schoolId = session.user.schoolId;
   const { page: pageParam, status } = await searchParams;
   const page = Math.max(1, Number(pageParam ?? '1') || 1);
@@ -101,8 +89,7 @@ export default async function InvitationsPage({
     }),
   ]);
 
-  const countOf = (s: InvitationStatus) =>
-    byStatus.find((b) => b.status === s)?._count._all ?? 0;
+  const countOf = (s: InvitationStatus) => byStatus.find((b) => b.status === s)?._count._all ?? 0;
   const registered = countOf('CLAIMED');
   // Enviadas (o vencidas) cuyo padre todavía no confirmó su registro en la app
   const awaitingRegistration = countOf('SENT') + countOf('EXPIRED');
@@ -134,67 +121,69 @@ export default async function InvitationsPage({
   const columns: Column<InvitationRow>[] = [
     {
       key: 'contact',
-      header: 'Contacto',
+      header: t('list.columns.contact'),
       cell: (r) => (
         <div>
-          <p className="font-bold">{r.recipientName ?? 'Sin nombre'}</p>
+          <p className="font-bold">{r.recipientName ?? t('list.noName')}</p>
           <p className="text-xs text-muted-foreground">{r.contactValue}</p>
         </div>
       ),
     },
     {
       key: 'channel',
-      header: 'Canal',
+      header: t('list.columns.channel'),
       cell: (r) => (
         <Badge variant={r.channel === 'EMAIL' ? 'default' : 'success'}>{r.channel}</Badge>
       ),
     },
     {
       key: 'students',
-      header: 'Alumnos',
+      header: t('list.columns.students'),
       cell: (r) => (
         <div className="space-y-0.5 text-xs">
           {r.studentNames.slice(0, 3).map((n) => (
             <p key={n}>{n}</p>
           ))}
           {r.studentNames.length > 3 && (
-            <p className="text-muted-foreground">+{r.studentNames.length - 3} más</p>
+            <p className="text-muted-foreground">
+              {t('list.moreStudents', { count: r.studentNames.length - 3 })}
+            </p>
           )}
         </div>
       ),
     },
     {
+      // "Envío" habla del ENVÍO; el registro del padre en la app va aparte (columna Registro).
+      // Pendiente de envío ≠ enviada ≠ enviada y registrada.
       key: 'status',
-      header: 'Envío',
-      cell: (r) => (
-        <Badge variant={STATUS_VARIANTS[r.status]}>{STATUS_LABELS[r.status]}</Badge>
-      ),
+      header: t('list.columns.delivery'),
+      cell: (r) => <Badge variant={STATUS_VARIANTS[r.status]}>{t(`status.${r.status}`)}</Badge>,
     },
     {
       key: 'registration',
-      header: 'Registro',
+      header: t('list.columns.registration'),
       cell: (r) =>
         r.status === 'CLAIMED' ? (
           <div>
-            <Badge variant="success">Registrado</Badge>
+            <Badge variant="success">{t('list.registered')}</Badge>
             {r.claimedAt && (
               <p className="mt-0.5 text-[10px] text-muted-foreground">
-                {new Date(r.claimedAt).toLocaleDateString('es-MX')}
+                {new Date(r.claimedAt).toLocaleDateString(intlLocale)}
               </p>
             )}
           </div>
         ) : r.status === 'REVOKED' ? (
           <span className="text-xs text-muted-foreground">—</span>
         ) : (
-          <Badge variant="warning">Pendiente</Badge>
+          <Badge variant="warning">{t('list.registrationPending')}</Badge>
         ),
     },
     {
       key: 'date',
-      header: 'Creada',
+      header: t('list.columns.created'),
       cell: (r) => (
         <span className="font-mono text-xs">
-          {new Date(r.createdAt).toLocaleDateString('es-MX')}
+          {new Date(r.createdAt).toLocaleDateString(intlLocale)}
         </span>
       ),
     },
@@ -214,14 +203,21 @@ export default async function InvitationsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-black">Invitaciones</h1>
-        <p className="text-sm text-muted-foreground">{total} en total.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-black">{t('list.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('list.totalCount', { count: total })}</p>
+        </div>
+        <Link href="/admin/invitations/import">
+          <Button>{t('importParents.title')}</Button>
+        </Link>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border bg-card p-4 shadow-sm">
-          <p className="text-xs font-bold uppercase text-muted-foreground">Registrados en la app</p>
+          <p className="text-xs font-bold uppercase text-muted-foreground">
+            {t('list.cards.registered')}
+          </p>
           <p className="text-3xl font-black text-emerald-600">{registered}</p>
         </div>
         <Link
@@ -229,16 +225,18 @@ export default async function InvitationsPage({
           className="rounded-2xl border bg-card p-4 shadow-sm transition hover:border-primary"
         >
           <p className="text-xs font-bold uppercase text-muted-foreground">
-            Falta confirmar registro
+            {t('list.cards.awaitingRegistration')}
           </p>
           <p className="text-3xl font-black text-amber-600">{awaitingRegistration}</p>
-          <p className="text-xs text-muted-foreground">Invitados que aún no entraron a la app</p>
+          <p className="text-xs text-muted-foreground">{t('list.cards.awaitingHint')}</p>
         </Link>
         <Link
           href="/admin/invitations?status=PENDING"
           className="rounded-2xl border bg-card p-4 shadow-sm transition hover:border-primary"
         >
-          <p className="text-xs font-bold uppercase text-muted-foreground">Pendientes de envío</p>
+          <p className="text-xs font-bold uppercase text-muted-foreground">
+            {t('list.cards.pendingSend')}
+          </p>
           <p className="text-3xl font-black">{pendingSend}</p>
         </Link>
       </div>
@@ -256,17 +254,17 @@ export default async function InvitationsPage({
           status ? (
             <EmptyState
               icon={Mail}
-              title="Sin invitaciones con ese estado"
-              description="Probá cambiar el filtro arriba."
+              title={t('list.emptyFiltered.title')}
+              description={t('list.emptyFiltered.description')}
             />
           ) : (
             <EmptyState
               icon={Mail}
-              title="Aún no enviaste invitaciones"
-              description="Importá un Excel con padres y alumnos — desde ahí se generan las invitaciones automáticas."
+              title={t('list.empty.title')}
+              description={t('list.empty.description')}
               action={
-                <Link href="/admin/students/import">
-                  <Button>Importar Excel</Button>
+                <Link href="/admin/invitations/import">
+                  <Button>{t('list.empty.importExcel')}</Button>
                 </Link>
               }
             />

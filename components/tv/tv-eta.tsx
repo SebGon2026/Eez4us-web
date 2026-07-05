@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -10,16 +11,15 @@ interface TvEtaProps {
   className?: string;
 }
 
-function label(remaining: number): { text: string; arriving: boolean } {
-  // "Llegando" en Nunito redonda, sin caps mono — el jefe pidió tipografía menos agresiva
-  if (remaining <= 30) return { text: 'Llegando', arriving: true };
+function countdownText(remaining: number): string {
   const total = Math.floor(remaining);
   const mins = Math.floor(total / 60);
   const ss = (total % 60).toString().padStart(2, '0');
-  return { text: `${mins}:${ss}`, arriving: false };
+  return `${mins}:${ss}`;
 }
 
 export function TvEta({ etaSeconds, etaUpdatedAt = null, className }: TvEtaProps) {
+  const t = useTranslations('tv');
   const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -41,7 +41,9 @@ export function TvEta({ etaSeconds, etaUpdatedAt = null, className }: TvEtaProps
     remaining = Math.max(0, etaSeconds - elapsed);
   }
 
-  const { text, arriving } = label(remaining);
+  // "Llegando" en Nunito redonda, sin caps mono — el jefe pidió tipografía menos agresiva
+  const arriving = remaining <= 30;
+  const text = arriving ? t('eta.arriving') : countdownText(remaining);
 
   return (
     <span

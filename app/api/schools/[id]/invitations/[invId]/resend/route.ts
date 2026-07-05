@@ -2,6 +2,7 @@ import { customAlphabet } from 'nanoid';
 
 import { prisma } from '@/lib/db';
 import { dispatchInvitation, inviteLink } from '@/lib/invitations';
+import { localeForCountry } from '@/lib/locale';
 import { jsonError, requireSchool } from '@/lib/session';
 
 const ALLOWED_ROLES = ['director', 'super_admin'];
@@ -20,7 +21,7 @@ export async function POST(
     const inv = await prisma.invitation.findUnique({
       where: { id: invId },
       include: {
-        school: { select: { id: true, name: true } },
+        school: { select: { id: true, name: true, country: true } },
       },
     });
     if (!inv || inv.schoolId !== schoolId) {
@@ -47,6 +48,7 @@ export async function POST(
       link: inviteLink(newToken),
       parentName,
       studentNames,
+      locale: localeForCountry(inv.school.country),
     });
 
     const updated = await prisma.invitation.update({

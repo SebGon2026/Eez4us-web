@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import type { RankedTrip } from '@/lib/trip-types';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +19,7 @@ interface TripCardProps {
 }
 
 export function TripCard({ trip, rank, role, onRemove }: TripCardProps) {
+  const t = useTranslations('dashboard.tripCard');
   const inZone = trip.status === 'EN_ZONA';
   const canFinalize = inZone && STAFF_ROLES.has(role);
 
@@ -40,7 +43,7 @@ export function TripCard({ trip, rank, role, onRemove }: TripCardProps) {
       {/* Parent + vehicle */}
       <div className="flex-1 min-w-0">
         <p className="font-semibold leading-tight truncate">
-          {trip.parentName ?? 'Padre sin nombre'}
+          {trip.parentName ?? t('unnamedParent')}
         </p>
         <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
           {trip.vehicle ? (
@@ -58,7 +61,7 @@ export function TripCard({ trip, rank, role, onRemove }: TripCardProps) {
             </>
           ) : (
             <span className="font-medium text-foreground/70">
-              {trip.origin === 'ESTOY_AFUERA' ? 'Padre afuera · sin GPS' : 'Retiro en puerta · a pie'}
+              {trip.origin === 'ESTOY_AFUERA' ? t('parentOutside') : t('walkup')}
             </span>
           )}
         </div>
@@ -82,7 +85,7 @@ export function TripCard({ trip, rank, role, onRemove }: TripCardProps) {
         {canFinalize && (
           <FinalizeButton
             tripId={trip.tripId}
-            parentName={trip.parentName ?? 'el padre'}
+            parentName={trip.parentName ?? t('parentFallback')}
             studentNames={trip.students.map((s) => `${s.firstName} ${s.lastName}`)}
             onRemove={() => onRemove(trip.tripId)}
           />

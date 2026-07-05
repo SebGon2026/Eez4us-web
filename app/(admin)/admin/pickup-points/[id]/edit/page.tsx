@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { PickupPointForm } from '@/components/admin/pickup-point-form';
 import { prisma } from '@/lib/db';
@@ -26,11 +27,12 @@ export default async function EditPickupPointPage({
     },
   });
   if (!pp || pp.schoolId !== schoolId) notFound();
+  const t = await getTranslations('pickupPoints');
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Editar punto</h1>
+        <h1 className="text-3xl font-black">{t('edit.title')}</h1>
         <p className="text-sm text-muted-foreground">{pp.name}</p>
       </div>
       <PickupPointForm

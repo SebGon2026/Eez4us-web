@@ -24,6 +24,7 @@ import {
   UserCog,
   UsersRound,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -34,13 +35,13 @@ import { cn } from '@/lib/utils';
 
 interface NavItem {
   href: string;
-  label: string;
+  labelKey: string;
   icon: typeof Home;
   roles?: string[];
 }
 
 interface NavSection {
-  title?: string;
+  titleKey?: string;
   roles?: string[];
   items: NavItem[];
 }
@@ -48,58 +49,60 @@ interface NavSection {
 const SECTIONS: NavSection[] = [
   {
     items: [
-      { href: '/admin', label: 'Inicio', icon: Home },
-      { href: '/admin/dashboard', label: 'Llegadas en vivo', icon: LayoutDashboard },
+      { href: '/admin', labelKey: 'home', icon: Home },
+      { href: '/admin/dashboard', labelKey: 'liveArrivals', icon: LayoutDashboard },
     ],
   },
   {
-    title: 'Personas',
+    titleKey: 'people',
     items: [
-      { href: '/admin/students', label: 'Alumnos', icon: GraduationCap },
-      { href: '/admin/grades', label: 'Grados', icon: Tag },
-      { href: '/admin/families', label: 'Familias', icon: UsersRound },
-      { href: '/admin/vehicles', label: 'Vehículos', icon: Car },
-      { href: '/admin/invitations', label: 'Invitaciones', icon: Mailbox },
+      { href: '/admin/students', labelKey: 'students', icon: GraduationCap },
+      { href: '/admin/grades', labelKey: 'grades', icon: Tag },
+      { href: '/admin/families', labelKey: 'families', icon: UsersRound },
+      { href: '/admin/vehicles', labelKey: 'vehicles', icon: Car },
+      { href: '/admin/invitations', labelKey: 'invitations', icon: Mailbox },
     ],
   },
   {
-    title: 'Operación',
+    titleKey: 'operations',
     items: [
-      { href: '/admin/pickup-points', label: 'Puntos de recogida', icon: MapPin },
-      { href: '/admin/temp-auths', label: 'Autoriz. temporales', icon: KeyRound },
-      { href: '/admin/messages', label: 'Mensajería', icon: Mail },
-      { href: '/admin/alerts', label: 'Alertas', icon: AlertTriangle },
+      { href: '/admin/pickup-points', labelKey: 'pickupPoints', icon: MapPin },
+      { href: '/admin/temp-auths', labelKey: 'tempAuths', icon: KeyRound },
+      { href: '/admin/messages', labelKey: 'messages', icon: Mail },
+      { href: '/admin/alerts', labelKey: 'alerts', icon: AlertTriangle },
     ],
   },
   {
-    title: 'Reportes',
+    titleKey: 'reports',
     roles: ['director', 'super_admin'],
     items: [
-      { href: '/admin/imports', label: 'Importaciones', icon: FileSpreadsheet },
-      { href: '/admin/reports/operational', label: 'Operativo', icon: BarChart3 },
-      { href: '/admin/reports/school', label: 'Escuela', icon: BarChart3 },
-      { href: '/admin/reports/invitations', label: 'Invitaciones', icon: BarChart3 },
+      { href: '/admin/imports', labelKey: 'imports', icon: FileSpreadsheet },
+      { href: '/admin/reports/operational', labelKey: 'reportOperational', icon: BarChart3 },
+      { href: '/admin/reports/school', labelKey: 'reportSchool', icon: BarChart3 },
+      { href: '/admin/reports/invitations', labelKey: 'reportInvitations', icon: BarChart3 },
     ],
   },
   {
-    title: 'Colegio',
+    titleKey: 'school',
     roles: ['director', 'super_admin'],
     items: [
-      { href: '/admin/staff', label: 'Personal', icon: UserCog },
-      { href: '/admin/billing', label: 'Facturación', icon: CreditCard },
-      { href: '/admin/settings', label: 'Configuración', icon: Settings },
+      { href: '/admin/staff', labelKey: 'staff', icon: UserCog },
+      { href: '/admin/billing', labelKey: 'billing', icon: CreditCard },
+      { href: '/admin/settings', labelKey: 'settings', icon: Settings },
     ],
   },
   {
-    title: 'Super admin',
+    titleKey: 'superAdmin',
     roles: ['super_admin'],
     items: [
-      { href: '/admin/super', label: 'Dashboard global', icon: LayoutDashboard },
-      { href: '/admin/schools', label: 'Colegios', icon: Building2 },
-      { href: '/admin/audit', label: 'Audit log', icon: ShieldCheck },
+      { href: '/admin/super', labelKey: 'superDashboard', icon: LayoutDashboard },
+      { href: '/admin/schools', labelKey: 'schools', icon: Building2 },
+      { href: '/admin/audit', labelKey: 'audit', icon: ShieldCheck },
     ],
   },
 ];
+
+const KNOWN_ROLES = new Set(['parent', 'director', 'support_staff', 'vendor', 'super_admin']);
 
 interface SidebarProps {
   userName: string | null;
@@ -120,6 +123,8 @@ export function Sidebar({
   collapsed,
   onClose,
 }: SidebarProps) {
+  const t = useTranslations('nav');
+  const tc = useTranslations('common');
   const pathname = usePathname();
   const router = useRouter();
   const [userOpen, setUserOpen] = useState(false);
@@ -214,10 +219,35 @@ export function Sidebar({
               {schoolName ?? 'Eez4us'}
             </p>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Panel admin
+              {t('brand.adminPanel')}
             </p>
           </div>
         </div>
+
+        {/* Franja de modo super admin: deja claro que NO sos el director del colegio, sino un
+            super admin viéndolo. Linkea al panel global para salir de la vista del colegio. */}
+        {role === 'super_admin' && (
+          <Link
+            href="/admin/super"
+            title={collapsed ? t('superBadge.title') : undefined}
+            className={cn(
+              'flex items-center gap-2 bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700',
+              collapsed && 'lg:justify-center lg:px-2',
+            )}
+          >
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            <div className={cn('min-w-0', hideOnCollapse)}>
+              <p className="text-[11px] font-black uppercase leading-tight tracking-wide">
+                {t('superBadge.title')}
+              </p>
+              {schoolName && (
+                <p className="truncate text-[10px] font-semibold text-indigo-100">
+                  {t('superBadge.viewing', { school: schoolName })}
+                </p>
+              )}
+            </div>
+          </Link>
+        )}
 
         {/* Nav agrupada */}
         <nav className={cn('flex-1 overflow-y-auto px-3 py-4', collapsed && 'lg:px-2')}>
@@ -226,14 +256,14 @@ export function Sidebar({
             if (items.length === 0) return null;
             return (
               <div key={idx} className="mb-5">
-                {section.title && (
+                {section.titleKey && (
                   <div
                     className={cn(
                       'mb-2 rounded-md border border-primary/20 bg-primary/15 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-primary',
                       hideOnCollapse,
                     )}
                   >
-                    {section.title}
+                    {t(`sections.${section.titleKey}`)}
                   </div>
                 )}
                 <div className="space-y-0.5">
@@ -243,11 +273,12 @@ export function Sidebar({
                         ? pathname === '/admin'
                         : pathname === item.href || pathname.startsWith(`${item.href}/`);
                     const Icon = item.icon;
+                    const label = t(`items.${item.labelKey}`);
                     return (
                       <Link
                         key={item.href}
                         href={item.href}
-                        title={collapsed ? item.label : undefined}
+                        title={collapsed ? label : undefined}
                         className={cn(
                           'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
                           collapsed && 'lg:justify-center lg:px-0',
@@ -267,7 +298,7 @@ export function Sidebar({
                               : 'text-muted-foreground group-hover:text-foreground',
                           )}
                         />
-                        <span className={cn('truncate', hideOnCollapse)}>{item.label}</span>
+                        <span className={cn('truncate', hideOnCollapse)}>{label}</span>
                       </Link>
                     );
                   })}
@@ -291,9 +322,11 @@ export function Sidebar({
               {userInitials}
             </div>
             <div className={cn('min-w-0 flex-1', hideOnCollapse)}>
-              <p className="truncate text-sm font-bold leading-tight">{userName ?? 'Usuario'}</p>
+              <p className="truncate text-sm font-bold leading-tight">
+                {userName ?? t('user.fallbackName')}
+              </p>
               <p className="truncate text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {role.replace('_', ' ')}
+                {KNOWN_ROLES.has(role) ? tc(`roles.${role}`) : role.replace('_', ' ')}
               </p>
             </div>
             <ChevronDown
@@ -312,7 +345,7 @@ export function Sidebar({
                 className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
               >
                 <Settings className="h-4 w-4" />
-                Configuración
+                {t('items.settings')}
               </Link>
               <Link
                 href="/privacy"
@@ -321,7 +354,7 @@ export function Sidebar({
                 className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
               >
                 <Shield className="h-4 w-4" />
-                Política de privacidad
+                {t('user.privacyPolicy')}
               </Link>
               <Link
                 href="/terms"
@@ -330,7 +363,7 @@ export function Sidebar({
                 className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
               >
                 <FileText className="h-4 w-4" />
-                Términos del servicio
+                {t('user.termsOfService')}
               </Link>
               <div className="my-1 h-px bg-border" />
               <button
@@ -339,7 +372,7 @@ export function Sidebar({
                 className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="h-4 w-4" />
-                Cerrar sesión
+                {t('user.logout')}
               </button>
             </div>
           )}

@@ -1,9 +1,11 @@
+import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 import { TrialEditor } from '@/components/admin/trial-editor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 import { SchoolActions } from './school-actions';
@@ -43,17 +45,21 @@ export default async function SchoolDetailPage({
     prisma.vehicle.count({ where: { active: true, parent: { schoolId: id, role: 'parent' } } }),
   ]);
 
+  const t = await getTranslations('schools');
+  const tCommon = await getTranslations('common');
+  const dateLocale = intlLocaleOf(await getLocale());
+
   return (
     <div className="space-y-6">
       <Link href="/admin/schools" className="text-sm font-bold text-primary hover:underline">
-        ← Volver
+        {t('detail.back')}
       </Link>
 
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-black">{school.name}</h1>
           <p className="text-sm text-muted-foreground">
-            Código <code>{school.internalCode}</code>
+            {t('codeLabel')} <code>{school.internalCode}</code>
             {(school.city || school.country) && (
               <> · {[school.city, school.country].filter(Boolean).join(', ')}</>
             )}
@@ -64,12 +70,12 @@ export default async function SchoolDetailPage({
 
       <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
-          { l: 'Alumnos', v: school._count.students },
-          { l: 'Padres de familia', v: parentsCount },
-          { l: 'Vehículos registrados', v: vehiclesCount },
-          { l: 'Viajes', v: school._count.trips },
-          { l: 'Pickup points', v: school._count.pickupPoints },
-          { l: 'Invitaciones', v: school._count.invitations },
+          { l: tCommon('fields.students'), v: school._count.students },
+          { l: t('detail.parents'), v: parentsCount },
+          { l: t('detail.vehicles'), v: vehiclesCount },
+          { l: t('detail.trips'), v: school._count.trips },
+          { l: t('detail.pickupPoints'), v: school._count.pickupPoints },
+          { l: t('detail.invitations'), v: school._count.invitations },
         ].map((c) => (
           <Card key={c.l}>
             <CardContent className="pt-6">
@@ -82,11 +88,11 @@ export default async function SchoolDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Staff</CardTitle>
+          <CardTitle className="text-xl">{t('detail.staff')}</CardTitle>
         </CardHeader>
         <CardContent>
           {school.users.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin staff configurado.</p>
+            <p className="text-sm text-muted-foreground">{t('detail.noStaff')}</p>
           ) : (
             <ul className="divide-y text-sm">
               {school.users.map((u) => (
@@ -104,50 +110,53 @@ export default async function SchoolDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Suscripción</CardTitle>
+          <CardTitle className="text-xl">{t('detail.subscription')}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm">
           {school.subscription ? (
             <>
               <p>
-                Estado: <span className="font-bold">{school.subscription.status}</span>
+                {t('detail.statusLabel')}{' '}
+                <span className="font-bold">{school.subscription.status}</span>
                 {school.subscription.status === 'PAST_DUE' && (
                   <span className="ml-2 text-xs font-bold text-destructive">
-                    (trial vencido / pago pendiente — falta cargar tarjeta)
+                    {t('detail.pastDueHint')}
                   </span>
                 )}
               </p>
               <p>
-                Precio por alumno: {school.subscription.pricePerStudent}{' '}
-                {school.subscription.currency}
+                {t('detail.pricePerStudent', {
+                  price: school.subscription.pricePerStudent,
+                  currency: school.subscription.currency,
+                })}
               </p>
               {school.subscription.trialEndsAt && (
                 <p>
-                  Trial hasta:{' '}
+                  {t('detail.trialUntil')}{' '}
                   <span className="font-bold">
-                    {new Date(school.subscription.trialEndsAt).toLocaleDateString('es-MX')}
+                    {new Date(school.subscription.trialEndsAt).toLocaleDateString(dateLocale)}
                   </span>
                   {new Date(school.subscription.trialEndsAt).getTime() < Date.now() && (
-                    <span className="ml-1 text-xs text-destructive">(vencido)</span>
+                    <span className="ml-1 text-xs text-destructive">{t('detail.expired')}</span>
                   )}
                 </p>
               )}
               {school.subscription.nextChargeAt && (
                 <p>
-                  Próximo cobro:{' '}
-                  {new Date(school.subscription.nextChargeAt).toLocaleDateString('es-MX')}
+                  {t('detail.nextCharge')}{' '}
+                  {new Date(school.subscription.nextChargeAt).toLocaleDateString(dateLocale)}
                 </p>
               )}
               {school.subscription.currentPeriodEnd && (
                 <p>
-                  Período actual hasta:{' '}
-                  {new Date(school.subscription.currentPeriodEnd).toLocaleDateString('es-MX')}
+                  {t('detail.currentPeriodUntil')}{' '}
+                  {new Date(school.subscription.currentPeriodEnd).toLocaleDateString(dateLocale)}
                 </p>
               )}
               <TrialEditor schoolId={school.id} />
             </>
           ) : (
-            <p className="text-muted-foreground">Sin suscripción.</p>
+            <p className="text-muted-foreground">{t('detail.noSubscription')}</p>
           )}
         </CardContent>
       </Card>

@@ -1,6 +1,8 @@
 import './globals.css';
 
 import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { Nunito } from 'next/font/google';
 import { Toaster } from 'sonner';
 
@@ -10,22 +12,30 @@ const nunito = Nunito({
   weight: ['400', '600', '700', '800', '900'],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://www.eez4us.com'),
-  title: 'Eez4us Admin',
-  description: 'Panel administrativo Eez4us',
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('common.app');
+  return {
+    metadataBase: new URL('https://www.eez4us.com'),
+    title: t('metaTitle'),
+    description: t('metaDescription'),
+    robots: { index: false, follow: false },
+  };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html
-      lang="es"
+      lang={locale}
       className={`${nunito.variable} h-full antialiased motion-safe:scroll-smooth`}
       suppressHydrationWarning
     >
       <body className="min-h-full" suppressHydrationWarning>
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
         <Toaster
           position="top-right"
           richColors

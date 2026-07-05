@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
@@ -15,6 +16,8 @@ interface User {
 }
 
 export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
+  const t = useTranslations('schools');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [mode, setMode] = useState<'existing' | 'new'>(
     candidateUsers.length > 0 ? 'existing' : 'new',
@@ -33,13 +36,13 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
     startTransition(async () => {
       const pct = Number(commissionPct) / 100;
       if (Number.isNaN(pct) || pct < 0 || pct > 1) {
-        setError('Comisión inválida');
+        setError(t('vendors.invalidCommission'));
         return;
       }
       // vacío = sin límite de meses
       const months = commissionMonths.trim() === '' ? null : Number(commissionMonths);
       if (months !== null && (!Number.isInteger(months) || months < 1 || months > 60)) {
-        setError('Duración inválida (1 a 60 meses, o vacío para sin límite)');
+        setError(t('vendors.invalidDuration'));
         return;
       }
       const body =
@@ -60,7 +63,7 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
         router.push('/admin/vendors');
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setError(err instanceof Error ? err.message : t('unknownError'));
       }
     });
   }
@@ -74,20 +77,20 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
           onClick={() => setMode('existing')}
           disabled={candidateUsers.length === 0}
         >
-          Usuario existente
+          {t('vendors.existingUser')}
         </Button>
         <Button
           type="button"
           variant={mode === 'new' ? 'default' : 'outline'}
           onClick={() => setMode('new')}
         >
-          Crear usuario nuevo
+          {t('vendors.newUser')}
         </Button>
       </div>
 
       {mode === 'existing' ? (
         <div className="space-y-2">
-          <Label htmlFor="userId">Usuario</Label>
+          <Label htmlFor="userId">{t('vendors.user')}</Label>
           <Select id="userId" value={userId} onChange={(e) => setUserId(e.target.value)} required>
             {candidateUsers.map((u) => (
               <option key={u.id} value={u.id}>
@@ -99,7 +102,7 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre</Label>
+            <Label htmlFor="name">{tCommon('fields.name')}</Label>
             <Input
               id="name"
               value={name}
@@ -108,7 +111,7 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{tCommon('fields.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -122,7 +125,7 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="commission">Comisión (%)</Label>
+          <Label htmlFor="commission">{t('vendors.commissionPct')}</Label>
           <Input
             id="commission"
             type="number"
@@ -135,7 +138,7 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="commissionMonths">Duración (meses)</Label>
+          <Label htmlFor="commissionMonths">{t('vendors.durationMonths')}</Label>
           <Input
             id="commissionMonths"
             type="number"
@@ -144,11 +147,10 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
             step="1"
             value={commissionMonths}
             onChange={(e) => setCommissionMonths(e.target.value)}
-            placeholder="Vacío = sin límite"
+            placeholder={t('vendors.emptyNoLimit')}
           />
           <p className="text-xs text-muted-foreground">
-            Ej: 10% por 3 meses — la comisión se acumula en los siguientes {commissionMonths || 'N'}{' '}
-            periodos de pago de cada escuela enrolada.
+            {t('vendors.commissionExample', { months: commissionMonths || 'N' })}
           </p>
         </div>
       </div>
@@ -161,7 +163,7 @@ export function NewVendorForm({ candidateUsers }: { candidateUsers: User[] }) {
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
-          {isPending ? 'Creando…' : 'Crear agente de venta'}
+          {isPending ? t('creating') : t('vendors.create')}
         </Button>
       </div>
     </form>

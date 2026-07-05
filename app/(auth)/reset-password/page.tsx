@@ -1,13 +1,17 @@
 'use client';
 
 import { CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { PasswordInput } from '@/components/ui/password-input';
 
 function ResetForm() {
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const sp = useSearchParams();
   const token = sp.get('token');
@@ -21,15 +25,15 @@ function ResetForm() {
     e.preventDefault();
     setError(null);
     if (!token) {
-      setError('Token inválido o ausente.');
+      setError(t('reset.errors.missingToken'));
       return;
     }
     if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.');
+      setError(t('reset.errors.tooShort'));
       return;
     }
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.');
+      setError(t('reset.errors.mismatch'));
       return;
     }
     setPending(true);
@@ -47,7 +51,7 @@ function ResetForm() {
       setDone(true);
       setTimeout(() => router.push('/login'), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado');
+      setError(err instanceof Error ? err.message : t('errors.unexpected'));
     } finally {
       setPending(false);
     }
@@ -58,10 +62,8 @@ function ResetForm() {
       <div className="space-y-6 rounded-2xl bg-card p-10 shadow-card border text-center">
         <CheckCircle2 className="mx-auto h-12 w-12 text-primary" />
         <div>
-          <h1 className="text-xl font-bold">Contraseña actualizada</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Te llevamos al login en unos segundos…
-          </p>
+          <h1 className="text-xl font-bold">{t('reset.done.title')}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t('reset.done.body')}</p>
         </div>
       </div>
     );
@@ -73,15 +75,15 @@ function ResetForm() {
       className="space-y-6 rounded-2xl bg-card p-10 shadow-card border"
     >
       <div className="text-center space-y-2">
-        <h1 className="text-xl font-bold">Nueva contraseña</h1>
-        <p className="text-sm text-muted-foreground">
-          Elegí una contraseña segura para tu cuenta.
-        </p>
+        <h1 className="text-xl font-bold">{t('reset.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('reset.subtitle')}</p>
       </div>
 
       <div className="space-y-3">
         <div>
-          <label className="text-xs font-semibold text-muted-foreground">Contraseña nueva</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            {t('reset.newPasswordLabel')}
+          </label>
           <PasswordInput
             wrapperClassName="mt-1"
             required
@@ -91,7 +93,9 @@ function ResetForm() {
           />
         </div>
         <div>
-          <label className="text-xs font-semibold text-muted-foreground">Confirmar</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            {t('reset.confirmLabel')}
+          </label>
           <PasswordInput
             wrapperClassName="mt-1"
             required
@@ -111,25 +115,33 @@ function ResetForm() {
         disabled={pending}
         className="inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-95 disabled:opacity-50"
       >
-        {pending ? 'Guardando…' : 'Guardar contraseña'}
+        {pending ? tCommon('actions.saving') : t('reset.submit')}
       </button>
 
       <Link
         href="/login"
         className="block text-center text-xs font-semibold text-muted-foreground hover:text-foreground"
       >
-        ← Volver al login
+        {t('backToLogin')}
       </Link>
     </form>
   );
 }
 
 export default function ResetPasswordPage() {
+  const tCommon = useTranslations('common');
   return (
-    <main className="auth-bg flex min-h-screen flex-col">
+    <main className="auth-bg relative flex min-h-screen flex-col">
+      <div className="absolute right-4 top-4 z-10">
+        <LanguageSwitcher />
+      </div>
       <div className="flex flex-1 items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <Suspense fallback={<div className="text-center text-muted-foreground">Cargando…</div>}>
+          <Suspense
+            fallback={
+              <div className="text-center text-muted-foreground">{tCommon('states.loading')}</div>
+            }
+          >
             <ResetForm />
           </Suspense>
         </div>

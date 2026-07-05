@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { NewVendorForm } from '@/components/admin/new-vendor-form';
@@ -20,19 +21,19 @@ export default async function NewVendorPage() {
     take: 200,
   });
 
+  const t = await getTranslations('schools');
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Crear agente de venta</h1>
-        <p className="text-sm text-muted-foreground">
-          Elegí un usuario existente con rol de agente de venta o creá uno nuevo.
-        </p>
+        <h1 className="text-3xl font-black">{t('vendors.create')}</h1>
+        <p className="text-sm text-muted-foreground">{t('vendors.newSubtitle')}</p>
       </div>
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Datos del agente de venta</CardTitle>
-          <CardDescription>Comisión por defecto 10% por 3 meses.</CardDescription>
+          <CardTitle className="text-xl">{t('vendors.newDataTitle')}</CardTitle>
+          <CardDescription>{t('vendors.defaultCommissionHint')}</CardDescription>
         </CardHeader>
         <CardContent>
           <NewVendorForm candidateUsers={candidateUsers} />

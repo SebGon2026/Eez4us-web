@@ -1,0 +1,20 @@
+{
+  "shell": {
+    "backToLogin": "Volver al login",
+    "lastUpdated": "Última actualización: {date}",
+    "privacy": "Política de privacidad",
+    "terms": "Términos del servicio"
+  },
+  "privacy": {
+    "title": "Política de privacidad",
+    "metaTitle": "Política de privacidad — Eez4us",
+    "metaDescription": "Cómo Eez4us recolecta, usa y protege los datos personales.",
+    "updatedAt": "19 de junio de 2026"
+  },
+  "terms": {
+    "title": "Términos del servicio",
+    "metaTitle": "Términos del servicio — Eez4us",
+    "metaDescription": "Condiciones de uso de la plataforma Eez4us.",
+    "updatedAt": "19 de junio de 2026"
+  }
+}

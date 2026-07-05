@@ -1,7 +1,9 @@
+import { getLocale, getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 export default async function AuditPage() {
@@ -15,20 +17,23 @@ export default async function AuditPage() {
     include: { actor: { select: { name: true, email: true, role: true } } },
   });
 
+  const t = await getTranslations('schools');
+  const dateLocale = intlLocaleOf(await getLocale());
+
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black">Audit log</h1>
-        <p className="text-sm text-muted-foreground">Últimas 100 acciones sensibles.</p>
+        <h1 className="text-3xl font-black">{t('audit.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('audit.subtitle')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Eventos</CardTitle>
+          <CardTitle className="text-xl">{t('audit.events')}</CardTitle>
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay eventos auditados todavía.</p>
+            <p className="text-sm text-muted-foreground">{t('audit.empty')}</p>
           ) : (
             <ul className="divide-y text-sm">
               {logs.map((log) => (
@@ -42,12 +47,12 @@ export default async function AuditPage() {
                         ) : null}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {log.actor?.name ?? log.actor?.email ?? 'sistema'}{' '}
+                        {log.actor?.name ?? log.actor?.email ?? t('audit.system')}{' '}
                         ({log.actor?.role ?? 'n/a'})
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(log.createdAt).toLocaleString('es-MX')}
+                      {new Date(log.createdAt).toLocaleString(dateLocale)}
                     </span>
                   </div>
                   {log.metadata != null && (

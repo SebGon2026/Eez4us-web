@@ -1,6 +1,7 @@
 'use client';
 
 import { APIProvider, Map, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ interface AddressPickerProps {
 }
 
 function AutocompleteInput({ value, onChange, placeholder }: AddressPickerProps) {
+  const t = useTranslations('pickupPoints');
   const places = useMapsLibrary('places');
   const inputRef = useRef<HTMLInputElement>(null);
   const map = useMap();
@@ -53,17 +55,18 @@ function AutocompleteInput({ value, onChange, placeholder }: AddressPickerProps)
     <Input
       ref={inputRef}
       defaultValue={value.addressText}
-      placeholder={placeholder ?? 'Buscar dirección'}
+      placeholder={placeholder ?? t('address.searchPlaceholder')}
       onChange={(e) => onChange({ ...value, addressText: e.target.value })}
     />
   );
 }
 
 function PreviewMap({ value }: { value: AddressValue }) {
+  const t = useTranslations('pickupPoints');
   if (value.addressLat === null || value.addressLng === null) {
     return (
       <div className="flex h-40 items-center justify-center rounded-2xl border-2 border-dashed text-xs text-muted-foreground">
-        Buscá una dirección para ver el mapa.
+        {t('address.searchHint')}
       </div>
     );
   }
@@ -81,13 +84,14 @@ function PreviewMap({ value }: { value: AddressValue }) {
 }
 
 export function AddressPicker({ value, onChange, placeholder }: AddressPickerProps) {
+  const t = useTranslations('pickupPoints');
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY;
   if (!apiKey) {
     return (
       <Input
         value={value.addressText}
         onChange={(e) => onChange({ ...value, addressText: e.target.value })}
-        placeholder={placeholder ?? 'Dirección'}
+        placeholder={placeholder ?? t('address.placeholder')}
       />
     );
   }

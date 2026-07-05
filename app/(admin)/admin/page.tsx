@@ -1,6 +1,7 @@
 import { ArrowRight, FileSpreadsheet, MapPin, Tag, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { AdminHomeTiles } from '@/components/admin/admin-home-tiles';
 import { prisma } from '@/lib/db';
@@ -40,64 +41,68 @@ export default async function AdminHomePage() {
       prisma.grade.count({ where: { schoolId } }),
     ]);
 
+  const t = await getTranslations('dashboard');
+
   const tiles = [
     {
-      label: 'Alumnos activos',
+      label: t('home.tiles.activeStudents'),
       value: studentsCount,
       href: '/admin/students',
-      hint: `${gradesCount} grados configurados`,
+      hint: t('home.tiles.gradesConfigured', { count: gradesCount }),
       icon: 'students' as const,
     },
     {
-      label: 'Invitaciones pendientes',
+      label: t('home.tiles.pendingInvitations'),
       value: invitationsPending,
       href: '/admin/invitations',
-      hint: invitationsPending > 0 ? 'Padres sin claimar' : 'Todo al día',
+      hint:
+        invitationsPending > 0 ? t('home.tiles.unclaimedParents') : t('home.tiles.allCaughtUp'),
       icon: 'invitations' as const,
     },
     {
-      label: 'Viajes en curso',
+      label: t('home.tiles.activeTrips'),
       value: tripsActive,
       href: '/admin/dashboard',
-      hint: tripsInZone > 0 ? `${tripsInZone} en la puerta` : 'Sin llegadas activas',
+      hint:
+        tripsInZone > 0
+          ? t('home.tiles.atTheGate', { count: tripsInZone })
+          : t('home.tiles.noActiveArrivals'),
       icon: 'trips' as const,
     },
   ];
 
   const shortcuts = [
     {
-      label: 'Importar padres desde Excel',
-      href: '/admin/students/import',
+      label: t('home.shortcuts.importParents'),
+      href: '/admin/invitations/import',
       icon: FileSpreadsheet,
-      description: 'Carga padres + alumnos masivamente con la plantilla oficial.',
+      description: t('home.shortcuts.importParentsDesc'),
     },
     {
-      label: 'Agregar punto de recogida',
+      label: t('home.shortcuts.addPickupPoint'),
       href: '/admin/pickup-points/new',
       icon: MapPin,
-      description: 'Define el geofence y horarios de un nuevo acceso.',
+      description: t('home.shortcuts.addPickupPointDesc'),
     },
     {
-      label: 'Gestionar grados',
+      label: t('home.shortcuts.manageGrades'),
       href: '/admin/grades',
       icon: Tag,
-      description: 'Suma, renombra o elimina grados del colegio.',
+      description: t('home.shortcuts.manageGradesDesc'),
     },
     {
-      label: 'Nuevo alumno',
+      label: t('home.shortcuts.newStudent'),
       href: '/admin/students/new',
       icon: UserPlus,
-      description: 'Alta manual de un alumno y asociación con sus padres.',
+      description: t('home.shortcuts.newStudentDesc'),
     },
   ];
 
   return (
     <div className="shell-gap">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Inicio</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Resumen rápido de la actividad del colegio.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('home.title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('home.subtitle')}</p>
       </div>
 
       {!readiness.isReady && (
@@ -109,13 +114,13 @@ export default async function AdminHomePage() {
             <ArrowRight className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-bold leading-tight">Terminá de configurar tu escuela</p>
+            <p className="font-bold leading-tight">{t('home.onboarding.title')}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {readiness.studentsCount === 0
-                ? 'Faltan alumnos y padres invitados para operar.'
+                ? t('home.onboarding.needStudents')
                 : readiness.invitedParentsCount === 0
-                  ? 'Cargá padres por Excel para que reciban su invitación.'
-                  : 'Revisá los pasos pendientes del alta.'}
+                  ? t('home.onboarding.needInvitations')
+                  : t('home.onboarding.pendingSteps')}
             </p>
           </div>
         </Link>
@@ -125,7 +130,7 @@ export default async function AdminHomePage() {
 
       <div>
         <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-          Atajos
+          {t('home.shortcuts.heading')}
         </h2>
         <div className="grid gap-5 sm:grid-cols-2">
           {shortcuts.map((s) => (

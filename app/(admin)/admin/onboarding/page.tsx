@@ -1,6 +1,7 @@
-import { ArrowRight, Check, MapPin, ShieldCheck, UserPlus, Users } from 'lucide-react';
+import { ArrowRight, Check, MapPin, ShieldCheck, Tag, UserPlus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,38 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getSchoolReadiness, type ReadinessStepKey } from '@/lib/onboarding';
 import { getCurrentSession } from '@/lib/session';
 
-const STEP_META: Record<
-  ReadinessStepKey,
-  { title: string; description: string; href: string; cta: string; icon: typeof MapPin }
-> = {
-  pickup: {
-    title: 'Punto de recogida',
-    description: 'Marcá en el mapa la puerta del colegio y su radio (geofence).',
-    href: '/admin/pickup-points/new',
-    cta: 'Agregar punto',
-    icon: MapPin,
-  },
-  students: {
-    title: 'Alumnos',
-    description: 'Cargá alumnos uno a uno o por Excel, con sus grados.',
-    href: '/admin/students/new',
-    cta: 'Agregar alumno',
-    icon: Users,
-  },
-  parents: {
-    title: 'Padres invitados',
-    description: 'Subí el Excel de padres: el sistema les manda la invitación por email o WhatsApp.',
-    href: '/admin/students/import',
-    cta: 'Importar padres',
-    icon: UserPlus,
-  },
-  staff: {
-    title: 'Personal de portón',
-    description: 'Sumá auxiliares (logistics) y soporte que operan la TV y finalizan entregas.',
-    href: '/admin/staff',
-    cta: 'Agregar personal',
-    icon: ShieldCheck,
-  },
+const STEP_META: Record<ReadinessStepKey, { href: string; icon: typeof MapPin }> = {
+  pickup: { href: '/admin/pickup-points/new', icon: MapPin },
+  grades: { href: '/admin/grades', icon: Tag },
+  // El onboarding empuja la carga MASIVA por Excel (no uno-por-uno): el alta individual
+  // sigue disponible desde la lista de alumnos.
+  students: { href: '/admin/students/import', icon: Users },
+  parents: { href: '/admin/invitations/import', icon: UserPlus },
+  staff: { href: '/admin/staff', icon: ShieldCheck },
 };
 
 export default async function OnboardingPage() {
@@ -48,14 +25,13 @@ export default async function OnboardingPage() {
   if (!['director', 'super_admin'].includes(session.user.role)) redirect('/admin');
 
   const readiness = await getSchoolReadiness(session.user.schoolId);
+  const t = await getTranslations('schools');
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Configurá tu escuela</h1>
-        <p className="text-sm text-muted-foreground">
-          Completá estos pasos para dejar la escuela lista para operar. Podés volver cuando quieras.
-        </p>
+        <h1 className="text-3xl font-black">{t('onboarding.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('onboarding.subtitle')}</p>
       </div>
 
       {readiness.isReady ? (
@@ -63,16 +39,14 @@ export default async function OnboardingPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-green-600" />
-              <CardTitle className="text-xl">Tu escuela está lista</CardTitle>
+              <CardTitle className="text-xl">{t('onboarding.readyTitle')}</CardTitle>
             </div>
-            <CardDescription>
-              Tenés puntos de recogida, alumnos y padres invitados. Ya podés operar las recogidas.
-            </CardDescription>
+            <CardDescription>{t('onboarding.readyDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild size="lg">
               <Link href="/admin/dashboard">
-                Ir al tablero en vivo
+                {t('onboarding.goLive')}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -81,10 +55,8 @@ export default async function OnboardingPage() {
       ) : (
         <Card className="border-2 border-primary/20 bg-primary/5 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-xl">Falta poco</CardTitle>
-            <CardDescription>
-              La escuela queda lista con al menos un punto de recogida, un alumno y un padre invitado.
-            </CardDescription>
+            <CardTitle className="text-xl">{t('onboarding.almostTitle')}</CardTitle>
+            <CardDescription>{t('onboarding.almostDesc')}</CardDescription>
           </CardHeader>
         </Card>
       )}
@@ -107,21 +79,25 @@ export default async function OnboardingPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-bold leading-tight">{meta.title}</p>
+                    <p className="font-bold leading-tight">
+                      {t(`onboarding.steps.${step.key}.title`)}
+                    </p>
                     {step.done ? (
                       <Badge variant="success">{step.count}</Badge>
                     ) : step.required ? (
-                      <Badge variant="warning">Requerido</Badge>
+                      <Badge variant="warning">{t('onboarding.required')}</Badge>
                     ) : (
-                      <Badge variant="secondary">Opcional</Badge>
+                      <Badge variant="secondary">{t('onboarding.optional')}</Badge>
                     )}
                   </div>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {meta.description}
+                    {t(`onboarding.steps.${step.key}.description`)}
                   </p>
                 </div>
                 <Button asChild variant={step.done ? 'outline' : 'default'} className="shrink-0">
-                  <Link href={meta.href}>{step.done ? 'Agregar más' : meta.cta}</Link>
+                  <Link href={meta.href}>
+                    {step.done ? t('onboarding.addMore') : t(`onboarding.steps.${step.key}.cta`)}
+                  </Link>
                 </Button>
               </CardContent>
             </Card>

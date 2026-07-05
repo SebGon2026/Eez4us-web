@@ -243,6 +243,7 @@ model Grade {
 enum PickupMode {
   PRIVATE_VEHICLE // recogido por un representante en su vehículo particular
   TRANSPORT // transporte escolar/privado (van o bus)
+  WALKING // el representante lo recoge a pie (usa "estoy afuera", sin vehículo ni GPS)
 }
 
 enum TransportVehicleType {

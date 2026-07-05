@@ -1,10 +1,13 @@
 'use client';
 
 import { CheckCircle2, Circle, Clock, MapPin, Radio } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
+
+type Translator = ReturnType<typeof useTranslations>;
 
 interface LiveTrip {
   id: string;
@@ -44,24 +47,29 @@ interface LiveArrivalsBoardProps {
   dismissalBuckets?: DismissalBucket[];
 }
 
-function etaColor(seconds: number | null): { label: string; cls: string } {
+function etaColor(seconds: number | null, t: Translator): { label: string; cls: string } {
   if (seconds == null) return { label: '—', cls: 'bg-muted text-muted-foreground border-border' };
-  if (seconds <= 0) return { label: 'Llegó', cls: 'bg-amber-100 text-amber-900 border-amber-300' };
+  if (seconds <= 0)
+    return { label: t('eta.arrived'), cls: 'bg-amber-100 text-amber-900 border-amber-300' };
   const mins = Math.round(seconds / 60);
-  if (mins <= 2) return { label: `${mins} min`, cls: 'bg-amber-100 text-amber-900 border-amber-300' };
-  if (mins <= 5) return { label: `${mins} min`, cls: 'bg-yellow-50 text-yellow-900 border-yellow-200' };
-  return { label: `${mins} min`, cls: 'bg-secondary text-foreground border-border' };
+  const label = t('eta.minutes', { count: mins });
+  if (mins <= 2) return { label, cls: 'bg-amber-100 text-amber-900 border-amber-300' };
+  if (mins <= 5) return { label, cls: 'bg-yellow-50 text-yellow-900 border-yellow-200' };
+  return { label, cls: 'bg-secondary text-foreground border-border' };
 }
 
-function relativeTime(iso: string | null): string {
+function relativeTime(iso: string | null, t: Translator): string {
   if (!iso) return '—';
   const diff = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return `${diff}s atrás`;
-  return `${Math.round(diff / 60)} min`;
+  if (diff < 60) return t('time.secondsAgo', { count: diff });
+  return t('time.minutes', { count: Math.round(diff / 60) });
 }
 
 // Calcula tiempo restante hasta la hora HH:MM de hoy
-function timeUntil(hhmm: string): { label: string; pastSoon: boolean; isPast: boolean } {
+function timeUntil(
+  hhmm: string,
+  t: Translator,
+): { label: string; pastSoon: boolean; isPast: boolean } {
   const [hh, mm] = hhmm.split(':').map(Number);
   if (Number.isNaN(hh) || Number.isNaN(mm)) {
     return { label: hhmm, pastSoon: false, isPast: false };
@@ -69,16 +77,24 @@ function timeUntil(hhmm: string): { label: string; pastSoon: boolean; isPast: bo
   const target = new Date();
   target.setHours(hh, mm, 0, 0);
   const diffMs = target.getTime() - Date.now();
-  if (diffMs < -30 * 60 * 1000) return { label: 'pasó', pastSoon: false, isPast: true };
-  if (diffMs < 0) return { label: 'hace unos minutos', pastSoon: true, isPast: true };
+  if (diffMs < -30 * 60 * 1000) return { label: t('time.passed'), pastSoon: false, isPast: true };
+  if (diffMs < 0) return { label: t('time.fewMinutesAgo'), pastSoon: true, isPast: true };
   const mins = Math.round(diffMs / 60000);
-  if (mins < 60) return { label: `en ${mins} min`, pastSoon: mins <= 15, isPast: false };
+  if (mins < 60)
+    return { label: t('time.inMinutes', { count: mins }), pastSoon: mins <= 15, isPast: false };
   const hrs = Math.floor(mins / 60);
   const rem = mins % 60;
-  return { label: `en ${hrs}h ${rem.toString().padStart(2, '0')}`, pastSoon: false, isPast: false };
+  return {
+    label: t('time.inHours', { hours: hrs, minutes: rem.toString().padStart(2, '0') }),
+    pastSoon: false,
+    isPast: false,
+  };
 }
 
-function pickNextDismissal(buckets: DismissalBucket[]): {
+function pickNextDismissal(
+  buckets: DismissalBucket[],
+  t: Translator,
+): {
   bucket: DismissalBucket | null;
   whenLabel: string;
   isPast: boolean;
@@ -98,7 +114,7 @@ function pickNextDismissal(buckets: DismissalBucket[]): {
     if (diff > 0 && diff < candidateMs) {
       candidate = b;
       candidateMs = diff;
-      candidateInfo = timeUntil(b.time);
+      candidateInfo = timeUntil(b.time, t);
     }
   }
   if (candidate) {
@@ -106,7 +122,7 @@ function pickNextDismissal(buckets: DismissalBucket[]): {
   }
   // Si todas pasaron, mostrar la última con cariño
   const last = buckets[buckets.length - 1];
-  const info = timeUntil(last.time);
+  const info = timeUntil(last.time, t);
   return { bucket: last, whenLabel: info.label, isPast: true, pastSoon: false };
 }
 
@@ -117,6 +133,8 @@ export function LiveArrivalsBoard({
   role,
   dismissalBuckets = [],
 }: LiveArrivalsBoardProps) {
+  const t = useTranslations('dashboard.arrivals');
+  const tc = useTranslations('common');
   const [trips, setTrips] = useState<LiveTrip[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('ALL');
@@ -156,12 +174,12 @@ export function LiveArrivalsBoard({
   );
 
   const nextDismissal = useMemo(
-    () => pickNextDismissal(dismissalBuckets),
-    [dismissalBuckets, now],
+    () => pickNextDismissal(dismissalBuckets, t),
+    [dismissalBuckets, now, t],
   );
 
   async function onFinalize(tripId: string) {
-    if (!confirm('¿Confirmar la entrega del alumno?')) return;
+    if (!confirm(t('confirmHandoff'))) return;
     setFinalizing(tripId);
     try {
       const res = await fetch(`/api/trips/${tripId}/finalize`, {
@@ -169,10 +187,10 @@ export function LiveArrivalsBoard({
         credentials: 'include',
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      toast.success('Entrega confirmada');
+      toast.success(t('handoffConfirmed'));
       setTrips((prev) => prev.filter((t) => t.id !== tripId));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo confirmar');
+      toast.error(err instanceof Error ? err.message : t('handoffFailed'));
     } finally {
       setFinalizing(null);
     }
@@ -191,17 +209,15 @@ export function LiveArrivalsBoard({
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Llegadas en vivo</h1>
-          <p className="text-sm text-muted-foreground">
-            Padres en camino al colegio, ordenados por tiempo estimado de llegada.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
           </span>
-          <span className="font-semibold text-muted-foreground">Actualiza cada 5s</span>
+          <span className="font-semibold text-muted-foreground">{t('refreshEvery')}</span>
         </div>
       </div>
 
@@ -232,7 +248,7 @@ export function LiveArrivalsBoard({
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                {nextDismissal.isPast ? 'Última tanda del día' : 'Próxima tanda'}
+                {nextDismissal.isPast ? t('nextDismissal.lastOfDay') : t('nextDismissal.next')}
               </p>
               <p className="text-lg font-bold leading-tight">
                 {nextDismissal.bucket.time} ·{' '}
@@ -241,8 +257,8 @@ export function LiveArrivalsBoard({
                 </span>
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {nextDismissal.bucket.studentsCount} alumnos ·{' '}
-                {nextDismissal.bucket.levels.join(', ') || 'Mixto'}
+                {t('nextDismissal.students', { count: nextDismissal.bucket.studentsCount })} ·{' '}
+                {nextDismissal.bucket.levels.join(', ') || t('nextDismissal.mixed')}
               </p>
             </div>
           </div>
@@ -268,11 +284,11 @@ export function LiveArrivalsBoard({
       {dismissalBuckets.length > 0 && (
         <div className="rounded-xl border bg-card overflow-hidden">
           <div className="border-b bg-secondary/40 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-            Horarios de salida de hoy
+            {t('todaySchedule')}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-px bg-border">
             {dismissalBuckets.map((b) => {
-              const info = timeUntil(b.time);
+              const info = timeUntil(b.time, t);
               const isNext = nextDismissal.bucket?.time === b.time && !nextDismissal.isPast;
               return (
                 <div
@@ -285,7 +301,7 @@ export function LiveArrivalsBoard({
                 >
                   <p className="text-base font-bold tabular-nums">{b.time}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">
-                    {b.studentsCount} alumnos
+                    {t('nextDismissal.students', { count: b.studentsCount })}
                   </p>
                   <p className="text-[10px] font-semibold text-muted-foreground">
                     {info.label}
@@ -301,25 +317,25 @@ export function LiveArrivalsBoard({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            En camino (GPS)
+            {t('stats.enRoute')}
           </p>
           <p className="mt-1 text-3xl font-bold">{enRoute}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            En la puerta (GPS)
+            {t('stats.atGate')}
           </p>
           <p className="mt-1 text-3xl font-bold text-amber-700">{inZone}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Padres afuera (sin GPS)
+            {t('stats.outsideNoGps')}
           </p>
           <p className="mt-1 text-3xl font-bold text-violet-700">{outside}</p>
         </div>
         <div className="rounded-xl border bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Puntos activos
+            {t('stats.activePoints')}
           </p>
           <p className="mt-1 text-3xl font-bold">{pickupPoints.length}</p>
         </div>
@@ -338,7 +354,7 @@ export function LiveArrivalsBoard({
                 : 'border-border bg-card text-foreground/70 hover:bg-secondary',
             )}
           >
-            Todos · {trips.length}
+            {tc('misc.all')} · {trips.length}
           </button>
           {pickupPoints.map((pp) => {
             const count = trips.filter((t) => t.pickupPointName === pp.name).length;
@@ -366,14 +382,14 @@ export function LiveArrivalsBoard({
       {/* Tabla en vivo */}
       <div className="overflow-hidden rounded-xl border bg-card">
         {loading ? (
-          <div className="p-12 text-center text-sm text-muted-foreground">Cargando viajes…</div>
+          <div className="p-12 text-center text-sm text-muted-foreground">
+            {t('table.loadingTrips')}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
             <Radio className="mx-auto h-10 w-10 text-muted-foreground/40" />
-            <p className="mt-3 text-base font-semibold">No hay padres en camino</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Cuando un padre presione &quot;Voy en camino&quot; en la app móvil aparecerá acá.
-            </p>
+            <p className="mt-3 text-base font-semibold">{t('table.emptyTitle')}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('table.emptyHint')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -381,17 +397,17 @@ export function LiveArrivalsBoard({
               <thead className="border-b bg-secondary/40">
                 <tr className="text-left text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                   <th className="px-4 py-3 w-12">#</th>
-                  <th className="px-4 py-3 w-24">ETA</th>
-                  <th className="px-4 py-3">Padre / Vehículo</th>
-                  <th className="px-4 py-3">Alumno(s)</th>
-                  <th className="px-4 py-3">Punto</th>
-                  <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3 text-right">Acciones</th>
+                  <th className="px-4 py-3 w-24">{t('table.eta')}</th>
+                  <th className="px-4 py-3">{t('table.parentVehicle')}</th>
+                  <th className="px-4 py-3">{t('table.students')}</th>
+                  <th className="px-4 py-3">{t('table.point')}</th>
+                  <th className="px-4 py-3">{tc('fields.status')}</th>
+                  <th className="px-4 py-3 text-right">{tc('fields.actions')}</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
                 {filtered.map((trip, idx) => {
-                  const eta = etaColor(trip.etaSeconds);
+                  const eta = etaColor(trip.etaSeconds, t);
                   const inZoneRow = trip.status === 'EN_ZONA';
                   return (
                     <tr
@@ -419,7 +435,7 @@ export function LiveArrivalsBoard({
                       <td className="px-4 py-3 align-middle">
                         <p className="font-semibold leading-tight">{trip.parentName}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {trip.vehiclePlate ?? 'Sin vehículo'}
+                          {trip.vehiclePlate ?? t('table.noVehicle')}
                           {trip.vehicleModel ? ` · ${trip.vehicleModel}` : ''}
                           {trip.vehicleColor ? ` · ${trip.vehicleColor}` : ''}
                         </p>
@@ -442,24 +458,24 @@ export function LiveArrivalsBoard({
                           {trip.pickupPointName}
                         </p>
                         <p className="mt-0.5 text-[10px] text-muted-foreground">
-                          {relativeTime(trip.lastPositionAt)}
+                          {relativeTime(trip.lastPositionAt, t)}
                         </p>
                       </td>
                       <td className="px-4 py-3 align-middle">
                         {inZoneRow && trip.origin && trip.origin !== 'EN_CAMINO' ? (
                           <span className="inline-flex items-center gap-1.5 rounded-md bg-violet-50 px-2 py-1 text-xs font-bold text-violet-900 border border-violet-200">
                             <Circle className="h-2 w-2 fill-current animate-pulse" />
-                            {trip.origin === 'WALKUP' ? 'Retiro en puerta' : 'Afuera (sin GPS)'}
+                            {trip.origin === 'WALKUP' ? t('badges.walkup') : t('badges.outside')}
                           </span>
                         ) : inZoneRow ? (
                           <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 border border-amber-300">
                             <Circle className="h-2 w-2 fill-current animate-pulse" />
-                            En la puerta
+                            {t('badges.atGate')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-900 border border-blue-200">
                             <Circle className="h-2 w-2 fill-current" />
-                            En camino
+                            {t('badges.onTheWay')}
                           </span>
                         )}
                       </td>
@@ -472,7 +488,7 @@ export function LiveArrivalsBoard({
                             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-95 disabled:opacity-50"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" />
-                            {finalizing === trip.id ? 'Guardando…' : 'Confirmar'}
+                            {finalizing === trip.id ? tc('actions.saving') : tc('actions.confirm')}
                           </button>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>

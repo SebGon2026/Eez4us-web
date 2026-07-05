@@ -1,0 +1,173 @@
+{
+  "list": {
+    "title": "Invitaciones",
+    "totalCount": "{count} en total.",
+    "cards": {
+      "registered": "Registrados en la app",
+      "awaitingRegistration": "Falta confirmar registro",
+      "awaitingHint": "Invitados que aún no entraron a la app",
+      "pendingSend": "Pendientes de envío"
+    },
+    "columns": {
+      "contact": "Contacto",
+      "channel": "Canal",
+      "students": "Alumnos",
+      "delivery": "Envío",
+      "registration": "Registro",
+      "created": "Creada"
+    },
+    "noName": "Sin nombre",
+    "moreStudents": "+{count} más",
+    "registered": "Registrado",
+    "registrationPending": "Pendiente",
+    "emptyFiltered": {
+      "title": "Sin invitaciones con ese estado",
+      "description": "Probá cambiar el filtro arriba."
+    },
+    "empty": {
+      "title": "Aún no enviaste invitaciones",
+      "description": "Importá un Excel con padres y alumnos — desde ahí se generan las invitaciones automáticas.",
+      "importExcel": "Importar Excel"
+    }
+  },
+  "status": {
+    "PENDING": "Pendiente de envío",
+    "SENT": "Enviada",
+    "CLAIMED": "Enviada",
+    "EXPIRED": "Expirada",
+    "REVOKED": "Revocada"
+  },
+  "channel": {
+    "EMAIL": "Email",
+    "WHATSAPP": "WhatsApp"
+  },
+  "filters": {
+    "all": "Todos los estados",
+    "PENDING": "Pendientes de envío",
+    "SENT": "Enviadas sin registrar",
+    "CLAIMED": "Registradas",
+    "EXPIRED": "Expiradas",
+    "REVOKED": "Revocadas"
+  },
+  "resend": {
+    "action": "Reenviar",
+    "success": "Invitación reenviada",
+    "failed": "No se pudo reenviar",
+    "unexpectedError": "Error inesperado"
+  },
+  "imports": {
+    "title": "Importaciones",
+    "subtitle": "Histórico de cargas masivas de padres/alumnos.",
+    "newImport": "Nueva importación",
+    "history": "Histórico",
+    "empty": "Aún no hay importaciones registradas.",
+    "byUser": "Por {name}",
+    "okLabel": "ok",
+    "errLabel": "err",
+    "warnLabel": "warn",
+    "totalRows": "{count} filas total"
+  },
+  "importParents": {
+    "title": "Importar padres",
+    "subtitle": "Subí un Excel o CSV con padres y las matrículas de sus alumnos. Generamos una invitación por padre (email si tiene, sino WhatsApp). Los alumnos deben existir antes — cargá el roster de alumnos primero."
+  },
+  "dropzone": {
+    "dropActive": "Soltá el archivo aquí",
+    "dropIdle": "Arrastrá un .xlsx o .csv, o hacé click",
+    "columnsHint": "Columnas: nombre, apellido, email, whatsapp, ids_alumnos. Si un padre tiene varios alumnos, separá sus matrículas con coma o punto y coma en esa celda.",
+    "previewSummary": "{valid} válidas · {errors} con errores · vista previa primeras 20",
+    "removeFile": "Quitar archivo",
+    "template": {
+      "label": "Plantilla:",
+      "xlsx": "Descargar .xlsx",
+      "csv": "Descargar .csv"
+    },
+    "prefilled": {
+      "label": "Recomendado:",
+      "download": "Descargar plantilla con mis {count} alumnos",
+      "hint": "Ya trae tus alumnos cargados; solo agregá el padre de cada uno y volvé a subirla."
+    },
+    "example": {
+      "title": "Ejemplo de archivo válido",
+      "hint": "Así se ven los datos. ids_alumnos usa la matrícula de cada alumno (la misma del importador de alumnos). El teléfono va en formato internacional (+52…)."
+    },
+    "columns": {
+      "parent": "Padre",
+      "contact": "Contacto",
+      "channel": "Canal",
+      "studentIds": "IDs alumnos"
+    },
+    "rowError": "Fila {row}: {message}",
+    "importFailed": "Error al importar",
+    "unexpectedError": "Error inesperado",
+    "importCount": "{count, plural, one {Importar # padre} other {Importar # padres}}",
+    "importing": "Importando…",
+    "result": {
+      "title": "Resultado",
+      "created": "Creadas",
+      "sent": "Enviadas",
+      "rowErrors": "Filas con error",
+      "sendFailures": "Envíos fallidos",
+      "coverageComplete": "Todos tus alumnos ({total}) tienen al menos un padre invitado.",
+      "coverageMissing": "Te faltan {count} de {total} alumnos sin padre invitado:",
+      "importAnother": "Importar otro archivo"
+    }
+  },
+  "copyLink": {
+    "prompt": "Copiá el link de invitación:",
+    "copied": "Link de invitación copiado",
+    "title": "Copiar link de invitación"
+  },
+  "claim": {
+    "dead": {
+      "CLAIMED": {
+        "title": "Esta invitación ya fue usada",
+        "body": "Tu cuenta ya está creada. Abrí la app de Eez4us y entrá con tu email y contraseña. Si no la recordás, usá \"¿La olvidaste?\" en la app."
+      },
+      "EXPIRED": {
+        "title": "Esta invitación venció",
+        "body": "Pedile a la escuela que te reenvíe una invitación nueva."
+      },
+      "REVOKED": {
+        "title": "Esta invitación fue revocada",
+        "body": "Pedile a la escuela que te genere una invitación nueva."
+      },
+      "NOT_FOUND": {
+        "title": "Invitación no encontrada",
+        "body": "El link no es válido. Revisá que lo hayas copiado completo o pedile uno nuevo a la escuela."
+      }
+    },
+    "validation": {
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+      "passwordMismatch": "Las contraseñas no coinciden."
+    },
+    "errors": {
+      "PHONE_INVALID": "El teléfono no es válido para el país de la escuela (prefijo {prefix}).",
+      "INVITATION_ALREADY_USED": "Esta invitación ya fue usada.",
+      "INVITATION_EXPIRED": "Esta invitación venció. Pedí una nueva a la escuela.",
+      "INVITATION_NOT_FOUND": "Invitación no encontrada.",
+      "SIGNUP_FAILED": "No pudimos crear la cuenta. Puede que ya exista una con este email.",
+      "fallback": "No pudimos crear tu cuenta. Intentá de nuevo.",
+      "unexpected": "Error inesperado"
+    },
+    "done": {
+      "title": "¡Cuenta creada!",
+      "subtitle": "Ya podés coordinar la recogida de {count, plural, one {tu hijo} other {tus hijos}} con <b>{school}</b>.",
+      "step1": "Descargá la app de Eez4us en tu Android: <apk>descargar APK</apk> (permití \"instalar de fuentes desconocidas\" si te lo pide).",
+      "step2": "Abrila y entrá con el email <mono>{email}</mono> y la contraseña que acabás de crear.",
+      "step3": "Cuando vayas a buscarlo al colegio, tocá \"Voy en camino\" y listo.",
+      "haveApp": "Ya tengo la app instalada"
+    },
+    "hello": "Hola {name}",
+    "helloAnon": "Hola",
+    "intro": "<b>{school}</b> te invitó a coordinar la recogida con Eez4us. Creá tu cuenta para empezar.",
+    "form": {
+      "name": "Tu nombre",
+      "password": "Contraseña (mínimo 8)",
+      "confirm": "Repetí la contraseña",
+      "phone": "Teléfono (opcional, {prefix}…)",
+      "submit": "Crear mi cuenta",
+      "submitting": "Creando cuenta…"
+    }
+  }
+}

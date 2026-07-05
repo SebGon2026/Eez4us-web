@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const pickupModeEnum = z.enum(['PRIVATE_VEHICLE', 'TRANSPORT']);
+export const pickupModeEnum = z.enum(['PRIVATE_VEHICLE', 'TRANSPORT', 'WALKING']);
 export const transportVehicleTypeEnum = z.enum(['BUS', 'VAN']);
 
 const nullableTrimmed = (max: number) =>
@@ -21,8 +21,10 @@ export const pickupFields = {
   transportVehicleType: transportVehicleTypeEnum.nullable().optional(),
 } as const;
 
+export type PickupModeValue = 'PRIVATE_VEHICLE' | 'TRANSPORT' | 'WALKING';
+
 export interface PickupInput {
-  pickupMode?: 'PRIVATE_VEHICLE' | 'TRANSPORT';
+  pickupMode?: PickupModeValue;
   transportName?: string | null;
   transportPlate?: string | null;
   transportPhone?: string | null;
@@ -30,7 +32,7 @@ export interface PickupInput {
 }
 
 export interface NormalizedPickup {
-  pickupMode: 'PRIVATE_VEHICLE' | 'TRANSPORT';
+  pickupMode: PickupModeValue;
   transportName: string | null;
   transportPlate: string | null;
   transportPhone: string | null;
@@ -43,7 +45,7 @@ export type NormalizePickupResult =
 
 export function normalizePickup(
   input: PickupInput,
-  fallbackMode: 'PRIVATE_VEHICLE' | 'TRANSPORT' = 'PRIVATE_VEHICLE',
+  fallbackMode: PickupModeValue = 'PRIVATE_VEHICLE',
 ): NormalizePickupResult {
   const mode = input.pickupMode ?? fallbackMode;
   if (mode === 'TRANSPORT') {
@@ -61,10 +63,12 @@ export function normalizePickup(
       },
     };
   }
+  // PRIVATE_VEHICLE y WALKING no llevan datos de transporte. WALKING = el padre
+  // recoge a pie: sin vehículo ni placa, opera por "estoy afuera" en el mobile.
   return {
     ok: true,
     value: {
-      pickupMode: 'PRIVATE_VEHICLE',
+      pickupMode: mode,
       transportName: null,
       transportPlate: null,
       transportPhone: null,

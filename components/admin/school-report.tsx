@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import {
   CartesianGrid,
@@ -34,6 +35,8 @@ const COLORS = [
 ];
 
 export function SchoolReport() {
+  const t = useTranslations('reports');
+  const tCommon = useTranslations('common');
   const [data, setData] = useState<SchoolData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,7 +57,7 @@ export function SchoolReport() {
       </p>
     );
   }
-  if (!data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
+  if (!data) return <p className="text-sm text-muted-foreground">{tCommon('states.loading')}</p>;
 
   const merged = data.days.map((day, i) => {
     const row: Record<string, string | number> = { day, total: data.totalPerDay[i]?.count ?? 0 };
@@ -68,7 +71,7 @@ export function SchoolReport() {
     <div className="space-y-6">
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Entregas totales por día</CardTitle>
+          <CardTitle className="text-xl">{t('school.totalDeliveriesPerDay')}</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
           <ResponsiveContainer width="100%" height="100%">
@@ -92,7 +95,7 @@ export function SchoolReport() {
       {data.series.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-xl">Por niño</CardTitle>
+            <CardTitle className="text-xl">{t('school.byChild')}</CardTitle>
           </CardHeader>
           <CardContent className="h-96">
             <ResponsiveContainer width="100%" height="100%">

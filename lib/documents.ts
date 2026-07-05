@@ -7,13 +7,23 @@ import { countryDefaults } from './country';
 export const DOCUMENT_TYPES = ['DUI', 'DNI', 'RFC', 'CURP', 'PASSPORT', 'OTHER'] as const;
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
 
-const LABELS: Record<DocumentType, string> = {
-  DUI: 'DUI',
-  DNI: 'DNI',
-  RFC: 'RFC',
-  CURP: 'CURP',
-  PASSPORT: 'Pasaporte',
-  OTHER: 'Otro',
+const LABELS: Record<'es' | 'en', Record<DocumentType, string>> = {
+  es: {
+    DUI: 'DUI',
+    DNI: 'DNI',
+    RFC: 'RFC',
+    CURP: 'CURP',
+    PASSPORT: 'Pasaporte',
+    OTHER: 'Otro',
+  },
+  en: {
+    DUI: 'DUI',
+    DNI: 'DNI',
+    RFC: 'RFC',
+    CURP: 'CURP',
+    PASSPORT: 'Passport',
+    OTHER: 'Other',
+  },
 };
 
 // Tipo por defecto sugerido para un país (para defaults de UI). null si no mapeado.
@@ -22,7 +32,7 @@ export function defaultDocumentTypeForCountry(country?: string | null): Document
   return countryDefaults(country)?.documentType ?? null;
 }
 
-export function documentTypeLabel(type?: string | null): string | null {
+export function documentTypeLabel(type?: string | null, locale: 'es' | 'en' = 'es'): string | null {
   if (!type) return null;
-  return LABELS[type as DocumentType] ?? type;
+  return LABELS[locale][type as DocumentType] ?? type;
 }

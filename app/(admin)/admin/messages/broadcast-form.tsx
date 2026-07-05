@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -9,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 export function BroadcastForm() {
+  const t = useTranslations('comms');
+  const tc = useTranslations('common');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState(false);
@@ -26,11 +29,11 @@ export function BroadcastForm() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as { broadcasted: number };
-      toast.success(`Broadcast enviado a ${data.broadcasted} padres`);
+      toast.success(t('broadcast.sent', { count: data.broadcasted }));
       setSubject('');
       setMessage('');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo enviar el broadcast');
+      toast.error(err instanceof Error ? err.message : t('broadcast.sendError'));
     } finally {
       setPending(false);
     }
@@ -39,26 +42,26 @@ export function BroadcastForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Broadcast a todos los padres</CardTitle>
+        <CardTitle className="text-xl">{t('broadcast.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-3">
           <Input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="Asunto (opcional)"
+            placeholder={t('broadcast.subjectPlaceholder')}
             maxLength={120}
           />
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Mensaje para todos los padres..."
+            placeholder={t('broadcast.messagePlaceholder')}
             rows={3}
             maxLength={2000}
             required
           />
           <Button type="submit" disabled={pending || !message.trim()}>
-            {pending ? 'Enviando…' : 'Enviar a todos'}
+            {pending ? tc('actions.sending') : t('broadcast.sendToAll')}
           </Button>
         </form>
       </CardContent>

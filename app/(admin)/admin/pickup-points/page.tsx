@@ -1,6 +1,7 @@
 import { MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { DeleteButton } from '@/components/admin/delete-button';
 import { EmptyState } from '@/components/empty-state';
@@ -21,6 +22,8 @@ export default async function PickupPointsPage() {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
   const schoolId = session.user.schoolId;
+  const t = await getTranslations('pickupPoints');
+  const tc = await getTranslations('common');
 
   const pickupPoints = await prisma.pickupPoint.findMany({
     where: { schoolId, active: true },
@@ -38,24 +41,22 @@ export default async function PickupPointsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black">Puntos de recogida</h1>
-          <p className="text-sm text-muted-foreground">
-            Cada punto tiene su propio geofence circular.
-          </p>
+          <h1 className="text-3xl font-black">{t('list.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('list.subtitle')}</p>
         </div>
         <Link href="/admin/pickup-points/new">
-          <Button>Nuevo punto</Button>
+          <Button>{t('list.newPoint')}</Button>
         </Link>
       </div>
 
       {pickupPoints.length === 0 ? (
         <EmptyState
           icon={MapPin}
-          title="Aún no hay puntos de recogida"
-          description="Creá el primero con su ubicación en el mapa y radio en metros."
+          title={t('list.emptyTitle')}
+          description={t('list.emptyDescription')}
           action={
             <Link href="/admin/pickup-points/new">
-              <Button>Crear primer punto</Button>
+              <Button>{t('list.createFirst')}</Button>
             </Link>
           }
         />
@@ -64,10 +65,10 @@ export default async function PickupPointsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Coordenadas</TableHead>
-                <TableHead>Radio</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>{tc('fields.name')}</TableHead>
+                <TableHead>{t('list.coordinates')}</TableHead>
+                <TableHead>{t('list.radius')}</TableHead>
+                <TableHead className="text-right">{tc('fields.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -82,13 +83,13 @@ export default async function PickupPointsPage() {
                     <div className="inline-flex gap-2">
                       <Link href={`/admin/pickup-points/${pp.id}/edit`}>
                         <Button variant="outline" size="sm">
-                          Editar
+                          {tc('actions.edit')}
                         </Button>
                       </Link>
                       <DeleteButton
                         url={`/api/schools/${schoolId}/pickup-points/${pp.id}`}
-                        description="Se desactiva el punto. No se eliminan viajes históricos."
-                        successMessage="Punto eliminado"
+                        description={t('list.deleteDescription')}
+                        successMessage={t('list.deleteSuccess')}
                       />
                     </div>
                   </TableCell>

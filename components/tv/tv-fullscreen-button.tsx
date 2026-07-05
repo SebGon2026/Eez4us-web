@@ -1,11 +1,13 @@
 'use client';
 
 import { Maximize2, Minimize2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
 export function TvFullscreenButton({ className }: { className?: string }) {
+  const t = useTranslations('tv');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function TvFullscreenButton({ className }: { className?: string }) {
       style={{ background: 'var(--tv-btn)', borderColor: 'var(--tv-border)', color: 'var(--tv-fg2)' }}
     >
       {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-      {isFullscreen ? 'Salir' : 'Pantalla completa'}
+      {isFullscreen ? t('fullscreen.exit') : t('fullscreen.enter')}
     </button>
   );
 }

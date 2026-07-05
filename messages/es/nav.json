@@ -1,0 +1,75 @@
+{
+  "brand": {
+    "adminPanel": "Panel admin"
+  },
+  "sections": {
+    "people": "Personas",
+    "operations": "Operación",
+    "reports": "Reportes",
+    "school": "Colegio",
+    "superAdmin": "Super admin"
+  },
+  "items": {
+    "home": "Inicio",
+    "liveArrivals": "Llegadas en vivo",
+    "students": "Alumnos",
+    "grades": "Grados",
+    "families": "Familias",
+    "vehicles": "Vehículos",
+    "invitations": "Invitaciones",
+    "pickupPoints": "Puntos de recogida",
+    "tempAuths": "Autoriz. temporales",
+    "messages": "Mensajería",
+    "alerts": "Alertas",
+    "imports": "Importaciones",
+    "reportOperational": "Operativo",
+    "reportSchool": "Escuela",
+    "reportInvitations": "Invitaciones",
+    "staff": "Personal",
+    "billing": "Facturación",
+    "settings": "Configuración",
+    "superDashboard": "Dashboard global",
+    "schools": "Colegios",
+    "audit": "Audit log"
+  },
+  "superBadge": {
+    "title": "Modo super admin",
+    "viewing": "Viendo el colegio: {school}"
+  },
+  "user": {
+    "fallbackName": "Usuario",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfService": "Términos del servicio",
+    "logout": "Cerrar sesión"
+  },
+  "topbar": {
+    "openMenu": "Abrir menú",
+    "expandMenu": "Expandir menú",
+    "collapseMenu": "Colapsar menú",
+    "codeLabel": "Código",
+    "searchPlaceholder": "Buscar alumno, padre…",
+    "alerts": "Alertas"
+  },
+  "billingBanner": {
+    "message": "El periodo de prueba terminó y no hay un método de pago activo. <link>Cargar tarjeta</link> para mantener el servicio."
+  },
+  "table": {
+    "pageSummary": "Página {page} de {totalPages} · {total} en total"
+  },
+  "deleteButton": {
+    "confirmTitle": "Confirmar eliminación",
+    "deletedSuccess": "Eliminado correctamente",
+    "deleteFailed": "No se pudo eliminar",
+    "unexpectedError": "Error inesperado"
+  },
+  "search": {
+    "placeholder": "Buscar…",
+    "clear": "Limpiar búsqueda"
+  },
+  "status": {
+    "EN_CAMINO": "En camino",
+    "EN_ZONA": "En la puerta",
+    "ENTREGADO": "Entregado",
+    "CANCELADO": "Cancelado"
+  }
+}

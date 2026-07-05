@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -48,7 +49,7 @@ interface StudentFormProps {
     gradeId: string | null;
     externalId: string | null;
     birthDate: string | null;
-    pickupMode: 'PRIVATE_VEHICLE' | 'TRANSPORT';
+    pickupMode: 'PRIVATE_VEHICLE' | 'TRANSPORT' | 'WALKING';
     transportName: string | null;
     transportPlate: string | null;
     transportPhone: string | null;
@@ -74,14 +75,17 @@ function repToPayload(r: Rep) {
   };
 }
 
-function toastInvitations(data: RepPayloadResponse, created: number, sent: number) {
+function toastInvitations(
+  t: ReturnType<typeof useTranslations>,
+  data: RepPayloadResponse,
+  created: number,
+  sent: number,
+) {
   if (created > 0) {
-    toast.success(`${sent}/${created} invitaciones enviadas`);
+    toast.success(t('form.toasts.invitationsSent', { sent, created }));
   }
   if (data.repErrors && data.repErrors.length > 0) {
-    toast.error(
-      `${data.repErrors.length} invitación(es) sin enviar — revisá la lista de invitaciones`,
-    );
+    toast.error(t('form.toasts.invitationsUnsent', { count: data.repErrors.length }));
   }
 }
 
@@ -94,13 +98,18 @@ export function StudentForm({
   pendingInvitations = [],
 }: StudentFormProps) {
   const router = useRouter();
+  const t = useTranslations('students');
+  const tCommon = useTranslations('common');
+  const tInvitations = useTranslations('invitations');
   const isEdit = Boolean(studentId);
   const [firstName, setFirstName] = useState(initial.firstName);
   const [lastName, setLastName] = useState(initial.lastName);
   const [gradeId, setGradeId] = useState(initial.gradeId ?? '');
   const [externalId, setExternalId] = useState(initial.externalId ?? '');
   const [birthDate, setBirthDate] = useState(initial.birthDate?.slice(0, 10) ?? '');
-  const [pickupMode, setPickupMode] = useState<'PRIVATE_VEHICLE' | 'TRANSPORT'>(initial.pickupMode);
+  const [pickupMode, setPickupMode] = useState<'PRIVATE_VEHICLE' | 'TRANSPORT' | 'WALKING'>(
+    initial.pickupMode,
+  );
   const [transportName, setTransportName] = useState(initial.transportName ?? '');
   const [transportPlate, setTransportPlate] = useState(initial.transportPlate ?? '');
   const [transportPhone, setTransportPhone] = useState(initial.transportPhone ?? '');
@@ -124,10 +133,10 @@ export function StudentForm({
   function validateReps(): string | null {
     for (const rep of reps) {
       if (!rep.firstName.trim() || !rep.lastName.trim()) {
-        return 'Cada representante necesita nombre y apellido.';
+        return t('form.validation.repName');
       }
       if (!rep.email.trim() && !rep.phone.trim()) {
-        return 'Cada representante necesita email o teléfono.';
+        return t('form.validation.repContact');
       }
     }
     return null;
@@ -145,7 +154,7 @@ export function StudentForm({
 
     if (pickupMode === 'TRANSPORT') {
       if (!transportName.trim() || !transportPlate.trim() || !transportVehicleType) {
-        setError('Para transporte: responsable, placa y tipo (van/bus) son obligatorios.');
+        setError(t('form.validation.transport'));
         return;
       }
     }
@@ -174,7 +183,7 @@ export function StudentForm({
         });
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
-          setError(data.error ?? 'No se pudo guardar');
+          setError(data.error ?? t('form.errors.saveFailed'));
           return;
         }
 
@@ -190,17 +199,18 @@ export function StudentForm({
           if (repRes.ok) {
             const data = (await repRes.json()) as RepPayloadResponse;
             toastInvitations(
+              t,
               data,
               data.invitations?.createdCount ?? 0,
               data.invitations?.sentCount ?? 0,
             );
           } else {
             const data = (await repRes.json().catch(() => ({}))) as { error?: string };
-            toast.error(data.error ?? 'No se pudieron crear las invitaciones');
+            toast.error(data.error ?? t('form.toasts.invitationsCreateFailed'));
           }
         }
 
-        toast.success('Cambios guardados');
+        toast.success(t('form.toasts.changesSaved'));
       } else {
         const res = await fetch(`/api/schools/${schoolId}/students`, {
           method: 'POST',
@@ -209,27 +219,30 @@ export function StudentForm({
         });
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
-          setError(data.error ?? 'No se pudo guardar');
+          setError(data.error ?? t('form.errors.saveFailed'));
           return;
         }
         const data = (await res.json()) as RepPayloadResponse;
         const created = data.invitations?.createdCount ?? 0;
         if (created === 0) {
-          toast.success('Alumno creado');
+          toast.success(t('form.toasts.studentCreated'));
         } else {
-          toast.success(`Alumno creado · ${data.invitations?.sentCount ?? 0}/${created} invitaciones enviadas`);
+          toast.success(
+            t('form.toasts.studentCreatedWithInvitations', {
+              sent: data.invitations?.sentCount ?? 0,
+              created,
+            }),
+          );
         }
         if (data.repErrors && data.repErrors.length > 0) {
-          toast.error(
-            `${data.repErrors.length} invitación(es) sin enviar — revisá la lista de invitaciones`,
-          );
+          toast.error(t('form.toasts.invitationsUnsent', { count: data.repErrors.length }));
         }
       }
 
       router.push('/admin/students');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado');
+      setError(err instanceof Error ? err.message : t('form.errors.unexpected'));
     } finally {
       setSubmitting(false);
     }
@@ -240,7 +253,7 @@ export function StudentForm({
       <div className="space-y-6 rounded-3xl border bg-card p-6 shadow-sm">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="firstName">Nombre</Label>
+            <Label htmlFor="firstName">{t('form.firstName')}</Label>
             <Input
               id="firstName"
               value={firstName}
@@ -249,7 +262,7 @@ export function StudentForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Apellido</Label>
+            <Label htmlFor="lastName">{t('form.lastName')}</Label>
             <Input
               id="lastName"
               value={lastName}
@@ -261,9 +274,9 @@ export function StudentForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="gradeId">Grado</Label>
+            <Label htmlFor="gradeId">{tCommon('fields.grade')}</Label>
             <Select id="gradeId" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
-              <option value="">Sin asignar</option>
+              <option value="">{t('form.noGradeOption')}</option>
               {grades.map((g) => (
                 <option key={g.id} value={g.id}>
                   {g.name}
@@ -272,18 +285,18 @@ export function StudentForm({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="externalId">Matrícula escolar (opcional)</Label>
+            <Label htmlFor="externalId">{t('form.externalId')}</Label>
             <Input
               id="externalId"
               value={externalId}
               onChange={(e) => setExternalId(e.target.value)}
-              placeholder="A-0042"
+              placeholder={t('form.externalIdPlaceholder')}
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="birthDate">Fecha de nacimiento (opcional)</Label>
+          <Label htmlFor="birthDate">{t('form.birthDate')}</Label>
           <Input
             id="birthDate"
             type="date"
@@ -295,24 +308,29 @@ export function StudentForm({
 
       <div className="space-y-4 rounded-3xl border bg-card p-6 shadow-sm">
         <div>
-          <h2 className="text-xl font-black">Modo de recogida</h2>
-          <p className="text-sm text-muted-foreground">Cómo se retira al alumno del colegio.</p>
+          <h2 className="text-xl font-black">{t('form.pickup.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('form.pickup.subtitle')}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="pickupMode">Modo</Label>
+          <Label htmlFor="pickupMode">{t('form.pickup.mode')}</Label>
           <Select
             id="pickupMode"
             value={pickupMode}
-            onChange={(e) => setPickupMode(e.target.value as 'PRIVATE_VEHICLE' | 'TRANSPORT')}
+            onChange={(e) =>
+              setPickupMode(e.target.value as 'PRIVATE_VEHICLE' | 'TRANSPORT' | 'WALKING')
+            }
           >
-            <option value="PRIVATE_VEHICLE">Vehículo particular (representante)</option>
-            <option value="TRANSPORT">Transporte (van / bus)</option>
+            <option value="PRIVATE_VEHICLE">{t('form.pickup.privateVehicle')}</option>
+            <option value="WALKING">{t('form.pickup.walking')}</option>
+            <option value="TRANSPORT">{t('form.pickup.transport')}</option>
           </Select>
           <p className="text-xs text-muted-foreground">
             {pickupMode === 'PRIVATE_VEHICLE'
-              ? 'El representante lo recoge en su propio vehículo (se registra desde la app del padre).'
-              : 'Lo recoge un servicio de transporte. Cargá los datos del responsable.'}
+              ? t('form.pickup.privateVehicleHint')
+              : pickupMode === 'WALKING'
+                ? t('form.pickup.walkingHint')
+                : t('form.pickup.transportHint')}
           </p>
         </div>
 
@@ -320,44 +338,44 @@ export function StudentForm({
           <div className="space-y-4 rounded-2xl border bg-secondary/30 p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="transportName">Responsable del transporte</Label>
+                <Label htmlFor="transportName">{t('form.pickup.transportName')}</Label>
                 <Input
                   id="transportName"
                   value={transportName}
                   onChange={(e) => setTransportName(e.target.value)}
-                  placeholder="Nombre de quien transporta"
+                  placeholder={t('form.pickup.transportNamePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="transportVehicleType">Tipo de vehículo</Label>
+                <Label htmlFor="transportVehicleType">{t('form.pickup.vehicleType')}</Label>
                 <Select
                   id="transportVehicleType"
                   value={transportVehicleType}
                   onChange={(e) => setTransportVehicleType(e.target.value as '' | 'BUS' | 'VAN')}
                 >
-                  <option value="">Seleccioná…</option>
-                  <option value="VAN">Van</option>
-                  <option value="BUS">Bus</option>
+                  <option value="">{t('form.pickup.vehicleTypePlaceholder')}</option>
+                  <option value="VAN">{t('form.pickup.van')}</option>
+                  <option value="BUS">{t('form.pickup.bus')}</option>
                 </Select>
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="transportPlate">Placa del vehículo</Label>
+                <Label htmlFor="transportPlate">{t('form.pickup.plate')}</Label>
                 <Input
                   id="transportPlate"
                   value={transportPlate}
                   onChange={(e) => setTransportPlate(e.target.value)}
-                  placeholder="ABC-123"
+                  placeholder={t('form.pickup.platePlaceholder')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="transportPhone">Teléfono (opcional)</Label>
+                <Label htmlFor="transportPhone">{t('form.pickup.phone')}</Label>
                 <Input
                   id="transportPhone"
                   value={transportPhone}
                   onChange={(e) => setTransportPhone(e.target.value)}
-                  placeholder="+52 55 1234 5678"
+                  placeholder={t('form.pickup.phonePlaceholder')}
                 />
               </div>
             </div>
@@ -367,20 +385,19 @@ export function StudentForm({
 
       <div className="space-y-4 rounded-3xl border bg-card p-6 shadow-sm">
         <div>
-          <h2 className="text-xl font-black">Representantes</h2>
-          <p className="text-sm text-muted-foreground">
-            Cada representante recibe una invitación para crear su cuenta. Email tiene prioridad
-            sobre WhatsApp.
-          </p>
+          <h2 className="text-xl font-black">{t('form.reps.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('form.reps.subtitle')}</p>
         </div>
 
         {isEdit && existingReps.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-sm font-bold uppercase text-muted-foreground">Con cuenta</h3>
+            <h3 className="text-sm font-bold uppercase text-muted-foreground">
+              {t('form.reps.withAccount')}
+            </h3>
             <ul className="space-y-2">
               {existingReps.map((rep) => (
                 <li key={rep.id} className="rounded-2xl border bg-secondary/30 p-3 text-sm">
-                  <p className="font-bold">{rep.name ?? 'Representante'}</p>
+                  <p className="font-bold">{rep.name ?? t('form.reps.fallbackName')}</p>
                   <p className="text-xs text-muted-foreground">
                     {rep.email ?? rep.phoneE164 ?? '—'}
                   </p>
@@ -393,7 +410,7 @@ export function StudentForm({
         {isEdit && pendingInvitations.length > 0 && (
           <div className="space-y-2">
             <h3 className="text-sm font-bold uppercase text-muted-foreground">
-              Invitaciones pendientes
+              {t('form.reps.pendingInvitations')}
             </h3>
             <ul className="space-y-2">
               {pendingInvitations.map((inv) => (
@@ -402,10 +419,10 @@ export function StudentForm({
                   className="flex items-center justify-between gap-3 rounded-2xl border bg-secondary/30 p-3 text-sm"
                 >
                   <div>
-                    <p className="font-bold">{inv.recipientName ?? 'Representante'}</p>
+                    <p className="font-bold">{inv.recipientName ?? t('form.reps.fallbackName')}</p>
                     <p className="text-xs text-muted-foreground">
-                      {inv.channel === 'EMAIL' ? 'Email' : 'WhatsApp'} · {inv.contactValue} ·{' '}
-                      {inv.status}
+                      {tInvitations(`channel.${inv.channel}`)} · {inv.contactValue} ·{' '}
+                      {tInvitations(`status.${inv.status}`)}
                     </p>
                   </div>
                   <ResendButton schoolId={schoolId} invitationId={inv.id} />
@@ -420,19 +437,19 @@ export function StudentForm({
             <div key={index} className="space-y-4 rounded-2xl border bg-secondary/30 p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-muted-foreground">
-                  Nuevo representante {index + 1}
+                  {t('form.reps.newRep', { number: index + 1 })}
                 </span>
                 <button
                   type="button"
                   onClick={() => removeRep(index)}
                   className="text-sm font-bold text-destructive hover:underline"
                 >
-                  Quitar
+                  {t('form.reps.remove')}
                 </button>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor={`rep-${index}-firstName`}>Nombre</Label>
+                  <Label htmlFor={`rep-${index}-firstName`}>{t('form.reps.firstName')}</Label>
                   <Input
                     id={`rep-${index}-firstName`}
                     value={rep.firstName}
@@ -440,7 +457,7 @@ export function StudentForm({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor={`rep-${index}-lastName`}>Apellido</Label>
+                  <Label htmlFor={`rep-${index}-lastName`}>{t('form.reps.lastName')}</Label>
                   <Input
                     id={`rep-${index}-lastName`}
                     value={rep.lastName}
@@ -450,32 +467,32 @@ export function StudentForm({
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor={`rep-${index}-email`}>Email</Label>
+                  <Label htmlFor={`rep-${index}-email`}>{t('form.reps.email')}</Label>
                   <Input
                     id={`rep-${index}-email`}
                     type="email"
                     value={rep.email}
                     onChange={(e) => updateRep(index, 'email', e.target.value)}
-                    placeholder="madre@ejemplo.com"
+                    placeholder={t('form.reps.emailPlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor={`rep-${index}-phone`}>Teléfono (WhatsApp)</Label>
+                  <Label htmlFor={`rep-${index}-phone`}>{t('form.reps.phone')}</Label>
                   <Input
                     id={`rep-${index}-phone`}
                     value={rep.phone}
                     onChange={(e) => updateRep(index, 'phone', e.target.value)}
-                    placeholder="+52 55 1234 5678"
+                    placeholder={t('form.reps.phonePlaceholder')}
                   />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">Email o teléfono es obligatorio.</p>
+              <p className="text-xs text-muted-foreground">{t('form.reps.contactHint')}</p>
             </div>
           ))}
         </div>
 
         <Button type="button" variant="outline" onClick={addRep}>
-          Agregar representante
+          {t('form.reps.add')}
         </Button>
       </div>
 
@@ -488,10 +505,10 @@ export function StudentForm({
           onClick={() => router.push('/admin/students')}
           disabled={submitting}
         >
-          Cancelar
+          {tCommon('actions.cancel')}
         </Button>
         <Button type="submit" disabled={submitting}>
-          {submitting ? 'Guardando…' : 'Guardar'}
+          {submitting ? tCommon('actions.saving') : tCommon('actions.save')}
         </Button>
       </div>
     </form>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -25,47 +26,39 @@ interface Props {
 }
 
 const HUE_PRESETS = [
-  { label: 'Verde', hue: 142 },
-  { label: 'Esmeralda', hue: 168 },
-  { label: 'Turquesa', hue: 190 },
-  { label: 'Azul', hue: 211 },
-  { label: 'Índigo', hue: 245 },
-  { label: 'Morado', hue: 280 },
-  { label: 'Fucsia', hue: 308 },
-  { label: 'Rosa', hue: 326 },
-  { label: 'Rojo', hue: 354 },
-  { label: 'Naranja', hue: 24 },
-  { label: 'Ámbar', hue: 45 },
-  { label: 'Lima', hue: 96 },
+  { key: 'green', hue: 142 },
+  { key: 'emerald', hue: 168 },
+  { key: 'turquoise', hue: 190 },
+  { key: 'blue', hue: 211 },
+  { key: 'indigo', hue: 245 },
+  { key: 'purple', hue: 280 },
+  { key: 'fuchsia', hue: 308 },
+  { key: 'pink', hue: 326 },
+  { key: 'red', hue: 354 },
+  { key: 'orange', hue: 24 },
+  { key: 'amber', hue: 45 },
+  { key: 'lime', hue: 96 },
 ];
 
 const MAX_LOGO_BYTES = 300 * 1024;
 
-const LOCALE_OPTIONS: { value: 'es-MX' | 'es-AR'; label: string; hint: string }[] = [
-  {
-    value: 'es-MX',
-    label: 'Español (Latinoamérica / México)',
-    hint: 'Imperativo neutro: «carga», «define», «elimina».',
-  },
-  {
-    value: 'es-AR',
-    label: 'Español (Argentina / Rioplatense)',
-    hint: 'Voseo: «cargá», «definí», «eliminá».',
-  },
+const LOCALE_OPTIONS: { value: 'es-MX' | 'es-AR'; key: 'esMX' | 'esAR' }[] = [
+  { value: 'es-MX', key: 'esMX' },
+  { value: 'es-AR', key: 'esAR' },
 ];
 
 const DENSITY_OPTIONS: {
   value: 'compact' | 'comfortable' | 'spacious';
-  label: string;
-  hint: string;
   bars: number[];
 }[] = [
-  { value: 'compact', label: 'Compacto', hint: 'Más información a la vista.', bars: [4, 4, 4] },
-  { value: 'comfortable', label: 'Cómodo', hint: 'Equilibrio recomendado.', bars: [6, 6, 6] },
-  { value: 'spacious', label: 'Espacioso', hint: 'Máximo aire entre bloques.', bars: [9, 9, 9] },
+  { value: 'compact', bars: [4, 4, 4] },
+  { value: 'comfortable', bars: [6, 6, 6] },
+  { value: 'spacious', bars: [9, 9, 9] },
 ];
 
 export function SchoolSettingsForm({ initial }: Props) {
+  const t = useTranslations('schools');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [name, setName] = useState(initial.name);
   const [addressText, setAddressText] = useState(initial.addressText);
@@ -98,14 +91,14 @@ export function SchoolSettingsForm({ initial }: Props) {
     e.target.value = '';
     if (!file) return;
     if (file.size > MAX_LOGO_BYTES) {
-      toast.error('El logo supera los 300 KB. Usa una imagen más liviana.');
+      toast.error(t('settings.logoTooBig'));
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') setLogoUrl(reader.result);
     };
-    reader.onerror = () => toast.error('No se pudo leer el archivo');
+    reader.onerror = () => toast.error(t('settings.fileReadError'));
     reader.readAsDataURL(file);
   }
 
@@ -135,17 +128,17 @@ export function SchoolSettingsForm({ initial }: Props) {
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      toast.success('Cambios guardados');
+      toast.success(t('settings.saved'));
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo guardar');
+      toast.error(err instanceof Error ? err.message : t('settings.saveFailed'));
     } finally {
       setPending(false);
     }
   }
 
   async function onRegenCode() {
-    if (!confirm('¿Regenerar código de acceso del colegio?')) return;
+    if (!confirm(t('settings.confirmRegenCode'))) return;
     setRegen(true);
     try {
       const res = await fetch('/api/admin/school/regenerate-code', {
@@ -155,10 +148,10 @@ export function SchoolSettingsForm({ initial }: Props) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as { internalCode: string };
       setCode(data.internalCode);
-      toast.success(`Nuevo código: ${data.internalCode}`);
+      toast.success(t('settings.newCode', { code: data.internalCode }));
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo regenerar');
+      toast.error(err instanceof Error ? err.message : t('settings.regenFailed'));
     } finally {
       setRegen(false);
     }
@@ -169,21 +162,21 @@ export function SchoolSettingsForm({ initial }: Props) {
       {/* ── Identidad ───────────────────────────── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Identidad</CardTitle>
-          <CardDescription>Nombre, ubicación y código de acceso del colegio.</CardDescription>
+          <CardTitle className="text-xl">{t('settings.identity')}</CardTitle>
+          <CardDescription>{t('settings.identityDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label>Nombre</Label>
+            <Label>{tCommon('fields.name')}</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div>
-            <Label>Dirección</Label>
+            <Label>{t('settings.address')}</Label>
             <Input value={addressText} onChange={(e) => setAddressText(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Latitud</Label>
+              <Label>{t('settings.latitude')}</Label>
               <Input
                 value={addressLat}
                 onChange={(e) => setAddressLat(e.target.value)}
@@ -191,7 +184,7 @@ export function SchoolSettingsForm({ initial }: Props) {
               />
             </div>
             <div>
-              <Label>Longitud</Label>
+              <Label>{t('settings.longitude')}</Label>
               <Input
                 value={addressLng}
                 onChange={(e) => setAddressLng(e.target.value)}
@@ -201,19 +194,16 @@ export function SchoolSettingsForm({ initial }: Props) {
           </div>
 
           <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4">
-            <Label>Código de acceso</Label>
+            <Label>{t('settings.accessCode')}</Label>
             <div className="mt-2 flex items-center gap-2">
               <code className="rounded-lg bg-card px-3 py-2 text-sm font-bold border border-border">
                 {code}
               </code>
               <Button type="button" variant="outline" onClick={onRegenCode} disabled={regen}>
-                {regen ? 'Regenerando…' : 'Regenerar'}
+                {regen ? t('settings.regenerating') : t('settings.regenerate')}
               </Button>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Compártelo con tus directores y padres — lo escriben en la pantalla de login para
-              llegar a la versión personalizada del colegio.
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">{t('settings.accessCodeHint')}</p>
           </div>
         </CardContent>
       </Card>
@@ -221,17 +211,15 @@ export function SchoolSettingsForm({ initial }: Props) {
       {/* ── Apariencia ──────────────────────────── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Apariencia</CardTitle>
-          <CardDescription>Cómo se ve el panel: logo, color de marca y densidad.</CardDescription>
+          <CardTitle className="text-xl">{t('settings.appearance')}</CardTitle>
+          <CardDescription>{t('settings.appearanceDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-[1fr_auto]">
             <div className="space-y-4">
               <div>
-                <Label>Logo del colegio</Label>
-                <p className="mb-2 text-xs text-muted-foreground">
-                  PNG, SVG, JPG o WebP con fondo transparente. Máx. 300 KB.
-                </p>
+                <Label>{t('settings.schoolLogo')}</Label>
+                <p className="mb-2 text-xs text-muted-foreground">{t('settings.logoHint')}</p>
                 <input
                   ref={logoInputRef}
                   type="file"
@@ -252,7 +240,7 @@ export function SchoolSettingsForm({ initial }: Props) {
                         variant="outline"
                         onClick={() => logoInputRef.current?.click()}
                       >
-                        Cambiar
+                        {t('settings.change')}
                       </Button>
                       <Button
                         type="button"
@@ -260,7 +248,7 @@ export function SchoolSettingsForm({ initial }: Props) {
                         onClick={() => setLogoUrl('')}
                         className="text-destructive hover:text-destructive"
                       >
-                        Quitar
+                        {t('settings.remove')}
                       </Button>
                     </div>
                   </div>
@@ -270,17 +258,17 @@ export function SchoolSettingsForm({ initial }: Props) {
                     onClick={() => logoInputRef.current?.click()}
                     className="flex w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-border bg-secondary/20 px-4 py-6 text-center transition-colors hover:border-primary hover:bg-primary/5"
                   >
-                    <span className="text-sm font-bold">Subir logo</span>
+                    <span className="text-sm font-bold">{t('settings.uploadLogo')}</span>
                     <span className="text-xs text-muted-foreground">
-                      Haz clic para elegir un archivo
+                      {t('settings.clickToChoose')}
                     </span>
                   </button>
                 )}
               </div>
               <div>
-                <Label>Color de marca (primario)</Label>
+                <Label>{t('settings.primaryColor')}</Label>
                 <p className="mb-2 text-xs text-muted-foreground">
-                  Sidebar, botones y estados activos.
+                  {t('settings.primaryColorHint')}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   {HUE_PRESETS.map((p) => (
@@ -288,7 +276,7 @@ export function SchoolSettingsForm({ initial }: Props) {
                       key={p.hue}
                       type="button"
                       onClick={() => setBrandHue(p.hue)}
-                      aria-label={p.label}
+                      aria-label={t(`settings.hues.${p.key}`)}
                       className={
                         'h-9 w-9 rounded-full border-2 transition-all ' +
                         (brandHue === p.hue
@@ -304,16 +292,16 @@ export function SchoolSettingsForm({ initial }: Props) {
                       onClick={() => setBrandHue(null)}
                       className="rounded-full border border-input px-3 py-1.5 text-xs font-bold hover:bg-secondary"
                     >
-                      Restablecer
+                      {t('settings.reset')}
                     </button>
                   )}
                 </div>
               </div>
 
               <div>
-                <Label>Color de acento (secundario)</Label>
+                <Label>{t('settings.accentColor')}</Label>
                 <p className="mb-2 text-xs text-muted-foreground">
-                  Íconos y bandas de las tarjetas. Si no eliges, usa el primario.
+                  {t('settings.accentColorHint')}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   {HUE_PRESETS.map((p) => (
@@ -321,7 +309,7 @@ export function SchoolSettingsForm({ initial }: Props) {
                       key={p.hue}
                       type="button"
                       onClick={() => setBrandHueSecondary(p.hue)}
-                      aria-label={p.label}
+                      aria-label={t(`settings.hues.${p.key}`)}
                       className={
                         'h-9 w-9 rounded-full border-2 transition-all ' +
                         (brandHueSecondary === p.hue
@@ -337,7 +325,7 @@ export function SchoolSettingsForm({ initial }: Props) {
                       onClick={() => setBrandHueSecondary(null)}
                       className="rounded-full border border-input px-3 py-1.5 text-xs font-bold hover:bg-secondary"
                     >
-                      Restablecer
+                      {t('settings.reset')}
                     </button>
                   )}
                 </div>
@@ -347,7 +335,7 @@ export function SchoolSettingsForm({ initial }: Props) {
             {/* Mini preview en vivo */}
             <div className="rounded-xl border border-border bg-secondary/30 p-3">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Vista previa
+                {t('settings.preview')}
               </p>
               <div className="flex w-44 items-center gap-2 rounded-lg border border-border bg-card p-2 shadow-card">
                 {logoUrl ? (
@@ -369,13 +357,15 @@ export function SchoolSettingsForm({ initial }: Props) {
                       .toUpperCase()}
                   </div>
                 )}
-                <span className="truncate text-xs font-bold">{name || 'Tu colegio'}</span>
+                <span className="truncate text-xs font-bold">
+                  {name || t('settings.yourSchool')}
+                </span>
               </div>
               <div
                 className="mt-2 h-9 w-44 rounded-lg text-center text-xs font-bold leading-9 text-white"
                 style={{ background: `hsl(${previewHue} 55% 36%)` }}
               >
-                Botón primario
+                {t('settings.primaryButton')}
               </div>
 
               {/* Tile con banda + ícono en color de acento */}
@@ -402,7 +392,7 @@ export function SchoolSettingsForm({ initial }: Props) {
                 </div>
                 <div className="px-2 py-1.5">
                   <p className="text-[8px] font-semibold uppercase text-muted-foreground">
-                    Métrica
+                    {t('settings.metric')}
                   </p>
                   <p className="text-base font-bold leading-none">128</p>
                 </div>
@@ -411,7 +401,7 @@ export function SchoolSettingsForm({ initial }: Props) {
           </div>
 
           <div>
-            <Label>Densidad de la interfaz</Label>
+            <Label>{t('settings.uiDensity')}</Label>
             <div className="mt-2 grid gap-3 sm:grid-cols-3">
               {DENSITY_OPTIONS.map((opt) => (
                 <button
@@ -431,15 +421,17 @@ export function SchoolSettingsForm({ initial }: Props) {
                     ))}
                   </div>
                   <div>
-                    <p className="text-sm font-bold leading-tight">{opt.label}</p>
-                    <p className="text-xs text-muted-foreground">{opt.hint}</p>
+                    <p className="text-sm font-bold leading-tight">
+                      {t(`settings.density.${opt.value}.label`)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t(`settings.density.${opt.value}.hint`)}
+                    </p>
                   </div>
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Se aplica al guardar y recargar el panel.
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">{t('settings.densityApplyHint')}</p>
           </div>
         </CardContent>
       </Card>
@@ -447,8 +439,8 @@ export function SchoolSettingsForm({ initial }: Props) {
       {/* ── Idioma / Región ─────────────────────── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Idioma / Región</CardTitle>
-          <CardDescription>Variante de español usada en los textos del panel.</CardDescription>
+          <CardTitle className="text-xl">{t('settings.languageRegion')}</CardTitle>
+          <CardDescription>{t('settings.languageRegionDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -471,8 +463,12 @@ export function SchoolSettingsForm({ initial }: Props) {
                   className="mt-1 h-4 w-4 accent-primary"
                 />
                 <div className="min-w-0">
-                  <p className="text-sm font-bold leading-tight">{opt.label}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{opt.hint}</p>
+                  <p className="text-sm font-bold leading-tight">
+                    {t(`settings.localeOptions.${opt.key}.label`)}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t(`settings.localeOptions.${opt.key}.hint`)}
+                  </p>
                 </div>
               </label>
             ))}
@@ -482,7 +478,7 @@ export function SchoolSettingsForm({ initial }: Props) {
 
       <div className="flex items-center justify-end gap-3">
         <Button type="submit" size="lg" disabled={pending}>
-          {pending ? 'Guardando…' : 'Guardar cambios'}
+          {pending ? tCommon('actions.saving') : t('settings.saveChanges')}
         </Button>
       </div>
     </form>

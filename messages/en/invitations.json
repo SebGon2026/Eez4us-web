@@ -1,0 +1,173 @@
+{
+  "list": {
+    "title": "Invitations",
+    "totalCount": "{count} total.",
+    "cards": {
+      "registered": "Registered in the app",
+      "awaitingRegistration": "Awaiting registration",
+      "awaitingHint": "Invitees who haven't entered the app yet",
+      "pendingSend": "Not sent yet"
+    },
+    "columns": {
+      "contact": "Contact",
+      "channel": "Channel",
+      "students": "Students",
+      "delivery": "Delivery",
+      "registration": "Registration",
+      "created": "Created"
+    },
+    "noName": "No name",
+    "moreStudents": "+{count} more",
+    "registered": "Registered",
+    "registrationPending": "Pending",
+    "emptyFiltered": {
+      "title": "No invitations with that status",
+      "description": "Try changing the filter above."
+    },
+    "empty": {
+      "title": "No invitations sent yet",
+      "description": "Import an Excel with parents and students — invitations are generated automatically from there.",
+      "importExcel": "Import Excel"
+    }
+  },
+  "status": {
+    "PENDING": "Not sent yet",
+    "SENT": "Sent",
+    "CLAIMED": "Sent",
+    "EXPIRED": "Expired",
+    "REVOKED": "Revoked"
+  },
+  "channel": {
+    "EMAIL": "Email",
+    "WHATSAPP": "WhatsApp"
+  },
+  "filters": {
+    "all": "All statuses",
+    "PENDING": "Not sent yet",
+    "SENT": "Sent, not registered",
+    "CLAIMED": "Registered",
+    "EXPIRED": "Expired",
+    "REVOKED": "Revoked"
+  },
+  "resend": {
+    "action": "Resend",
+    "success": "Invitation resent",
+    "failed": "Could not resend",
+    "unexpectedError": "Unexpected error"
+  },
+  "imports": {
+    "title": "Imports",
+    "subtitle": "History of bulk parent/student uploads.",
+    "newImport": "New import",
+    "history": "History",
+    "empty": "No imports recorded yet.",
+    "byUser": "By {name}",
+    "okLabel": "ok",
+    "errLabel": "err",
+    "warnLabel": "warn",
+    "totalRows": "{count} rows total"
+  },
+  "importParents": {
+    "title": "Import parents",
+    "subtitle": "Upload an Excel or CSV with parents and their students' IDs. We generate one invitation per parent (email if available, otherwise WhatsApp). Students must exist first — import the student roster first."
+  },
+  "dropzone": {
+    "dropActive": "Drop the file here",
+    "dropIdle": "Drag a .xlsx or .csv, or click",
+    "columnsHint": "Columns: nombre, apellido, email, whatsapp, ids_alumnos. If a parent has several students, separate their IDs with a comma or semicolon in that cell.",
+    "previewSummary": "{valid} valid · {errors} with errors · preview of first 20",
+    "removeFile": "Remove file",
+    "template": {
+      "label": "Template:",
+      "xlsx": "Download .xlsx",
+      "csv": "Download .csv"
+    },
+    "prefilled": {
+      "label": "Recommended:",
+      "download": "Download template with my {count} students",
+      "hint": "It comes pre-filled with your students; just add each one's parent and re-upload it."
+    },
+    "example": {
+      "title": "Example of a valid file",
+      "hint": "This is what the data looks like. ids_alumnos uses each student's ID (the same one from the student importer). Phone goes in international format (+52…)."
+    },
+    "columns": {
+      "parent": "Parent",
+      "contact": "Contact",
+      "channel": "Channel",
+      "studentIds": "Student IDs"
+    },
+    "rowError": "Row {row}: {message}",
+    "importFailed": "Import failed",
+    "unexpectedError": "Unexpected error",
+    "importCount": "{count, plural, one {Import # parent} other {Import # parents}}",
+    "importing": "Importing…",
+    "result": {
+      "title": "Result",
+      "created": "Created",
+      "sent": "Sent",
+      "rowErrors": "Rows with errors",
+      "sendFailures": "Failed sends",
+      "coverageComplete": "All your students ({total}) have at least one invited parent.",
+      "coverageMissing": "You're missing {count} of {total} students with no invited parent:",
+      "importAnother": "Import another file"
+    }
+  },
+  "copyLink": {
+    "prompt": "Copy the invitation link:",
+    "copied": "Invitation link copied",
+    "title": "Copy invitation link"
+  },
+  "claim": {
+    "dead": {
+      "CLAIMED": {
+        "title": "This invitation was already used",
+        "body": "Your account already exists. Open the Eez4us app and sign in with your email and password. If you don't remember it, use \"Forgot it?\" in the app."
+      },
+      "EXPIRED": {
+        "title": "This invitation has expired",
+        "body": "Ask the school to send you a new invitation."
+      },
+      "REVOKED": {
+        "title": "This invitation was revoked",
+        "body": "Ask the school to generate a new invitation for you."
+      },
+      "NOT_FOUND": {
+        "title": "Invitation not found",
+        "body": "The link is not valid. Make sure you copied it in full, or ask the school for a new one."
+      }
+    },
+    "validation": {
+      "passwordTooShort": "The password must be at least 8 characters long.",
+      "passwordMismatch": "The passwords don't match."
+    },
+    "errors": {
+      "PHONE_INVALID": "The phone number is not valid for the school's country (prefix {prefix}).",
+      "INVITATION_ALREADY_USED": "This invitation was already used.",
+      "INVITATION_EXPIRED": "This invitation has expired. Ask the school for a new one.",
+      "INVITATION_NOT_FOUND": "Invitation not found.",
+      "SIGNUP_FAILED": "We couldn't create the account. One may already exist with this email.",
+      "fallback": "We couldn't create your account. Please try again.",
+      "unexpected": "Unexpected error"
+    },
+    "done": {
+      "title": "Account created!",
+      "subtitle": "You can now coordinate pickup for {count, plural, one {your child} other {your children}} with <b>{school}</b>.",
+      "step1": "Download the Eez4us app on your Android: <apk>download APK</apk> (allow \"install from unknown sources\" if prompted).",
+      "step2": "Open it and sign in with the email <mono>{email}</mono> and the password you just created.",
+      "step3": "When you head out for school pickup, tap \"On my way\" and you're set.",
+      "haveApp": "I already have the app"
+    },
+    "hello": "Hi {name}",
+    "helloAnon": "Hi",
+    "intro": "<b>{school}</b> invited you to coordinate pickup with Eez4us. Create your account to get started.",
+    "form": {
+      "name": "Your name",
+      "password": "Password (min. 8 characters)",
+      "confirm": "Repeat the password",
+      "phone": "Phone (optional, {prefix}…)",
+      "submit": "Create my account",
+      "submitting": "Creating account…"
+    }
+  }
+}

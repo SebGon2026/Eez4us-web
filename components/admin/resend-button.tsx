@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -12,25 +13,26 @@ interface ResendButtonProps {
 }
 
 export function ResendButton({ schoolId, invitationId }: ResendButtonProps) {
+  const t = useTranslations('invitations');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
   async function onResend() {
     setPending(true);
     try {
-      const res = await fetch(
-        `/api/schools/${schoolId}/invitations/${invitationId}/resend`,
-        { method: 'POST' },
-      );
+      const res = await fetch(`/api/schools/${schoolId}/invitations/${invitationId}/resend`, {
+        method: 'POST',
+      });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        toast.error(data.error ?? 'No se pudo reenviar');
+        toast.error(data.error ?? t('resend.failed'));
         return;
       }
-      toast.success('Invitación reenviada');
+      toast.success(t('resend.success'));
       router.refresh();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Error inesperado');
+      toast.error(e instanceof Error ? e.message : t('resend.unexpectedError'));
     } finally {
       setPending(false);
     }
@@ -38,7 +40,7 @@ export function ResendButton({ schoolId, invitationId }: ResendButtonProps) {
 
   return (
     <Button size="sm" variant="outline" onClick={onResend} disabled={pending}>
-      {pending ? 'Enviando…' : 'Reenviar'}
+      {pending ? tCommon('actions.sending') : t('resend.action')}
     </Button>
   );
 }

@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -52,15 +53,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     pastDue = school?.subscription?.status === 'PAST_DUE';
   }
 
+  const t = await getTranslations('nav');
+
   // Trial vencido / pago pendiente: hoy solo AVISA (banner). El corte duro está detrás de
   // BILLING_BLOCK_ON_PAST_DUE (apagado — decisión de producto pendiente: avisar vs bloquear).
   const billingBanner = pastDue ? (
     <div className="border-b border-destructive/20 bg-destructive/10 px-4 py-2 text-center text-sm font-semibold text-destructive">
-      El periodo de prueba terminó y no hay un método de pago activo.{' '}
-      <Link href="/admin/billing" className="underline font-bold">
-        Cargar tarjeta
-      </Link>{' '}
-      para mantener el servicio.
+      {t.rich('billingBanner.message', {
+        link: (chunks) => (
+          <Link href="/admin/billing" className="underline font-bold">
+            {chunks}
+          </Link>
+        ),
+      })}
     </div>
   ) : null;
 

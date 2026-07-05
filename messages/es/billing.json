@@ -1,0 +1,62 @@
+{
+  "title": "Facturación",
+  "subtitle": "Eez4us cobra por alumno activo a la escuela ({school}).",
+  "yourSchool": "tu escuela",
+  "status": {
+    "TRIALING": "En prueba",
+    "ACTIVE": "Activa",
+    "PAST_DUE": "Pago atrasado",
+    "CANCELED": "Cancelada",
+    "PAUSED": "Pausada"
+  },
+  "noSubscription": "Sin suscripción",
+  "monthlyPayment": "Pago mensual a Eez4us",
+  "perStudentBreakdown": "{count, plural, one {# alumno} other {# alumnos}} × {price}/mes",
+  "cutoffDate": "Fecha de corte",
+  "currentPeriodClose": "Cierre del periodo actual",
+  "lastPayment": "Último pago",
+  "openpayDescription": "Cargá la tarjeta del colegio; Eez4us cobra cada mes por alumno activo vía Openpay (México).",
+  "stripeManageDescription": "Administrá tu suscripción y método de pago vía el portal de Stripe.",
+  "startSubscriptionDescription": "Iniciá la suscripción para empezar a cobrar mensualmente por alumno activo.",
+  "paymentHistory": "Historial de pagos",
+  "noInvoices": "Todavía no hay facturas emitidas.",
+  "invoiceIssued": "Emitida {date}",
+  "invoicePaid": " · Pagada {date}",
+  "invoiceStatus": {
+    "PAID": "Pagada",
+    "FAILED": "Falló",
+    "VOID": "Anulada",
+    "PENDING": "Pendiente"
+  },
+  "unknownError": "Error desconocido",
+  "portal": {
+    "opening": "Abriendo portal…",
+    "manageCards": "Agregar/quitar tarjetas y formas de pago",
+    "starting": "Iniciando…",
+    "startSubscription": "Iniciar suscripción"
+  },
+  "openpay": {
+    "missingKeys": "Faltan las llaves públicas de Openpay (NEXT_PUBLIC_OPENPAY_*).",
+    "loadFailed": "No se pudo cargar Openpay.js",
+    "notReady": "Openpay no está listo todavía.",
+    "cardValidationFailed": "No se pudo validar la tarjeta",
+    "cardOnFile": "Ya hay una tarjeta archivada. Cargá una nueva para reemplazarla.",
+    "holderPlaceholder": "Nombre del titular",
+    "numberPlaceholder": "Número de tarjeta",
+    "monthPlaceholder": "MM",
+    "yearPlaceholder": "AA",
+    "cvvPlaceholder": "CVV",
+    "replaceCard": "Reemplazar tarjeta",
+    "saveCardActivate": "Guardar tarjeta y activar",
+    "loading": "Cargando Openpay…",
+    "disclaimer": "Procesado por Openpay (BBVA). Los datos de la tarjeta no pasan por nuestros servidores."
+  },
+  "trial": {
+    "updated": "Trial actualizado",
+    "adjust": "Ajustar trial",
+    "extendDays": "Extender (días)",
+    "extend": "Extender",
+    "orSetExactDate": "o fijar fecha exacta",
+    "set": "Fijar"
+  }
+}

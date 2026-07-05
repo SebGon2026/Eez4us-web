@@ -1,0 +1,43 @@
+{
+  "list": {
+    "title": "Pickup points",
+    "subtitle": "Each point has its own circular geofence.",
+    "newPoint": "New point",
+    "emptyTitle": "No pickup points yet",
+    "emptyDescription": "Create the first one with its location on the map and radius in meters.",
+    "createFirst": "Create first point",
+    "coordinates": "Coordinates",
+    "radius": "Radius",
+    "deleteDescription": "The point is deactivated. Historical trips are not deleted.",
+    "deleteSuccess": "Point deleted"
+  },
+  "new": {
+    "title": "New pickup point",
+    "subtitle": "Drag the marker to reposition the center."
+  },
+  "edit": {
+    "title": "Edit point"
+  },
+  "form": {
+    "namePlaceholder": "Main gate",
+    "locationAndRadius": "Location and radius",
+    "manualCoords": "Manual coordinates",
+    "manualCoordsHint": "You can set the point by typing latitude and longitude, even if the map doesn't load. They also update when you drag the marker.",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "radiusMeters": "Radius (meters)",
+    "saveError": "Could not save",
+    "unexpectedError": "Unexpected error"
+  },
+  "map": {
+    "missingKey": "Set NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY to see the map.",
+    "loadError": "Could not load Google Maps.",
+    "geofenceRadius": "Geofence radius",
+    "dragHint": "Drag the marker to reposition the center. The circle triggers \"Arrived\" when the parent enters."
+  },
+  "address": {
+    "searchPlaceholder": "Search for an address",
+    "placeholder": "Address",
+    "searchHint": "Search for an address to see the map."
+  }
+}

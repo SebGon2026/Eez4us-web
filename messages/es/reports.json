@@ -1,0 +1,59 @@
+{
+  "table": {
+    "school": "Escuela",
+    "total": "Total"
+  },
+  "financial": {
+    "title": "Reporte financiero",
+    "subtitle": "Facturación recurrente vigente, comisiones a agentes de venta y breakdown por escuela.",
+    "billedPerMonth": "Facturado/mes",
+    "commissions": "Comisiones",
+    "net": "Neto",
+    "revenueBySchool": "Revenue por escuela",
+    "noActiveSubscriptions": "No hay suscripciones activas.",
+    "detail": "Detalle",
+    "revenue": "Revenue",
+    "commission": "Comisión"
+  },
+  "invitations": {
+    "title": "Reporte de invitaciones",
+    "subtitle": "Cobertura del onboarding de padres del colegio.",
+    "total": "Total",
+    "claimed": "Registros exitosos",
+    "claimedRate": "% registradas",
+    "channel": "Canal {channel}",
+    "byStatus": "Por estado",
+    "status": {
+      "PENDING": "Pendiente de envío",
+      "SENT": "Enviada sin registrar",
+      "CLAIMED": "Registrada",
+      "EXPIRED": "Expirada",
+      "REVOKED": "Revocada"
+    }
+  },
+  "operational": {
+    "title": "Reporte operativo",
+    "subtitle": "Alumnos activos, viajes del mes y tendencia 30 días.",
+    "activeStudents": "Alumnos activos",
+    "tripsThisMonth": "Viajes este mes",
+    "deliveredPct": "% entregados",
+    "canceledPct": "% cancelados",
+    "avgPickupDuration": "Duración promedio de recogida",
+    "avgPickupDurationHint": "“Voy en camino” → entrega, este mes",
+    "avgOutsideWait": "Espera promedio afuera",
+    "avgOutsideWaitHint": "“Estoy afuera” (sin GPS) → entrega",
+    "parentsWithApp": "Padres con la app móvil",
+    "withRegisteredDevice": "Con dispositivo registrado",
+    "useImOutside": "Usan “Estoy afuera”",
+    "usesThisMonth": "{count, plural, one {# uso este mes} other {# usos este mes}}",
+    "tripsPerDayLast30": "Viajes por día — últimos 30",
+    "breakdownBySchool": "Breakdown por escuela",
+    "tripsMonth": "Viajes mes"
+  },
+  "school": {
+    "title": "Reporte de mi escuela",
+    "subtitle": "Histórico de entregas por día.",
+    "totalDeliveriesPerDay": "Entregas totales por día",
+    "byChild": "Por niño"
+  }
+}

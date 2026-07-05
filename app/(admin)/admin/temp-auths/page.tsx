@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 import { ValidateCodeForm } from './validate-code-form';
@@ -12,6 +14,8 @@ export default async function TempAuthsPage() {
   if (!['director', 'support_staff', 'super_admin'].includes(session.user.role)) {
     redirect('/admin');
   }
+  const t = await getTranslations('comms');
+  const intlLocale = intlLocaleOf(await getLocale());
 
   const history = await prisma.temporaryAuthorization.findMany({
     where: { schoolId: session.user.schoolId },
@@ -50,23 +54,21 @@ export default async function TempAuthsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black">Autorizaciones temporales</h1>
-        <p className="text-sm text-muted-foreground">
-          Validá un código generado por el padre para personas ocasionales (niñera, etc.).
-        </p>
+        <h1 className="text-3xl font-black">{t('tempAuths.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('tempAuths.subtitle')}</p>
       </div>
 
       <ValidateCodeForm />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Vigentes hoy ({activeToday.length})</CardTitle>
+          <CardTitle className="text-xl">
+            {t('tempAuths.activeToday', { count: activeToday.length })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {activeToday.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No hay autorizaciones pendientes para hoy.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('tempAuths.activeTodayEmpty')}</p>
           ) : (
             <ul className="space-y-3">
               {activeToday.map((h) => (
@@ -78,13 +80,16 @@ export default async function TempAuthsPage() {
                     <div className="space-y-1">
                       <p className="font-black text-lg">{h.personName}</p>
                       <p className="text-sm">
-                        Autoriza: <span className="font-bold">{h.parent.name ?? h.parent.email}</span>
+                        {t('tempAuths.authorizes')}{' '}
+                        <span className="font-bold">{h.parent.name ?? h.parent.email}</span>
                       </p>
                       {h.vehicleInfo && (
-                        <p className="text-sm">Vehículo: {h.vehicleInfo}</p>
+                        <p className="text-sm">
+                          {t('tempAuths.vehicleLine', { info: h.vehicleInfo })}
+                        </p>
                       )}
                       <p className="text-sm">
-                        Recoge a:{' '}
+                        {t('tempAuths.picksUp')}{' '}
                         <span className="font-bold">
                           {studentNames(h.studentIds).join(', ') || '—'}
                         </span>
@@ -103,13 +108,13 @@ export default async function TempAuthsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Histórico ({history.length})</CardTitle>
+          <CardTitle className="text-xl">
+            {t('tempAuths.historyTitle', { count: history.length })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Aún no hay autorizaciones temporales generadas.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('tempAuths.historyEmpty')}</p>
           ) : (
             <ul className="divide-y text-sm">
               {history.map((h) => (
@@ -118,27 +123,34 @@ export default async function TempAuthsPage() {
                     <div>
                       <p className="font-bold">{h.personName}</p>
                       <p className="text-xs text-muted-foreground">
-                        Padre: {h.parent.name ?? h.parent.email} · Código{' '}
-                        <code className="rounded bg-secondary px-1 py-0.5">{h.code}</code> ·{' '}
-                        Válido {new Date(h.validDate).toLocaleDateString('es-MX')}
+                        {t.rich('tempAuths.historyMeta', {
+                          name: h.parent.name ?? h.parent.email,
+                          code: h.code,
+                          date: new Date(h.validDate).toLocaleDateString(intlLocale),
+                          c: (chunks) => (
+                            <code className="rounded bg-secondary px-1 py-0.5">{chunks}</code>
+                          ),
+                        })}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Recoge a: {studentNames(h.studentIds).join(', ') || '—'}
-                        {h.vehicleInfo ? ` · Vehículo: ${h.vehicleInfo}` : ''}
+                        {t('tempAuths.picksUp')} {studentNames(h.studentIds).join(', ') || '—'}
+                        {h.vehicleInfo
+                          ? ` · ${t('tempAuths.vehicleLine', { info: h.vehicleInfo })}`
+                          : ''}
                       </p>
                     </div>
                     <div>
                       {h.revokedAt ? (
                         <span className="rounded-full bg-destructive/20 px-2 py-1 text-xs font-bold text-destructive">
-                          Revocada
+                          {t('tempAuths.status.revoked')}
                         </span>
                       ) : h.usedAt ? (
                         <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-800">
-                          Usada por {h.usedByStaff?.name ?? 'staff'}
+                          {t('tempAuths.status.usedBy', { name: h.usedByStaff?.name ?? 'staff' })}
                         </span>
                       ) : (
                         <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs font-bold text-yellow-800">
-                          Pendiente
+                          {t('tempAuths.status.pending')}
                         </span>
                       )}
                     </div>

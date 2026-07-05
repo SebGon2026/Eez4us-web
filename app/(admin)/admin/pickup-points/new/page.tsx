@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { PickupPointForm } from '@/components/admin/pickup-point-form';
 import { prisma } from '@/lib/db';
@@ -11,6 +12,7 @@ export default async function NewPickupPointPage() {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
   const schoolId = session.user.schoolId;
+  const t = await getTranslations('pickupPoints');
 
   const school = await prisma.school.findUnique({
     where: { id: schoolId },
@@ -20,10 +22,8 @@ export default async function NewPickupPointPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Nuevo punto de recogida</h1>
-        <p className="text-sm text-muted-foreground">
-          Arrastrá el marker para reubicar el centro.
-        </p>
+        <h1 className="text-3xl font-black">{t('new.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('new.subtitle')}</p>
       </div>
       <PickupPointForm
         schoolId={schoolId}

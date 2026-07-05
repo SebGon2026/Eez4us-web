@@ -1,0 +1,40 @@
+{
+  "shell": {
+    "schoolFallback": "Colegio",
+    "viewArrivals": "Llegadas",
+    "viewGate": "Portón"
+  },
+  "connection": {
+    "online": "En vivo",
+    "connecting": "Conectando",
+    "offline": "Sin conexión"
+  },
+  "fullscreen": {
+    "enter": "Pantalla completa",
+    "exit": "Salir"
+  },
+  "eta": {
+    "arriving": "Llegando"
+  },
+  "arrivals": {
+    "emptyTitle": "No hay vehículos en camino",
+    "emptyHint": "Cuando un padre presione “voy en camino” aparecerá acá.",
+    "outside": "Afuera",
+    "onFoot": "A pie",
+    "atGate": "En puerta",
+    "onTheWay": "En camino",
+    "pageFooter": "Página {page} de {total} · {count} en total"
+  },
+  "gate": {
+    "emptyTitle": "Sin alumnos pendientes",
+    "emptyHint": "Los alumnos en camino aparecerán acá ordenados por cercanía.",
+    "parentOutside": "Padre afuera · sin auto",
+    "walkUp": "Retiro en puerta · a pie",
+    "pageFooter": "Página {page} de {total} · {count, plural, one {# alumno pendiente} other {# alumnos pendientes}}"
+  },
+  "proximity": {
+    "atGate": "En puerta",
+    "near": "Cerca",
+    "onTheWay": "En camino"
+  }
+}

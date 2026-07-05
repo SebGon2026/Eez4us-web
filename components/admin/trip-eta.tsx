@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -9,8 +10,8 @@ interface TripETAProps {
   etaUpdatedAt: string | null;
 }
 
-function format(remaining: number): { text: string; arriving: boolean } {
-  if (remaining <= 30) return { text: 'Llegando', arriving: true };
+function format(remaining: number, arrivingLabel: string): { text: string; arriving: boolean } {
+  if (remaining <= 30) return { text: arrivingLabel, arriving: true };
   const total = Math.floor(remaining);
   const mins = Math.floor(total / 60);
   const ss = (total % 60).toString().padStart(2, '0');
@@ -18,6 +19,7 @@ function format(remaining: number): { text: string; arriving: boolean } {
 }
 
 export function TripETA({ etaSeconds, etaUpdatedAt }: TripETAProps) {
+  const t = useTranslations('dashboard.tripEta');
   const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export function TripETA({ etaSeconds, etaUpdatedAt }: TripETAProps) {
   const updatedAtMs = new Date(etaUpdatedAt).getTime();
   const elapsedSec = Math.max(0, (now - updatedAtMs) / 1000);
   const remaining = Math.max(0, etaSeconds - elapsedSec);
-  const { text, arriving } = format(remaining);
+  const { text, arriving } = format(remaining, t('arriving'));
 
   return (
     <span

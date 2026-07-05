@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,18 +29,19 @@ export default async function LiveMapPage() {
     }),
   ]);
 
+  const t = await getTranslations('dashboard');
+  const tc = await getTranslations('common');
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Mapa en vivo</h1>
-        <p className="text-sm text-muted-foreground">
-          Posiciones en tiempo real de los padres en camino al colegio.
-        </p>
+        <h1 className="text-3xl font-black">{t('liveMap.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('liveMap.subtitle')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">{school?.name ?? 'Colegio'}</CardTitle>
+          <CardTitle className="text-xl">{school?.name ?? tc('fields.school')}</CardTitle>
         </CardHeader>
         <CardContent>
           <LiveMap

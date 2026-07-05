@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -52,6 +53,8 @@ export function DataTable<T>({
   queryParams = {},
   empty,
 }: DataTableProps<T>) {
+  const t = useTranslations('nav');
+  const tc = useTranslations('common');
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const hasPrev = page > 1;
   const hasNext = page < totalPages;
@@ -62,7 +65,7 @@ export function DataTable<T>({
     <div className="rounded-3xl border bg-card shadow-sm">
       {rows.length === 0 ? (
         <div className="px-4 py-10 text-center text-sm text-muted-foreground">
-          {empty ?? 'Sin resultados'}
+          {empty ?? tc('states.empty')}
         </div>
       ) : (
         <>
@@ -118,7 +121,7 @@ export function DataTable<T>({
       )}
       <div className="flex items-center justify-between border-t px-4 py-3 text-xs">
         <p className="text-muted-foreground">
-          Página {page} de {totalPages} · {total} en total
+          {t('table.pageSummary', { page, totalPages, total })}
         </p>
         <div className="flex gap-2">
           <Link
@@ -132,7 +135,7 @@ export function DataTable<T>({
                 : 'pointer-events-none border-input opacity-40',
             )}
           >
-            Anterior
+            {tc('pagination.previous')}
           </Link>
           <Link
             aria-disabled={!hasNext}
@@ -145,7 +148,7 @@ export function DataTable<T>({
                 : 'pointer-events-none border-input opacity-40',
             )}
           >
-            Siguiente
+            {tc('pagination.next')}
           </Link>
         </div>
       </div>

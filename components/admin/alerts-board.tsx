@@ -1,7 +1,9 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { intlLocaleOf } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 
 type AlertSeverity = 'info' | 'warning' | 'critical';
@@ -18,33 +20,24 @@ export interface AlertItem {
   targetRole: string | null;
 }
 
-const TYPE_LABELS: Record<AlertType, string> = {
-  TRIP_OVERDUE: 'Viaje demorado',
-  ARRIVED_NOT_DELIVERED: 'Entrega pendiente',
-  INVITATION_STALE: 'Invitación sin claim',
-};
-
-const SEVERITY_STYLES: Record<AlertSeverity, { border: string; chip: string; label: string }> = {
+const SEVERITY_STYLES: Record<AlertSeverity, { border: string; chip: string }> = {
   info: {
     border: 'border-blue-300',
     chip: 'bg-blue-100 text-blue-800',
-    label: 'Info',
   },
   warning: {
     border: 'border-amber-300',
     chip: 'bg-amber-100 text-amber-800',
-    label: 'Aviso',
   },
   critical: {
     border: 'border-red-400',
     chip: 'bg-red-100 text-red-800',
-    label: 'Crítico',
   },
 };
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string, intlLocale: string): string {
   try {
-    return new Date(iso).toLocaleString('es-MX', {
+    return new Date(iso).toLocaleString(intlLocale, {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
@@ -55,29 +48,34 @@ function formatWhen(iso: string): string {
   }
 }
 
-function describeAlert(a: AlertItem): string {
-  const p = a.payload;
-  if (a.type === 'TRIP_OVERDUE') {
-    const parent = (p.parentName as string) ?? 'Padre';
-    const students = (p.students as string) ?? '';
-    return `${parent} lleva más de 30 minutos en camino. ${students}`.trim();
-  }
-  if (a.type === 'ARRIVED_NOT_DELIVERED') {
-    const parent = (p.parentName as string) ?? 'Padre';
-    const students = (p.students as string) ?? '';
-    return `${parent} está en zona hace más de 10 minutos sin entrega. ${students}`.trim();
-  }
-  if (a.type === 'INVITATION_STALE') {
-    const recipient = (p.recipientName as string) ?? (p.contactValue as string) ?? 'Padre';
-    return `${recipient} no ha aceptado la invitación tras 7 días.`;
-  }
-  return 'Alerta';
-}
-
 export function AlertsBoard({ initial }: { initial: AlertItem[] }) {
+  const t = useTranslations('comms');
+  const intlLocale = intlLocaleOf(useLocale());
   const [alerts, setAlerts] = useState<AlertItem[]>(initial);
   const [filter, setFilter] = useState<'all' | 'unread' | AlertType>('all');
   const [marking, setMarking] = useState<string | null>(null);
+
+  function describeAlert(a: AlertItem): string {
+    const p = a.payload;
+    if (a.type === 'TRIP_OVERDUE') {
+      const parent = (p.parentName as string) ?? t('alerts.describe.parentFallback');
+      const students = (p.students as string) ?? '';
+      return t('alerts.describe.tripOverdue', { parent, students }).trim();
+    }
+    if (a.type === 'ARRIVED_NOT_DELIVERED') {
+      const parent = (p.parentName as string) ?? t('alerts.describe.parentFallback');
+      const students = (p.students as string) ?? '';
+      return t('alerts.describe.arrivedNotDelivered', { parent, students }).trim();
+    }
+    if (a.type === 'INVITATION_STALE') {
+      const recipient =
+        (p.recipientName as string) ??
+        (p.contactValue as string) ??
+        t('alerts.describe.parentFallback');
+      return t('alerts.describe.invitationStale', { recipient });
+    }
+    return t('alerts.describe.generic');
+  }
 
   const reload = useCallback(async () => {
     const res = await fetch('/api/alerts?limit=100', { credentials: 'include' });
@@ -119,13 +117,13 @@ export function AlertsBoard({ initial }: { initial: AlertItem[] }) {
       <div className="flex flex-wrap gap-2">
         {(
           [
-            ['all', 'Todas'],
-            ['unread', 'No leídas'],
-            ['TRIP_OVERDUE', 'Viajes demorados'],
-            ['ARRIVED_NOT_DELIVERED', 'Entregas pendientes'],
-            ['INVITATION_STALE', 'Invitaciones'],
+            'all',
+            'unread',
+            'TRIP_OVERDUE',
+            'ARRIVED_NOT_DELIVERED',
+            'INVITATION_STALE',
           ] as const
-        ).map(([key, label]) => (
+        ).map((key) => (
           <button
             key={key}
             type="button"
@@ -137,14 +135,14 @@ export function AlertsBoard({ initial }: { initial: AlertItem[] }) {
                 : 'border-input bg-card text-foreground hover:bg-secondary',
             )}
           >
-            {label}
+            {t(`alerts.filters.${key}`)}
           </button>
         ))}
       </div>
 
       {visible.length === 0 ? (
         <div className="rounded-3xl border-2 border-dashed border-input bg-card py-16 text-center text-sm text-muted-foreground">
-          No hay alertas para este filtro.
+          {t('alerts.empty')}
         </div>
       ) : (
         <div className="space-y-3">
@@ -167,16 +165,22 @@ export function AlertsBoard({ initial }: { initial: AlertItem[] }) {
                       style.chip,
                     )}
                   >
-                    {style.label}
+                    {t(`alerts.severity.${a.severity}`)}
                   </span>
-                  <span className="text-sm font-bold">{TYPE_LABELS[a.type]}</span>
+                  <span className="text-sm font-bold">{t(`alerts.type.${a.type}`)}</span>
                   <span className="ml-auto text-xs text-muted-foreground">
-                    {formatWhen(a.createdAt)}
+                    {formatWhen(a.createdAt, intlLocale)}
                   </span>
                 </header>
                 <p className="text-sm">{describeAlert(a)}</p>
                 <footer className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{isUnread ? 'No leída' : `Leída ${a.readAt ? formatWhen(a.readAt) : ''}`}</span>
+                  <span>
+                    {isUnread
+                      ? t('alerts.unread')
+                      : t('alerts.readAt', {
+                          when: a.readAt ? formatWhen(a.readAt, intlLocale) : '',
+                        })}
+                  </span>
                   {isUnread && (
                     <button
                       type="button"
@@ -184,7 +188,7 @@ export function AlertsBoard({ initial }: { initial: AlertItem[] }) {
                       onClick={() => markAsRead(a.id)}
                       className="rounded-2xl border-2 border-input px-3 py-1 text-xs font-bold transition-colors hover:bg-secondary disabled:opacity-50"
                     >
-                      {marking === a.id ? 'Marcando...' : 'Marcar como leída'}
+                      {marking === a.id ? t('alerts.marking') : t('alerts.markRead')}
                     </button>
                   )}
                 </footer>

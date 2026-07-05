@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 import { ReplyForm } from './reply-form';
@@ -15,6 +17,8 @@ export default async function ConversationPage({
   const { id } = await params;
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
+  const t = await getTranslations('comms');
+  const intlLocale = intlLocaleOf(await getLocale());
 
   const conv = await prisma.conversation.findUnique({
     where: { id },
@@ -36,7 +40,7 @@ export default async function ConversationPage({
         href="/admin/messages"
         className="text-sm font-bold text-primary hover:underline"
       >
-        ← Volver a Mensajería
+        {t('conversation.back')}
       </Link>
 
       <Card>
@@ -75,7 +79,7 @@ export default async function ConversationPage({
                   <p>{m.body}</p>
                   <p className="mt-1 text-[10px] opacity-70">
                     {m.sender?.name ?? m.senderType} ·{' '}
-                    {new Date(m.createdAt).toLocaleTimeString('es-MX', {
+                    {new Date(m.createdAt).toLocaleTimeString(intlLocale, {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -84,7 +88,9 @@ export default async function ConversationPage({
               </div>
             ))}
             {conv.messages.length === 0 && (
-              <p className="text-center text-sm text-muted-foreground">Sin mensajes todavía.</p>
+              <p className="text-center text-sm text-muted-foreground">
+                {t('conversation.empty')}
+              </p>
             )}
           </div>
         </CardContent>

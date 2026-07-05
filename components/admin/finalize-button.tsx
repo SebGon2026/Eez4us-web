@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -24,11 +25,13 @@ export function FinalizeButton({
   studentNames,
   onRemove,
 }: FinalizeButtonProps) {
+  const t = useTranslations('dashboard.finalize');
+  const tc = useTranslations('common');
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const studentsLabel = studentNames.length > 0 ? studentNames.join(', ') : 'el alumno';
+  const studentsLabel = studentNames.length > 0 ? studentNames.join(', ') : t('studentFallback');
 
   function confirm() {
     setError(null);
@@ -43,7 +46,7 @@ export function FinalizeButton({
         setOpen(false);
         onRemove();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setError(err instanceof Error ? err.message : t('unknownError'));
       }
     });
   }
@@ -51,14 +54,17 @@ export function FinalizeButton({
   return (
     <>
       <Button size="sm" onClick={() => setOpen(true)} disabled={isPending}>
-        Finalizar entrega
+        {t('button')}
       </Button>
       <Dialog open={open} onOpenChange={(o) => !isPending && setOpen(o)}>
         <DialogHeader>
-          <DialogTitle>¿Confirmás entrega?</DialogTitle>
+          <DialogTitle>{t('confirmTitle')}</DialogTitle>
           <DialogDescription>
-            Marcar entrega de <span className="font-bold text-foreground">{studentsLabel}</span>{' '}
-            a <span className="font-bold text-foreground">{parentName}</span>.
+            {t.rich('confirmBody', {
+              students: studentsLabel,
+              parent: parentName,
+              b: (chunks) => <span className="font-bold text-foreground">{chunks}</span>,
+            })}
           </DialogDescription>
         </DialogHeader>
         {error && (
@@ -72,10 +78,10 @@ export function FinalizeButton({
             onClick={() => setOpen(false)}
             disabled={isPending}
           >
-            Cancelar
+            {tc('actions.cancel')}
           </Button>
           <Button onClick={confirm} disabled={isPending}>
-            {isPending ? 'Finalizando…' : 'Sí, confirmar'}
+            {isPending ? t('finalizing') : t('yesConfirm')}
           </Button>
         </DialogFooter>
       </Dialog>

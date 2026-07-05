@@ -1,0 +1,75 @@
+{
+  "brand": {
+    "adminPanel": "Admin panel"
+  },
+  "sections": {
+    "people": "People",
+    "operations": "Operations",
+    "reports": "Reports",
+    "school": "School",
+    "superAdmin": "Super admin"
+  },
+  "items": {
+    "home": "Home",
+    "liveArrivals": "Live arrivals",
+    "students": "Students",
+    "grades": "Grades",
+    "families": "Families",
+    "vehicles": "Vehicles",
+    "invitations": "Invitations",
+    "pickupPoints": "Pickup points",
+    "tempAuths": "Temp authorizations",
+    "messages": "Messaging",
+    "alerts": "Alerts",
+    "imports": "Imports",
+    "reportOperational": "Operational",
+    "reportSchool": "School",
+    "reportInvitations": "Invitations",
+    "staff": "Staff",
+    "billing": "Billing",
+    "settings": "Settings",
+    "superDashboard": "Global dashboard",
+    "schools": "Schools",
+    "audit": "Audit log"
+  },
+  "superBadge": {
+    "title": "Super admin mode",
+    "viewing": "Viewing school: {school}"
+  },
+  "user": {
+    "fallbackName": "User",
+    "privacyPolicy": "Privacy policy",
+    "termsOfService": "Terms of service",
+    "logout": "Log out"
+  },
+  "topbar": {
+    "openMenu": "Open menu",
+    "expandMenu": "Expand menu",
+    "collapseMenu": "Collapse menu",
+    "codeLabel": "Code",
+    "searchPlaceholder": "Search student, parent…",
+    "alerts": "Alerts"
+  },
+  "billingBanner": {
+    "message": "The trial period ended and there is no active payment method. <link>Add a card</link> to keep the service running."
+  },
+  "table": {
+    "pageSummary": "Page {page} of {totalPages} · {total} total"
+  },
+  "deleteButton": {
+    "confirmTitle": "Confirm deletion",
+    "deletedSuccess": "Deleted successfully",
+    "deleteFailed": "Could not delete",
+    "unexpectedError": "Unexpected error"
+  },
+  "search": {
+    "placeholder": "Search…",
+    "clear": "Clear search"
+  },
+  "status": {
+    "EN_CAMINO": "On the way",
+    "EN_ZONA": "At the gate",
+    "ENTREGADO": "Handed off",
+    "CANCELADO": "Canceled"
+  }
+}

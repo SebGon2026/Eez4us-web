@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -27,6 +28,8 @@ interface GradesManagerProps {
 }
 
 export function GradesManager({ schoolId, grades }: GradesManagerProps) {
+  const t = useTranslations('students');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [newName, setNewName] = useState('');
   const [editing, setEditing] = useState<{ id: string; name: string } | null>(null);
@@ -45,7 +48,7 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
       });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        setError(data.error ?? 'No se pudo crear');
+        setError(data.error ?? t('grades.errors.createFailed'));
         return;
       }
       setNewName('');
@@ -67,7 +70,7 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
       });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        setError(data.error ?? 'No se pudo guardar');
+        setError(data.error ?? t('grades.errors.saveFailed'));
         return;
       }
       setEditing(null);
@@ -78,7 +81,7 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
   }
 
   async function onDelete(id: string) {
-    if (!confirm('¿Eliminar este grado?')) return;
+    if (!confirm(t('grades.confirmDelete'))) return;
     setPendingId(id);
     setError(null);
     try {
@@ -87,7 +90,7 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
       });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        setError(data.error ?? 'No se pudo eliminar');
+        setError(data.error ?? t('grades.errors.deleteFailed'));
         return;
       }
       router.refresh();
@@ -102,20 +105,20 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
         <div className="flex items-end gap-3">
           <div className="flex-1 space-y-2">
             <label className="text-sm font-bold" htmlFor="new-grade">
-              Nuevo grado
+              {t('grades.newGrade')}
             </label>
             <Input
               id="new-grade"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Primero A"
+              placeholder={t('grades.namePlaceholder')}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') onCreate();
               }}
             />
           </div>
           <Button onClick={onCreate} disabled={pendingId === 'new' || !newName.trim()}>
-            {pendingId === 'new' ? 'Creando…' : 'Crear'}
+            {pendingId === 'new' ? t('grades.creating') : tCommon('actions.create')}
           </Button>
         </div>
       </Card>
@@ -126,16 +129,16 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Alumnos</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead>{tCommon('fields.name')}</TableHead>
+              <TableHead>{tCommon('fields.students')}</TableHead>
+              <TableHead className="text-right">{tCommon('fields.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {grades.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
-                  Sin grados creados aún.
+                  {t('grades.empty')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -168,14 +171,10 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
                               onClick={onSaveEdit}
                               disabled={pendingId === g.id || !editing.name.trim()}
                             >
-                              Guardar
+                              {tCommon('actions.save')}
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setEditing(null)}
-                            >
-                              Cancelar
+                            <Button size="sm" variant="outline" onClick={() => setEditing(null)}>
+                              {tCommon('actions.cancel')}
                             </Button>
                           </>
                         ) : (
@@ -185,7 +184,7 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
                               variant="outline"
                               onClick={() => setEditing({ id: g.id, name: g.name })}
                             >
-                              Editar
+                              {tCommon('actions.edit')}
                             </Button>
                             <Button
                               size="sm"
@@ -193,7 +192,7 @@ export function GradesManager({ schoolId, grades }: GradesManagerProps) {
                               onClick={() => onDelete(g.id)}
                               disabled={pendingId === g.id}
                             >
-                              Eliminar
+                              {tCommon('actions.delete')}
                             </Button>
                           </>
                         )}

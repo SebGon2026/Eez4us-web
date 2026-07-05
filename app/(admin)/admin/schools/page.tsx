@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -10,6 +11,8 @@ export default async function SchoolsAdminPage() {
   const session = await getCurrentSession();
   if (!session) redirect('/login');
   if (session.user.role !== 'super_admin') redirect('/admin');
+  const t = await getTranslations('schools');
+  const tCommon = await getTranslations('common');
 
   const schools = await prisma.school.findMany({
     orderBy: { createdAt: 'desc' },
@@ -37,38 +40,44 @@ export default async function SchoolsAdminPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-black">Colegios</h1>
-          <p className="text-sm text-muted-foreground">
-            Vista global de colegios en la plataforma.
-          </p>
+          <h1 className="text-3xl font-black">{t('list.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('list.subtitle')}</p>
         </div>
         <Link href="/admin/schools/new">
-          <Button>Alta de colegio</Button>
+          <Button>{t('list.addSchool')}</Button>
         </Link>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-xs uppercase text-muted-foreground font-bold">Colegios</p>
+            <p className="text-xs uppercase text-muted-foreground font-bold">
+              {t('list.kpiSchools')}
+            </p>
             <p className="text-3xl font-black">{totals.schools}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-xs uppercase text-muted-foreground font-bold">Activos</p>
+            <p className="text-xs uppercase text-muted-foreground font-bold">
+              {t('list.kpiActive')}
+            </p>
             <p className="text-3xl font-black">{totals.active}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-xs uppercase text-muted-foreground font-bold">Alumnos</p>
+            <p className="text-xs uppercase text-muted-foreground font-bold">
+              {tCommon('fields.students')}
+            </p>
             <p className="text-3xl font-black">{totals.students}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-xs uppercase text-muted-foreground font-bold">Usuarios</p>
+            <p className="text-xs uppercase text-muted-foreground font-bold">
+              {t('list.kpiUsers')}
+            </p>
             <p className="text-3xl font-black">{totals.users}</p>
           </CardContent>
         </Card>
@@ -76,11 +85,11 @@ export default async function SchoolsAdminPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Listado</CardTitle>
+          <CardTitle className="text-xl">{t('list.listTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           {schools.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay colegios cargados.</p>
+            <p className="text-sm text-muted-foreground">{t('list.empty')}</p>
           ) : (
             <ul className="divide-y text-sm">
               {schools.map((s) => {
@@ -102,17 +111,18 @@ export default async function SchoolsAdminPage() {
                         )}
                         {!s.active && (
                           <span className="ml-2 rounded-full bg-destructive/20 px-2 py-0.5 text-xs font-bold text-destructive">
-                            Suspendido
+                            {t('list.suspended')}
                           </span>
                         )}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Código <code>{s.internalCode}</code> ·{' '}
-                        {s._count.students} alumnos · {s._count.users} usuarios ·{' '}
-                        {s._count.trips} viajes ·{' '}
-                        {s.subscription?.status ?? 'sin suscripción'} ·{' '}
+                        {t('codeLabel')} <code>{s.internalCode}</code> ·{' '}
+                        {t('list.studentsCount', { count: s._count.students })} ·{' '}
+                        {t('list.usersCount', { count: s._count.users })} ·{' '}
+                        {t('list.tripsCount', { count: s._count.trips })} ·{' '}
+                        {s.subscription?.status ?? t('list.noSubscription')} ·{' '}
                         <span className="font-bold text-emerald-700">
-                          ${monthlyRevenue.toLocaleString('en-US')} /mes
+                          ${monthlyRevenue.toLocaleString('en-US')} {t('list.perMonth')}
                         </span>
                       </p>
                     </div>
@@ -122,12 +132,12 @@ export default async function SchoolsAdminPage() {
                         method="POST"
                       >
                         <Button type="submit" variant="outline" size="sm">
-                          Ver como director
+                          {t('viewAsDirector')}
                         </Button>
                       </form>
                       <Link href={`/admin/schools/${s.id}`}>
                         <Button variant="outline" size="sm">
-                          Detalle
+                          {t('list.detail')}
                         </Button>
                       </Link>
                     </div>

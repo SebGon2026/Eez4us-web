@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCircle, RotateCcw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 export default function GlobalError({
@@ -10,6 +11,9 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('auth.appError');
+  const tCommon = useTranslations('common');
+
   useEffect(() => {
     console.error('App error boundary:', error);
   }, [error]);
@@ -21,10 +25,8 @@ export default function GlobalError({
           <AlertCircle className="size-10 text-destructive" strokeWidth={1.5} />
         </div>
         <div className="space-y-1">
-          <h1 className="text-2xl font-black text-foreground">Algo salió mal</h1>
-          <p className="text-sm text-muted-foreground">
-            No pudimos cargar esta pantalla. Probá de nuevo y si sigue, avisanos.
-          </p>
+          <h1 className="text-2xl font-black text-foreground">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('body')}</p>
         </div>
         <button
           type="button"
@@ -32,7 +34,7 @@ export default function GlobalError({
           className="inline-flex items-center gap-2 rounded-3xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition active:scale-[0.98]"
         >
           <RotateCcw className="size-4" />
-          Reintentar
+          {tCommon('actions.retry')}
         </button>
       </div>
     </main>

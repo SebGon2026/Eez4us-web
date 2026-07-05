@@ -1,0 +1,122 @@
+{
+  "home": {
+    "title": "Inicio",
+    "subtitle": "Resumen rápido de la actividad del colegio.",
+    "onboarding": {
+      "title": "Terminá de configurar tu escuela",
+      "needStudents": "Faltan alumnos y padres invitados para operar.",
+      "needInvitations": "Cargá padres por Excel para que reciban su invitación.",
+      "pendingSteps": "Revisá los pasos pendientes del alta."
+    },
+    "tiles": {
+      "activeStudents": "Alumnos activos",
+      "gradesConfigured": "{count, plural, one {# grado configurado} other {# grados configurados}}",
+      "pendingInvitations": "Invitaciones pendientes",
+      "unclaimedParents": "Padres sin claimar",
+      "allCaughtUp": "Todo al día",
+      "activeTrips": "Viajes en curso",
+      "atTheGate": "{count} en la puerta",
+      "noActiveArrivals": "Sin llegadas activas"
+    },
+    "shortcuts": {
+      "heading": "Atajos",
+      "importParents": "Importar padres desde Excel",
+      "importParentsDesc": "Carga padres + alumnos masivamente con la plantilla oficial.",
+      "addPickupPoint": "Agregar punto de recogida",
+      "addPickupPointDesc": "Define el geofence y horarios de un nuevo acceso.",
+      "manageGrades": "Gestionar grados",
+      "manageGradesDesc": "Suma, renombra o elimina grados del colegio.",
+      "newStudent": "Nuevo alumno",
+      "newStudentDesc": "Alta manual de un alumno y asociación con sus padres."
+    }
+  },
+  "pickup": {
+    "backToDashboard": "← Dashboard",
+    "subtitle": "Viajes activos rankeados por ETA. Geofence: {radius} m."
+  },
+  "liveMap": {
+    "title": "Mapa en vivo",
+    "subtitle": "Posiciones en tiempo real de los padres en camino al colegio.",
+    "center": "Centro: {lat}, {lng}",
+    "loadError": "No se pudo cargar Google Maps. Verificá que la API key sea válida y tenga habilitada Maps JavaScript API.",
+    "missingKey": "Configurá NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY para ver el mapa.",
+    "pickupPointsHeading": "Puntos de recogida",
+    "liveVehiclesHeading": "Vehículos en vivo ({count})",
+    "pointMeta": "{lat}, {lng} · Geofence {radius}m",
+    "noPickupPoints": "Sin puntos configurados.",
+    "noOneOnTheWay": "Nadie está en camino ahora mismo.",
+    "minutes": "{count} min",
+    "etaLabel": "ETA:"
+  },
+  "arrivals": {
+    "title": "Llegadas en vivo",
+    "subtitle": "Padres en camino al colegio, ordenados por tiempo estimado de llegada.",
+    "refreshEvery": "Actualiza cada 5s",
+    "eta": {
+      "arrived": "Llegó",
+      "minutes": "{count} min"
+    },
+    "time": {
+      "secondsAgo": "{count}s atrás",
+      "minutes": "{count} min",
+      "passed": "pasó",
+      "fewMinutesAgo": "hace unos minutos",
+      "inMinutes": "en {count} min",
+      "inHours": "en {hours}h {minutes}"
+    },
+    "nextDismissal": {
+      "next": "Próxima tanda",
+      "lastOfDay": "Última tanda del día",
+      "students": "{count, plural, one {# alumno} other {# alumnos}}",
+      "mixed": "Mixto"
+    },
+    "todaySchedule": "Horarios de salida de hoy",
+    "stats": {
+      "enRoute": "En camino (GPS)",
+      "atGate": "En la puerta (GPS)",
+      "outsideNoGps": "Padres afuera (sin GPS)",
+      "activePoints": "Puntos activos"
+    },
+    "table": {
+      "eta": "ETA",
+      "parentVehicle": "Padre / Vehículo",
+      "students": "Alumno(s)",
+      "point": "Punto",
+      "noVehicle": "Sin vehículo",
+      "loadingTrips": "Cargando viajes…",
+      "emptyTitle": "No hay padres en camino",
+      "emptyHint": "Cuando un padre presione \"Voy en camino\" en la app móvil aparecerá acá."
+    },
+    "badges": {
+      "walkup": "Retiro en puerta",
+      "outside": "Afuera (sin GPS)",
+      "atGate": "En la puerta",
+      "onTheWay": "En camino"
+    },
+    "confirmHandoff": "¿Confirmar la entrega del alumno?",
+    "handoffConfirmed": "Entrega confirmada",
+    "handoffFailed": "No se pudo confirmar"
+  },
+  "ranked": {
+    "emptyTitle": "No hay viajes activos en este punto.",
+    "emptyHint": "Cuando un padre presione \"voy en camino\" aparecerá acá."
+  },
+  "tripCard": {
+    "unnamedParent": "Padre sin nombre",
+    "parentOutside": "Padre afuera · sin GPS",
+    "walkup": "Retiro en puerta · a pie",
+    "parentFallback": "el padre"
+  },
+  "tripEta": {
+    "arriving": "Llegando"
+  },
+  "finalize": {
+    "studentFallback": "el alumno",
+    "button": "Finalizar entrega",
+    "confirmTitle": "¿Confirmás entrega?",
+    "confirmBody": "Marcar entrega de <b>{students}</b> a <b>{parent}</b>.",
+    "finalizing": "Finalizando…",
+    "yesConfirm": "Sí, confirmar",
+    "unknownError": "Error desconocido"
+  }
+}

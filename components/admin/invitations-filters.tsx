@@ -1,19 +1,14 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Select } from '@/components/ui/select';
 
-const STATUSES = [
-  { value: '', label: 'Todos los estados' },
-  { value: 'PENDING', label: 'Pendientes de envío' },
-  { value: 'SENT', label: 'Enviadas sin registrar' },
-  { value: 'CLAIMED', label: 'Registradas' },
-  { value: 'EXPIRED', label: 'Expiradas' },
-  { value: 'REVOKED', label: 'Revocadas' },
-];
+const STATUS_VALUES = ['PENDING', 'SENT', 'CLAIMED', 'EXPIRED', 'REVOKED'] as const;
 
 export function InvitationsFilters() {
+  const t = useTranslations('invitations');
   const router = useRouter();
   const params = useSearchParams();
   const status = params.get('status') ?? '';
@@ -26,14 +21,11 @@ export function InvitationsFilters() {
   }
 
   return (
-    <Select
-      value={status}
-      onChange={(e) => apply(e.target.value)}
-      className="sm:max-w-xs"
-    >
-      {STATUSES.map((s) => (
-        <option key={s.value} value={s.value}>
-          {s.label}
+    <Select value={status} onChange={(e) => apply(e.target.value)} className="sm:max-w-xs">
+      <option value="">{t('filters.all')}</option>
+      {STATUS_VALUES.map((value) => (
+        <option key={value} value={value}>
+          {t(`filters.${value}`)}
         </option>
       ))}
     </Select>

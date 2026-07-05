@@ -1,10 +1,12 @@
 'use client';
 
 import { ArrowRight, KeyRound, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { PasswordInput } from '@/components/ui/password-input';
 import { authClient } from '@/lib/auth-client';
 
@@ -30,6 +32,8 @@ function initials(name: string): string {
 }
 
 export default function LoginPage() {
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const [step, setStep] = useState<'code' | 'creds' | 'otp'>('code');
   const [code, setCode] = useState('');
   const [school, setSchool] = useState<SchoolBrand | null>(null);
@@ -69,9 +73,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(
-          data.error === 'NOT_FOUND'
-            ? 'No encontramos ningún colegio con ese código.'
-            : 'Código inválido.',
+          data.error === 'NOT_FOUND' ? t('login.code.notFound') : t('login.code.invalid'),
         );
         return;
       }
@@ -79,7 +81,7 @@ export default function LoginPage() {
       setStep('creds');
       localStorage.setItem(STORAGE_KEY, data.school.internalCode);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado');
+      setError(err instanceof Error ? err.message : t('errors.unexpected'));
     } finally {
       setPending(false);
     }
@@ -98,14 +100,14 @@ export default function LoginPage() {
     try {
       const result = await authClient.signIn.email({ email, password });
       if (result.error) {
-        setError(result.error.message ?? 'No se pudo iniciar sesión');
+        setError(result.error.message ?? t('login.creds.signInFallback'));
         return;
       }
       // Staff con 2FA: better-auth no crea sesión todavía, pide el código por email.
       if ((result.data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) {
         const sent = await authClient.twoFactor.sendOtp();
         if (sent.error) {
-          setError('No pudimos enviarte el código. Intentá de nuevo.');
+          setError(t('login.otp.sendFailed'));
           return;
         }
         setOtp('');
@@ -116,7 +118,7 @@ export default function LoginPage() {
       // /login → / → /admin. El server-side router resuelve todo en una sola pasada.
       window.location.replace('/admin');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado');
+      setError(err instanceof Error ? err.message : t('errors.unexpected'));
     } finally {
       setPending(false);
     }
@@ -129,12 +131,12 @@ export default function LoginPage() {
     try {
       const result = await authClient.twoFactor.verifyOtp({ code: otp.trim(), trustDevice });
       if (result.error) {
-        setError('Código incorrecto o vencido. Revisá tu correo e intentá de nuevo.');
+        setError(t('login.otp.invalidOrExpired'));
         return;
       }
       window.location.replace('/admin');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado');
+      setError(err instanceof Error ? err.message : t('errors.unexpected'));
     } finally {
       setPending(false);
     }
@@ -143,7 +145,7 @@ export default function LoginPage() {
   async function resendOtp() {
     setError(null);
     const sent = await authClient.twoFactor.sendOtp();
-    if (sent.error) setError('No pudimos reenviar el código.');
+    if (sent.error) setError(t('login.otp.resendFailed'));
   }
 
   function switchSchool() {
@@ -163,7 +165,10 @@ export default function LoginPage() {
   }, [school?.brandHue]);
 
   return (
-    <main style={brandStyle} className="auth-bg flex min-h-screen flex-col">
+    <main style={brandStyle} className="auth-bg relative flex min-h-screen flex-col">
+      <div className="absolute right-4 top-4 z-10">
+        <LanguageSwitcher />
+      </div>
       <div className="flex flex-1 items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           {step === 'code' ? (
@@ -177,9 +182,7 @@ export default function LoginPage() {
                   priority
                   className="mx-auto h-auto w-[180px]"
                 />
-                <h1 className="text-xl font-bold text-foreground">
-                  Ingresa el código de tu colegio
-                </h1>
+                <h1 className="text-xl font-bold text-foreground">{t('login.code.title')}</h1>
               </div>
 
               <form onSubmit={onSubmitCode} className="space-y-5">
@@ -210,7 +213,7 @@ export default function LoginPage() {
                   disabled={pending || !code.trim()}
                   className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
                 >
-                  {pending ? 'Buscando…' : 'Continuar'}
+                  {pending ? t('login.code.searching') : t('login.code.continue')}
                   {!pending && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />}
                 </button>
 
@@ -220,7 +223,7 @@ export default function LoginPage() {
                     onClick={() => setHelpOpen(true)}
                     className="font-semibold text-primary hover:underline"
                   >
-                    ¿Dónde consigo mi código?
+                    {t('login.code.whereIsMyCode')}
                   </button>
                 </p>
               </form>
@@ -237,15 +240,16 @@ export default function LoginPage() {
                   className="mx-auto h-auto w-[180px]"
                 />
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">Revisá tu correo</h1>
+                  <h1 className="text-xl font-bold text-foreground">{t('login.otp.title')}</h1>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Te enviamos un código de 6 dígitos a{' '}
-                    <span className="font-semibold text-foreground">{email}</span>
+                    {t.rich('login.otp.sentTo', {
+                      email,
+                      strong: (chunks) => (
+                        <span className="font-semibold text-foreground">{chunks}</span>
+                      ),
+                    })}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Puede tardar hasta un minuto (revisá spam). Si no llega, reenvialo o
-                    escribí a soporte.
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t('login.otp.hint')}</p>
                 </div>
               </div>
 
@@ -271,7 +275,7 @@ export default function LoginPage() {
                     onChange={(e) => setTrustDevice(e.target.checked)}
                     className="h-4 w-4 rounded border-input accent-[hsl(var(--primary))]"
                   />
-                  Confiar en este dispositivo por 30 días
+                  {t('login.otp.trustDevice')}
                 </label>
 
                 {error && <p className="text-sm font-medium text-destructive">{error}</p>}
@@ -281,7 +285,7 @@ export default function LoginPage() {
                   disabled={pending || otp.length !== 6}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
                 >
-                  {pending ? 'Verificando…' : 'Verificar código'}
+                  {pending ? t('login.otp.verifying') : t('login.otp.verify')}
                 </button>
 
                 <button
@@ -289,7 +293,7 @@ export default function LoginPage() {
                   onClick={resendOtp}
                   className="block w-full text-center text-xs font-semibold text-primary hover:underline"
                 >
-                  Reenviar código
+                  {t('login.otp.resend')}
                 </button>
 
                 <button
@@ -301,7 +305,7 @@ export default function LoginPage() {
                   }}
                   className="block w-full text-center text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  ← Volver
+                  {t('login.otp.back')}
                 </button>
               </form>
             </div>
@@ -325,18 +329,25 @@ export default function LoginPage() {
                 <div>
                   <h1 className="text-xl font-bold text-foreground">{school?.name}</h1>
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mt-1">
-                    Código: <span className="font-mono font-bold text-foreground">{school?.internalCode}</span>
+                    {t.rich('login.creds.codeLabel', {
+                      code: school?.internalCode ?? '',
+                      mono: (chunks) => (
+                        <span className="font-mono font-bold text-foreground">{chunks}</span>
+                      ),
+                    })}
                   </p>
                 </div>
               </div>
 
               <form onSubmit={onSubmitCreds} className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">Email</label>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    {tCommon('fields.email')}
+                  </label>
                   <input
                     type="email"
                     required
-                    placeholder="director@colegio.com"
+                    placeholder={t('emailPlaceholder')}
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -346,12 +357,14 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-muted-foreground">Contraseña</label>
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      {tCommon('fields.password')}
+                    </label>
                     <Link
                       href="/forgot-password"
                       className="text-xs font-semibold text-primary hover:underline"
                     >
-                      ¿La olvidaste?
+                      {t('login.creds.forgotPassword')}
                     </Link>
                   </div>
                   <PasswordInput
@@ -373,7 +386,7 @@ export default function LoginPage() {
                   disabled={pending}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground transition-all hover:opacity-95 disabled:opacity-50"
                 >
-                  {pending ? 'Entrando…' : 'Entrar'}
+                  {pending ? t('login.creds.submitting') : t('login.creds.submit')}
                 </button>
 
                 <button
@@ -381,7 +394,7 @@ export default function LoginPage() {
                   onClick={switchSchool}
                   className="block w-full text-center text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  ← Cambiar de colegio
+                  {t('login.creds.switchSchool')}
                 </button>
               </form>
             </div>
@@ -403,6 +416,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setHelpOpen(false)}
+              aria-label={tCommon('actions.close')}
               className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground hover:bg-secondary"
             >
               <X className="h-5 w-5" />
@@ -416,7 +430,7 @@ export default function LoginPage() {
               className="mx-auto h-auto w-[130px]"
             />
 
-            <h2 className="mt-4 text-center text-lg font-bold">¿Dónde consigo mi código?</h2>
+            <h2 className="mt-4 text-center text-lg font-bold">{t('login.help.title')}</h2>
 
             <div className="mt-5 flex justify-center">
               <div className="flex items-center gap-2 rounded-lg border-2 border-primary bg-white px-4 py-2">
@@ -428,20 +442,18 @@ export default function LoginPage() {
             </div>
 
             <p className="mt-2 text-center text-xs font-semibold text-primary">
-              ↑ Así se ve tu código
+              {t('login.help.caption')}
             </p>
 
             <p className="mt-4 text-center text-sm text-muted-foreground leading-relaxed">
-              Es el código que se le entregó a tu colegio como{' '}
-              <span className="font-semibold text-foreground">identificador único</span>{' '}
-              dentro de Eez4us.
+              {t.rich('login.help.body1', {
+                strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+              })}
             </p>
             <p className="mt-2 text-center text-sm text-muted-foreground leading-relaxed">
-              Si no lo encuentras, pídeselo a la{' '}
-              <span className="font-semibold text-foreground">administración de tu institución</span>{' '}
-              o contacta al{' '}
-              <span className="font-semibold text-foreground">soporte de Eez4us</span> para una
-              reposición.
+              {t.rich('login.help.body2', {
+                strong: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+              })}
             </p>
 
             <button
@@ -449,7 +461,7 @@ export default function LoginPage() {
               onClick={() => setHelpOpen(false)}
               className="mt-6 w-full rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground hover:opacity-95"
             >
-              Entendido
+              {tCommon('actions.understood')}
             </button>
           </div>
         </div>

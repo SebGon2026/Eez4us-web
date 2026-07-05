@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -9,6 +10,7 @@ const inputClass =
   'mt-1.5 w-full rounded-xl border border-input bg-white px-3.5 py-2.5 text-sm font-medium outline-none transition-all duration-200 placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/25';
 
 export function ContactForm() {
+  const t = useTranslations('landing.contact.form');
   const [name, setName] = useState('');
   const [school, setSchool] = useState('');
   const [email, setEmail] = useState('');
@@ -32,8 +34,8 @@ export function ContactForm() {
       website,
     };
     if (payload.name.length < 2 || payload.school.length < 2 || payload.message.length < 10) {
-      toast.error('Revisa los datos del formulario', {
-        description: 'El mensaje debe tener al menos 10 caracteres.',
+      toast.error(t('validationErrorTitle'), {
+        description: t('validationErrorDescription'),
       });
       return;
     }
@@ -47,18 +49,16 @@ export function ContactForm() {
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         toast.error(
-          data?.error === 'INVALID_FIELDS'
-            ? 'Revisa los datos del formulario'
-            : 'No pudimos enviar tu mensaje. Intenta de nuevo o llámanos.',
+          data?.error === 'INVALID_FIELDS' ? t('validationErrorTitle') : t('sendError'),
         );
         return;
       }
       setSent(true);
-      toast.success('Mensaje enviado', {
-        description: 'Te respondemos el mismo día hábil.',
+      toast.success(t('successToastTitle'), {
+        description: t('successToastDescription'),
       });
     } catch {
-      toast.error('No pudimos enviar tu mensaje. Intenta de nuevo o llámanos.');
+      toast.error(t('sendError'));
     } finally {
       setPending(false);
     }
@@ -83,10 +83,14 @@ export function ContactForm() {
           >
             <CheckCircle2 className="h-8 w-8 text-primary" />
           </motion.span>
-          <h3 className="mt-5 text-xl font-black tracking-tight">¡Mensaje enviado!</h3>
+          <h3 className="mt-5 text-xl font-black tracking-tight">{t('successTitle')}</h3>
           <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Gracias por escribirnos. Te respondemos a{' '}
-            <span className="font-semibold text-foreground">{email}</span> el mismo día hábil.
+            {t.rich('successBody', {
+              email,
+              strong: (chunks) => (
+                <span className="font-semibold text-foreground">{chunks}</span>
+              ),
+            })}
           </p>
           <button
             type="button"
@@ -96,7 +100,7 @@ export function ContactForm() {
             }}
             className="mt-6 text-sm font-bold text-primary transition-colors hover:underline"
           >
-            Enviar otro mensaje
+            {t('sendAnother')}
           </button>
         </motion.div>
       ) : (
@@ -105,13 +109,13 @@ export function ContactForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="contact-name" className="text-xs font-bold text-muted-foreground">
-                  Nombre completo
+                  {t('nameLabel')}
                 </label>
                 <input
                   id="contact-name"
                   type="text"
                   required
-                  placeholder="Ana Rodríguez"
+                  placeholder={t('namePlaceholder')}
                   autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -120,13 +124,13 @@ export function ContactForm() {
               </div>
               <div>
                 <label htmlFor="contact-school" className="text-xs font-bold text-muted-foreground">
-                  Colegio o institución
+                  {t('schoolLabel')}
                 </label>
                 <input
                   id="contact-school"
                   type="text"
                   required
-                  placeholder="Colegio Santa María"
+                  placeholder={t('schoolPlaceholder')}
                   autoComplete="organization"
                   value={school}
                   onChange={(e) => setSchool(e.target.value)}
@@ -137,13 +141,13 @@ export function ContactForm() {
 
             <div>
               <label htmlFor="contact-email" className="text-xs font-bold text-muted-foreground">
-                Email
+                {t('emailLabel')}
               </label>
               <input
                 id="contact-email"
                 type="email"
                 required
-                placeholder="direccion@colegio.edu"
+                placeholder={t('emailPlaceholder')}
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -154,12 +158,13 @@ export function ContactForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="contact-phone" className="text-xs font-bold text-muted-foreground">
-                  Teléfono <span className="font-medium text-muted-foreground">(opcional)</span>
+                  {t('phoneLabel')}{' '}
+                  <span className="font-medium text-muted-foreground">{t('optional')}</span>
                 </label>
                 <input
                   id="contact-phone"
                   type="tel"
-                  placeholder="520 909 5510"
+                  placeholder={t('phonePlaceholder')}
                   autoComplete="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -168,13 +173,13 @@ export function ContactForm() {
               </div>
               <div>
                 <label htmlFor="contact-city" className="text-xs font-bold text-muted-foreground">
-                  Ciudad y país{' '}
-                  <span className="font-medium text-muted-foreground">(opcional)</span>
+                  {t('cityLabel')}{' '}
+                  <span className="font-medium text-muted-foreground">{t('optional')}</span>
                 </label>
                 <input
                   id="contact-city"
                   type="text"
-                  placeholder="Monterrey, México"
+                  placeholder={t('cityPlaceholder')}
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className={inputClass}
@@ -184,14 +189,14 @@ export function ContactForm() {
 
             <div>
               <label htmlFor="contact-message" className="text-xs font-bold text-muted-foreground">
-                ¿Cómo podemos ayudarte?
+                {t('messageLabel')}
               </label>
               <textarea
                 id="contact-message"
                 required
                 minLength={10}
                 rows={4}
-                placeholder="Quiero implementar Eez4us en mi colegio…"
+                placeholder={t('messagePlaceholder')}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className={`${inputClass} resize-none`}
@@ -200,7 +205,7 @@ export function ContactForm() {
 
             {/* Honeypot anti-bots: invisible para humanos */}
             <div className="absolute left-[-9999px] top-auto" aria-hidden>
-              <label htmlFor="contact-website">Sitio web</label>
+              <label htmlFor="contact-website">{t('websiteLabel')}</label>
               <input
                 id="contact-website"
                 type="text"
@@ -221,18 +226,18 @@ export function ContactForm() {
             {pending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Enviando…
+                {t('submitting')}
               </>
             ) : (
               <>
                 <Send className="h-4 w-4" />
-                Enviar mensaje
+                {t('submit')}
               </>
             )}
           </motion.button>
 
           <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
-            Tu mensaje llega directo a nuestro equipo comercial. Te respondemos el mismo día hábil.
+            {t('footnote')}
           </p>
         </form>
       )}

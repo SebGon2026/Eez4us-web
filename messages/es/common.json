@@ -1,0 +1,100 @@
+{
+  "app": {
+    "metaTitle": "Eez4us Admin",
+    "metaDescription": "Panel administrativo Eez4us"
+  },
+  "actions": {
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "deleting": "Eliminando…",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "confirm": "Confirmar",
+    "retry": "Reintentar",
+    "search": "Buscar",
+    "add": "Agregar",
+    "create": "Crear",
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "download": "Descargar",
+    "view": "Ver",
+    "refresh": "Actualizar",
+    "filter": "Filtrar",
+    "clear": "Limpiar",
+    "seeAll": "Ver todo",
+    "understood": "Entendido",
+    "loadingMore": "Cargando más…",
+    "loadMore": "Cargar más"
+  },
+  "states": {
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "loading": "Cargando…",
+    "empty": "Sin resultados",
+    "error": "Ocurrió un error",
+    "success": "Listo",
+    "pending": "Pendiente"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Intenta de nuevo.",
+    "network": "Error de conexión. Revisa tu internet e intenta de nuevo.",
+    "unauthorized": "No tienes permiso para hacer esto.",
+    "notFound": "No encontrado."
+  },
+  "confirmDialog": {
+    "title": "¿Estás seguro?",
+    "irreversible": "Esta acción no se puede deshacer."
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "pageOf": "Página {page} de {total}",
+    "showing": "Mostrando {count, plural, one {# resultado} other {# resultados}}"
+  },
+  "language": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "English",
+    "change": "Cambiar idioma"
+  },
+  "fields": {
+    "name": "Nombre",
+    "email": "Email",
+    "phone": "Teléfono",
+    "password": "Contraseña",
+    "status": "Estado",
+    "role": "Rol",
+    "school": "Colegio",
+    "grade": "Grado",
+    "student": "Alumno",
+    "students": "Alumnos",
+    "parent": "Padre/Madre",
+    "date": "Fecha",
+    "actions": "Acciones",
+    "optional": "Opcional",
+    "required": "Obligatorio",
+    "notes": "Notas"
+  },
+  "misc": {
+    "yes": "Sí",
+    "no": "No",
+    "all": "Todos",
+    "none": "Ninguno",
+    "notAvailable": "N/D",
+    "perStudentPerMonth": "por alumno / mes",
+    "comingSoon": "Próximamente"
+  },
+  "roles": {
+    "parent": "Padre/Madre",
+    "director": "Director",
+    "support_staff": "Personal de apoyo",
+    "vendor": "Vendedor",
+    "super_admin": "Súper admin"
+  }
+}

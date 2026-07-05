@@ -1,8 +1,9 @@
 import { GraduationCap } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { type Column,DataTable } from '@/components/admin/data-table';
+import { type Column, DataTable } from '@/components/admin/data-table';
 import { DeleteButton } from '@/components/admin/delete-button';
 import { StudentsFilters } from '@/components/admin/students-filters';
 import { EmptyState } from '@/components/empty-state';
@@ -29,6 +30,8 @@ export default async function StudentsPage({
 }) {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
+  const t = await getTranslations('students');
+  const tCommon = await getTranslations('common');
   const schoolId = session.user.schoolId;
   const { page: pageParam, q, gradeId } = await searchParams;
   const page = Math.max(1, Number(pageParam ?? '1') || 1);
@@ -83,7 +86,7 @@ export default async function StudentsPage({
   const columns: Column<StudentRow>[] = [
     {
       key: 'name',
-      header: 'Alumno',
+      header: t('list.columns.student'),
       cell: (r) => (
         <div>
           <p className="font-bold">
@@ -97,17 +100,17 @@ export default async function StudentsPage({
     },
     {
       key: 'grade',
-      header: 'Grado',
+      header: t('list.columns.grade'),
       cell: (r) =>
         r.gradeName ? (
           <Badge variant="secondary">{r.gradeName}</Badge>
         ) : (
-          <span className="text-xs text-muted-foreground">Sin asignar</span>
+          <span className="text-xs text-muted-foreground">{t('list.noGrade')}</span>
         ),
     },
     {
       key: 'parents',
-      header: 'Padres',
+      header: t('list.columns.parents'),
       cell: (r) => <span>{r.parentsCount}</span>,
     },
     {
@@ -118,12 +121,12 @@ export default async function StudentsPage({
         <div className="inline-flex gap-2">
           <Link href={`/admin/students/${r.id}/edit`}>
             <Button variant="outline" size="sm">
-              Editar
+              {tCommon('actions.edit')}
             </Button>
           </Link>
           <DeleteButton
             url={`/api/schools/${schoolId}/students/${r.id}`}
-            description="Se desactiva el alumno. Sus padres ya no podrán crear nuevos viajes para él."
+            description={t('list.deleteDescription')}
           />
         </div>
       ),
@@ -134,15 +137,15 @@ export default async function StudentsPage({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-black">Alumnos</h1>
-          <p className="text-sm text-muted-foreground">{total} alumnos activos.</p>
+          <h1 className="text-3xl font-black">{t('list.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('list.activeCount', { count: total })}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/admin/students/import">
-            <Button variant="outline">Importar Excel</Button>
+            <Button variant="outline">{t('list.importExcel')}</Button>
           </Link>
           <Link href="/admin/students/new">
-            <Button>Nuevo alumno</Button>
+            <Button>{t('list.newStudent')}</Button>
           </Link>
         </div>
       </div>
@@ -161,21 +164,21 @@ export default async function StudentsPage({
           q || gradeId ? (
             <EmptyState
               icon={GraduationCap}
-              title="Sin alumnos que coincidan"
-              description="Probá quitar filtros o cambiar el término de búsqueda."
+              title={t('list.emptyFiltered.title')}
+              description={t('list.emptyFiltered.description')}
             />
           ) : (
             <EmptyState
               icon={GraduationCap}
-              title="Aún no agregaste alumnos"
-              description="Cargá un Excel con la lista de padres + alumnos o creá uno manualmente."
+              title={t('list.empty.title')}
+              description={t('list.empty.description')}
               action={
                 <div className="flex gap-2">
                   <Link href="/admin/students/import">
-                    <Button variant="outline">Importar Excel</Button>
+                    <Button variant="outline">{t('list.importExcel')}</Button>
                   </Link>
                   <Link href="/admin/students/new">
-                    <Button>Nuevo alumno</Button>
+                    <Button>{t('list.newStudent')}</Button>
                   </Link>
                 </div>
               }

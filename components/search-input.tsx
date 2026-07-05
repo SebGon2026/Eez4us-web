@@ -1,6 +1,7 @@
 'use client';
 
 import { Search, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -11,10 +12,11 @@ interface SearchInputProps {
 }
 
 export function SearchInput({
-  placeholder = 'Buscar…',
+  placeholder,
   paramName = 'q',
   debounceMs = 300,
 }: SearchInputProps) {
+  const t = useTranslations('nav');
   const router = useRouter();
   const searchParams = useSearchParams();
   const initial = searchParams.get(paramName) ?? '';
@@ -45,7 +47,7 @@ export function SearchInput({
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t('search.placeholder')}
         className="w-full rounded-3xl border-2 border-input bg-background py-2.5 pl-11 pr-10 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
       />
       {value && (
@@ -53,7 +55,7 @@ export function SearchInput({
           type="button"
           onClick={() => setValue('')}
           className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          aria-label="Limpiar búsqueda"
+          aria-label={t('search.clear')}
         >
           <X className="size-4" />
         </button>

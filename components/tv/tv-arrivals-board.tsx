@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useEncryptedChannel } from '@/lib/pusher-subscribe';
@@ -25,6 +26,7 @@ function compareTrips(a: RankedTrip, b: RankedTrip): number {
 }
 
 export function TvArrivalsBoard({ initialTrips, schoolId, pickupPointId, vertical = false }: TvArrivalsBoardProps) {
+  const t = useTranslations('tv');
   const [trips, setTrips] = useState<RankedTrip[]>(() => [...initialTrips].sort(compareTrips));
 
   const channelName = useMemo(
@@ -50,10 +52,10 @@ export function TvArrivalsBoard({ initialTrips, schoolId, pickupPointId, vertica
     return (
       <div className="flex h-full flex-col items-center justify-center text-center">
         <p className="text-4xl font-black" style={{ color: 'var(--tv-fg2)' }}>
-          No hay vehículos en camino
+          {t('arrivals.emptyTitle')}
         </p>
         <p className="mt-3 text-xl" style={{ color: 'var(--tv-fg3)' }}>
-          Cuando un padre presione “voy en camino” aparecerá acá.
+          {t('arrivals.emptyHint')}
         </p>
       </div>
     );
@@ -99,7 +101,7 @@ export function TvArrivalsBoard({ initialTrips, schoolId, pickupPointId, vertica
                     className={cn('font-black', vertical ? 'text-4xl' : 'text-5xl')}
                     style={{ color: 'var(--tv-fg2)' }}
                   >
-                    {trip.origin === 'ESTOY_AFUERA' ? 'Afuera' : 'A pie'}
+                    {trip.origin === 'ESTOY_AFUERA' ? t('arrivals.outside') : t('arrivals.onFoot')}
                   </span>
                 )}
                 <div className="mt-2 flex items-center gap-3 text-2xl" style={{ color: 'var(--tv-fg2)' }}>
@@ -129,7 +131,7 @@ export function TvArrivalsBoard({ initialTrips, schoolId, pickupPointId, vertica
                       : { background: 'var(--tv-sky-chip)', color: 'var(--tv-sky)' }
                   }
                 >
-                  {inZone ? 'En puerta' : 'En camino'}
+                  {inZone ? t('arrivals.atGate') : t('arrivals.onTheWay')}
                 </span>
               </div>
             </motion.div>
@@ -139,7 +141,7 @@ export function TvArrivalsBoard({ initialTrips, schoolId, pickupPointId, vertica
 
       {totalPages > 1 && (
         <p className="pt-1 text-center text-lg font-bold" style={{ color: 'var(--tv-fg3)' }}>
-          Página {page + 1} de {totalPages} · {trips.length} en total
+          {t('arrivals.pageFooter', { page: page + 1, total: totalPages, count: trips.length })}
         </p>
       )}
     </div>

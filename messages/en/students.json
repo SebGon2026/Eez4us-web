@@ -1,0 +1,187 @@
+{
+  "list": {
+    "title": "Students",
+    "activeCount": "{count, plural, one {# active student.} other {# active students.}}",
+    "importExcel": "Import Excel",
+    "newStudent": "New student",
+    "columns": {
+      "student": "Student",
+      "grade": "Grade",
+      "parents": "Parents"
+    },
+    "noGrade": "Unassigned",
+    "deleteDescription": "The student will be deactivated. Their parents will no longer be able to start new trips for them.",
+    "emptyFiltered": {
+      "title": "No matching students",
+      "description": "Try removing filters or changing your search term."
+    },
+    "empty": {
+      "title": "You haven't added any students yet",
+      "description": "Upload an Excel with the parent + student list, or create one manually."
+    }
+  },
+  "filters": {
+    "searchPlaceholder": "Search by first name, last name, or student ID",
+    "allGrades": "All grades"
+  },
+  "new": {
+    "title": "New student",
+    "subtitle": "Only first and last name are required.",
+    "noGradesWarning": "You haven't configured any grades yet. You can still create the student and assign a grade later, but it's best to set up grades first.",
+    "configureGrades": "Set up grades"
+  },
+  "edit": {
+    "title": "Edit student"
+  },
+  "import": {
+    "title": "Import students",
+    "subtitle": "Upload an Excel or CSV with the student list. Grades are matched by name; the student ID is what you later reference in the parents' Excel.",
+    "template": {
+      "label": "Template:",
+      "xlsx": "Download .xlsx",
+      "csv": "Download .csv"
+    },
+    "dropzone": {
+      "dropActive": "Drop the file here",
+      "dropIdle": "Drag a .xlsx or .csv, or click",
+      "columnsHint": "Columns: nombre, apellido, grado (optional), matricula (optional), nacimiento (optional)",
+      "previewSummary": "{valid} valid · {errors} with errors · previewing first 20",
+      "removeFile": "Remove file",
+      "noGrade": "No grade",
+      "columns": {
+        "student": "Student",
+        "grade": "Grade",
+        "externalId": "Student ID"
+      },
+      "example": {
+        "title": "Example of a valid file",
+        "hint": "This is what the data looks like. The student ID is what you later reference in the parents' Excel (ids_alumnos column)."
+      },
+      "rowError": "Row {row}: {message}",
+      "importFailed": "Import failed",
+      "unexpectedError": "Unexpected error",
+      "importCount": "{count, plural, one {Import # student} other {Import # students}}",
+      "importing": "Importing…"
+    },
+    "result": {
+      "title": "Result",
+      "created": "Created",
+      "updated": "Updated",
+      "warnings": "Warnings",
+      "errors": "Errors",
+      "importAnother": "Import another file"
+    }
+  },
+  "form": {
+    "firstName": "First name",
+    "lastName": "Last name",
+    "noGradeOption": "Unassigned",
+    "externalId": "Student ID (optional)",
+    "externalIdPlaceholder": "A-0042",
+    "birthDate": "Date of birth (optional)",
+    "pickup": {
+      "title": "Pickup mode",
+      "subtitle": "How the student is picked up from school.",
+      "mode": "Mode",
+      "privateVehicle": "Private vehicle (representative)",
+      "walking": "On foot (walking)",
+      "transport": "Transport (van / bus)",
+      "privateVehicleHint": "The representative picks them up in their own vehicle (registered from the parent app).",
+      "walkingHint": "The representative picks them up on foot. No vehicle or GPS: on arrival they tap \"I'm outside\" in the app.",
+      "transportHint": "A transport service picks them up. Enter the details of the person in charge.",
+      "transportName": "Person in charge of transport",
+      "transportNamePlaceholder": "Name of the person transporting",
+      "vehicleType": "Vehicle type",
+      "vehicleTypePlaceholder": "Select…",
+      "van": "Van",
+      "bus": "Bus",
+      "plate": "License plate",
+      "platePlaceholder": "ABC-123",
+      "phone": "Phone (optional)",
+      "phonePlaceholder": "+52 55 1234 5678"
+    },
+    "reps": {
+      "title": "Guardians / Representatives",
+      "subtitle": "People responsible for picking up the student at school. Each one receives an invitation to create their account. Email takes priority over WhatsApp.",
+      "withAccount": "With an account",
+      "pendingInvitations": "Pending invitations",
+      "fallbackName": "Representative",
+      "newRep": "New representative {number}",
+      "remove": "Remove",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone (WhatsApp)",
+      "emailPlaceholder": "mom@example.com",
+      "phonePlaceholder": "+52 55 1234 5678",
+      "contactHint": "Email or phone is required.",
+      "add": "Add representative"
+    },
+    "validation": {
+      "repName": "Each representative needs a first and last name.",
+      "repContact": "Each representative needs an email or phone number.",
+      "transport": "For transport: person in charge, plate, and type (van/bus) are required."
+    },
+    "toasts": {
+      "invitationsSent": "{sent}/{created} invitations sent",
+      "invitationsUnsent": "{count, plural, one {# invitation not sent} other {# invitations not sent}} — check the invitations list",
+      "invitationsCreateFailed": "The invitations could not be created",
+      "changesSaved": "Changes saved",
+      "studentCreated": "Student created",
+      "studentCreatedWithInvitations": "Student created · {sent}/{created} invitations sent"
+    },
+    "errors": {
+      "saveFailed": "Could not save",
+      "unexpected": "Unexpected error"
+    }
+  },
+  "grades": {
+    "title": "Grades",
+    "subtitle": "Group your students. The name is up to you — \"1st Grade A\", \"Kindergarten\", etc.",
+    "newGrade": "New grade",
+    "namePlaceholder": "1st Grade A",
+    "creating": "Creating…",
+    "confirmDelete": "Delete this grade?",
+    "errors": {
+      "createFailed": "Could not create",
+      "saveFailed": "Could not save",
+      "deleteFailed": "Could not delete"
+    },
+    "empty": "No grades created yet."
+  },
+  "families": {
+    "title": "School families",
+    "subtitle": "List of parents with their students, vehicles, and secondary family members.",
+    "new": {
+      "title": "Add parent",
+      "subtitle": "Invite a parent to existing student(s), without re-uploading the Excel.",
+      "studentsTitle": "Students",
+      "studentsSubtitle": "Choose which student(s) this parent is linked to.",
+      "searchStudents": "Search by name or student ID…",
+      "noStudents": "No matching students.",
+      "selectedCount": "{count, plural, one {# student selected} other {# students selected}}",
+      "parentTitle": "Parent details",
+      "parentSubtitle": "They receive an invitation to create their account. Email takes priority over WhatsApp.",
+      "submit": "Send invitation",
+      "validation": {
+        "noStudent": "Select at least one student."
+      }
+    },
+    "searchPlaceholder": "Search by name, email, or phone…",
+    "parentsCount": "Parents ({count})",
+    "emptyFiltered": "No parents found matching that search.",
+    "empty": "No parents have claimed their account yet.",
+    "childrenCount": "{count, plural, one {# child} other {# children}}",
+    "vehiclesCount": "{count, plural, one {# vehicle} other {# vehicles}}",
+    "familyMembersCount": "{count, plural, one {# family member} other {# family members}}"
+  },
+  "vehicles": {
+    "title": "Registered vehicles",
+    "subtitle": "Vehicles associated with the school's parents.",
+    "searchPlaceholder": "Search by plate, model, or parent…",
+    "vehiclesCount": "Vehicles ({count})",
+    "emptyFiltered": "No vehicles found.",
+    "empty": "No vehicles registered yet.",
+    "colorLabel": "Color"
+  }
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useEncryptedChannel } from '@/lib/pusher-subscribe';
@@ -38,6 +39,7 @@ export function RankedTripsBoard({
   pickupPointId,
   role,
 }: RankedTripsBoardProps) {
+  const t = useTranslations('dashboard.ranked');
   const [trips, setTrips] = useState<RankedTrip[]>(initialTrips);
 
   const channelName = useMemo(
@@ -94,12 +96,8 @@ export function RankedTripsBoard({
   if (trips.length === 0) {
     return (
       <div className="rounded-3xl border-2 border-dashed border-border bg-card py-16 text-center">
-        <p className="text-lg font-bold text-muted-foreground">
-          No hay viajes activos en este punto.
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Cuando un padre presione &quot;voy en camino&quot; aparecerá acá.
-        </p>
+        <p className="text-lg font-bold text-muted-foreground">{t('emptyTitle')}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('emptyHint')}</p>
       </div>
     );
   }

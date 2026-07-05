@@ -1,0 +1,40 @@
+{
+  "shell": {
+    "schoolFallback": "School",
+    "viewArrivals": "Arrivals",
+    "viewGate": "Gate"
+  },
+  "connection": {
+    "online": "Live",
+    "connecting": "Connecting",
+    "offline": "Offline"
+  },
+  "fullscreen": {
+    "enter": "Fullscreen",
+    "exit": "Exit"
+  },
+  "eta": {
+    "arriving": "Arriving"
+  },
+  "arrivals": {
+    "emptyTitle": "No vehicles on the way",
+    "emptyHint": "When a parent taps “on my way” it will show up here.",
+    "outside": "Outside",
+    "onFoot": "On foot",
+    "atGate": "At the gate",
+    "onTheWay": "On the way",
+    "pageFooter": "Page {page} of {total} · {count} total"
+  },
+  "gate": {
+    "emptyTitle": "No students pending",
+    "emptyHint": "Students on the way will appear here, sorted by proximity.",
+    "parentOutside": "Parent outside · no car",
+    "walkUp": "Gate pickup · on foot",
+    "pageFooter": "Page {page} of {total} · {count, plural, one {# student pending} other {# students pending}}"
+  },
+  "proximity": {
+    "atGate": "At the gate",
+    "near": "Nearby",
+    "onTheWay": "On the way"
+  }
+}

@@ -1,8 +1,11 @@
 'use client';
 
 import { Bell, Menu, PanelLeft, PanelLeftClose, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 interface TopbarProps {
   schoolName: string | null;
@@ -19,6 +22,7 @@ export function Topbar({
   onMenuClick,
   onToggleCollapse,
 }: TopbarProps) {
+  const t = useTranslations('nav');
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
@@ -47,7 +51,7 @@ export function Topbar({
         type="button"
         onClick={onMenuClick}
         className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card transition-colors hover:bg-secondary lg:hidden"
-        aria-label="Abrir menú"
+        aria-label={t('topbar.openMenu')}
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -55,7 +59,7 @@ export function Topbar({
         type="button"
         onClick={onToggleCollapse}
         className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card transition-colors hover:bg-secondary lg:inline-flex"
-        aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+        aria-label={collapsed ? t('topbar.expandMenu') : t('topbar.collapseMenu')}
       >
         {collapsed ? <PanelLeft className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
       </button>
@@ -65,7 +69,8 @@ export function Topbar({
         </p>
         {internalCode && (
           <p className="text-[11px] font-semibold text-muted-foreground">
-            Código <span className="font-mono font-bold text-foreground/70">{internalCode}</span>
+            {t('topbar.codeLabel')}{' '}
+            <span className="font-mono font-bold text-foreground/70">{internalCode}</span>
           </p>
         )}
       </div>
@@ -75,14 +80,15 @@ export function Topbar({
           <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Buscar alumno, padre…"
+            placeholder={t('topbar.searchPlaceholder')}
             className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/70"
           />
         </div>
+        <LanguageSwitcher />
         <Link
           href="/admin/alerts"
           className="relative inline-flex items-center justify-center h-9 w-9 rounded-full border border-border bg-card hover:bg-secondary transition-colors"
-          aria-label="Alertas"
+          aria-label={t('topbar.alerts')}
         >
           <Bell className="h-4 w-4" />
           {unread > 0 && (

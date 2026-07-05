@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
@@ -24,6 +25,7 @@ export default async function PickupDashboardPage({ params }: PageProps) {
   if (!pickup || pickup.schoolId !== schoolId) notFound();
 
   const initialTrips = await buildRankedTrips(schoolId, pickup.id);
+  const t = await getTranslations('dashboard');
 
   return (
     <div className="space-y-6">
@@ -33,11 +35,11 @@ export default async function PickupDashboardPage({ params }: PageProps) {
             href="/admin/dashboard"
             className="text-xs font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground"
           >
-            ← Dashboard
+            {t('pickup.backToDashboard')}
           </Link>
           <h1 className="mt-1 text-3xl font-black">{pickup.name}</h1>
           <p className="text-sm text-muted-foreground">
-            Viajes activos rankeados por ETA. Geofence: {pickup.radiusMeters} m.
+            {t('pickup.subtitle', { radius: pickup.radiusMeters })}
           </p>
         </div>
       </div>

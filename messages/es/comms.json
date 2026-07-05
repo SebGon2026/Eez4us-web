@@ -1,0 +1,130 @@
+{
+  "messages": {
+    "title": "Mensajería",
+    "subtitle": "Conversaciones con padres del colegio y broadcasts.",
+    "conversations": "Conversaciones ({count})",
+    "empty": "Todavía no hay conversaciones. Mandá un broadcast o esperá a que un padre escriba.",
+    "noMessages": "Sin mensajes"
+  },
+  "broadcast": {
+    "title": "Broadcast a todos los padres",
+    "subjectPlaceholder": "Asunto (opcional)",
+    "messagePlaceholder": "Mensaje para todos los padres...",
+    "sendToAll": "Enviar a todos",
+    "sent": "Broadcast enviado a {count, plural, one {# padre} other {# padres}}",
+    "sendError": "No se pudo enviar el broadcast"
+  },
+  "conversation": {
+    "back": "← Volver a Mensajería",
+    "empty": "Sin mensajes todavía.",
+    "replyPlaceholder": "Escribí tu respuesta…",
+    "sendError": "No se pudo enviar el mensaje"
+  },
+  "alerts": {
+    "title": "Alertas",
+    "subtitle": "Eventos que requieren atención: viajes demorados, entregas pendientes e invitaciones sin aceptar.",
+    "type": {
+      "TRIP_OVERDUE": "Viaje demorado",
+      "ARRIVED_NOT_DELIVERED": "Entrega pendiente",
+      "INVITATION_STALE": "Invitación sin claim"
+    },
+    "severity": {
+      "info": "Info",
+      "warning": "Aviso",
+      "critical": "Crítico"
+    },
+    "filters": {
+      "all": "Todas",
+      "unread": "No leídas",
+      "TRIP_OVERDUE": "Viajes demorados",
+      "ARRIVED_NOT_DELIVERED": "Entregas pendientes",
+      "INVITATION_STALE": "Invitaciones"
+    },
+    "describe": {
+      "parentFallback": "Padre",
+      "tripOverdue": "{parent} lleva más de 30 minutos en camino. {students}",
+      "arrivedNotDelivered": "{parent} está en zona hace más de 10 minutos sin entrega. {students}",
+      "invitationStale": "{recipient} no ha aceptado la invitación tras 7 días.",
+      "generic": "Alerta"
+    },
+    "empty": "No hay alertas para este filtro.",
+    "unread": "No leída",
+    "readAt": "Leída {when}",
+    "markRead": "Marcar como leída",
+    "marking": "Marcando..."
+  },
+  "support": {
+    "title": "Soporte",
+    "subtitle": "Reportá un bug, una mejora o pedí ayuda.",
+    "adminTitle": "Soporte — Admin",
+    "adminSubtitle": "Todos los tickets reportados.",
+    "report": "Reportar",
+    "table": {
+      "type": "Tipo",
+      "title": "Título",
+      "reportedBy": "Reportado por",
+      "change": "Cambiar"
+    },
+    "emptyTable": "No hay tickets.",
+    "ticketType": {
+      "BUG": "Bug",
+      "IMPROVEMENT": "Mejora",
+      "SUPPORT": "Soporte"
+    },
+    "status": {
+      "OPEN": "Abierto",
+      "IN_PROGRESS": "En curso",
+      "RESOLVED": "Resuelto",
+      "CLOSED": "Cerrado"
+    },
+    "statusFilter": {
+      "all": "Todos los estados",
+      "OPEN": "Abiertos",
+      "IN_PROGRESS": "En curso",
+      "RESOLVED": "Resueltos",
+      "CLOSED": "Cerrados"
+    },
+    "dialog": {
+      "title": "Reportar ticket",
+      "description": "Contanos el problema, sugerencia o pedido. El equipo lo verá inmediatamente.",
+      "typeLabel": "Tipo",
+      "titleLabel": "Título",
+      "descriptionLabel": "Descripción"
+    },
+    "errorFallback": "Error"
+  },
+  "tempAuths": {
+    "title": "Autorizaciones temporales",
+    "subtitle": "Validá un código generado por el padre para personas ocasionales (niñera, etc.).",
+    "activeToday": "Vigentes hoy ({count})",
+    "activeTodayEmpty": "No hay autorizaciones pendientes para hoy.",
+    "authorizes": "Autoriza:",
+    "vehicleLine": "Vehículo: {info}",
+    "picksUp": "Recoge a:",
+    "historyTitle": "Histórico ({count})",
+    "historyEmpty": "Aún no hay autorizaciones temporales generadas.",
+    "historyMeta": "Padre: {name} · Código <c>{code}</c> · Válido {date}",
+    "status": {
+      "revoked": "Revocada",
+      "usedBy": "Usada por {name}",
+      "pending": "Pendiente"
+    }
+  },
+  "validate": {
+    "title": "Validar código",
+    "action": "Validar",
+    "validating": "Validando…",
+    "validateError": "No se pudo validar",
+    "confirmPrompt": "¿Confirmar entrega a {name}?",
+    "confirmed": "Entrega confirmada",
+    "confirmError": "No se pudo confirmar",
+    "tempPerson": "Persona temporal",
+    "document": "Documento: {type} — {id}",
+    "docFallback": "Doc",
+    "authorizingParent": "Padre autorizante",
+    "authorizedChildren": "Niños autorizados",
+    "recommendation": "Recomendación: pedile a la persona autorizada que pase personalmente con un encargado de la escuela — no subir al alumno al vehículo sin verificar identidad.",
+    "confirmDelivery": "Confirmar entrega",
+    "confirming": "Confirmando…"
+  }
+}

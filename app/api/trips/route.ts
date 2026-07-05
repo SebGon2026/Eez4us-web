@@ -80,14 +80,15 @@ export async function POST(req: Request): Promise<Response> {
       return Response.json({ error: 'STUDENT_SCHOOL_MISMATCH' }, { status: 400 });
     }
 
-    // "Voy en camino" no aplica a alumnos de transporte (van/bus) — paridad con
-    // /api/mobile/pickups/start. "Estoy afuera" sí se permite: el padre está físicamente
-    // en la puerta y la miss decide la entrega.
+    // "Voy en camino" (GPS + placa en la TV) solo aplica a alumnos que recoge un
+    // representante en su vehículo particular. Transporte (van/bus) y a pie (WALKING)
+    // quedan fuera — paridad con /api/mobile/pickups/start. "Estoy afuera" sí se permite:
+    // el padre está físicamente en la puerta (incluso a pie) y la miss decide la entrega.
     if (body.mode === 'EN_CAMINO') {
-      const transport = ownedStudents.find((s) => s.student.pickupMode === 'TRANSPORT');
-      if (transport) {
+      const nonPrivate = ownedStudents.find((s) => s.student.pickupMode !== 'PRIVATE_VEHICLE');
+      if (nonPrivate) {
         return Response.json(
-          { error: 'STUDENT_NOT_PRIVATE_PICKUP', studentId: transport.studentId },
+          { error: 'STUDENT_NOT_PRIVATE_PICKUP', studentId: nonPrivate.studentId },
           { status: 400 },
         );
       }

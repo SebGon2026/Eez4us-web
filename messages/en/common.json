@@ -1,0 +1,100 @@
+{
+  "app": {
+    "metaTitle": "Eez4us Admin",
+    "metaDescription": "Eez4us admin panel"
+  },
+  "actions": {
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "retry": "Retry",
+    "search": "Search",
+    "add": "Add",
+    "create": "Create",
+    "send": "Send",
+    "sending": "Sending…",
+    "copy": "Copy",
+    "copied": "Copied",
+    "download": "Download",
+    "view": "View",
+    "refresh": "Refresh",
+    "filter": "Filter",
+    "clear": "Clear",
+    "seeAll": "See all",
+    "understood": "Got it",
+    "loadingMore": "Loading more…",
+    "loadMore": "Load more"
+  },
+  "states": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "loading": "Loading…",
+    "empty": "No results",
+    "error": "Something went wrong",
+    "success": "Done",
+    "pending": "Pending"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Connection error. Check your internet and try again.",
+    "unauthorized": "You don't have permission to do this.",
+    "notFound": "Not found."
+  },
+  "confirmDialog": {
+    "title": "Are you sure?",
+    "irreversible": "This action cannot be undone."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {total}",
+    "showing": "Showing {count, plural, one {# result} other {# results}}"
+  },
+  "language": {
+    "label": "Language",
+    "es": "Español",
+    "en": "English",
+    "change": "Change language"
+  },
+  "fields": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "password": "Password",
+    "status": "Status",
+    "role": "Role",
+    "school": "School",
+    "grade": "Grade",
+    "student": "Student",
+    "students": "Students",
+    "parent": "Parent",
+    "date": "Date",
+    "actions": "Actions",
+    "optional": "Optional",
+    "required": "Required",
+    "notes": "Notes"
+  },
+  "misc": {
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "none": "None",
+    "notAvailable": "N/A",
+    "perStudentPerMonth": "per student / month",
+    "comingSoon": "Coming soon"
+  },
+  "roles": {
+    "parent": "Parent",
+    "director": "Director",
+    "support_staff": "Support staff",
+    "vendor": "Vendor",
+    "super_admin": "Super admin"
+  }
+}

@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { auth } from './auth';
 import { prisma } from './db';
+import { type AppLocale,localeForCountry } from './locale';
 import { sendInvitationEmail } from './mailer';
 import { sendWhatsAppInvitation } from './n8n';
 import { validatePhoneForCountry } from './phone';
@@ -107,6 +108,8 @@ interface DispatchInvitationArgs {
   link: string;
   parentName: string;
   studentNames: string[];
+  // Idioma del email según país del colegio. WhatsApp no lo usa: el template vive en Meta/n8n.
+  locale?: AppLocale;
 }
 
 export async function dispatchInvitation({
@@ -115,9 +118,10 @@ export async function dispatchInvitation({
   link,
   parentName,
   studentNames,
+  locale,
 }: DispatchInvitationArgs): Promise<void> {
   if (channel === 'EMAIL') {
-    await sendInvitationEmail({ email: contactValue, link, parentName, studentNames });
+    await sendInvitationEmail({ email: contactValue, link, parentName, studentNames, locale });
   } else {
     await sendWhatsAppInvitation({ phone: contactValue, link, parentName, studentNames });
   }
@@ -130,6 +134,7 @@ interface SendInvitationArgs {
   token: string;
   parentName: string;
   studentNames: string[];
+  locale?: AppLocale;
 }
 
 export async function sendInvitation({
@@ -139,6 +144,7 @@ export async function sendInvitation({
   token,
   parentName,
   studentNames,
+  locale,
 }: SendInvitationArgs): Promise<void> {
   await dispatchInvitation({
     channel,
@@ -146,6 +152,7 @@ export async function sendInvitation({
     link: inviteLink(token),
     parentName,
     studentNames,
+    locale,
   });
   await prisma.invitation.update({
     where: { id: invitationId },
@@ -179,21 +186,25 @@ export async function inviteRepresentatives({
     parentName: string;
   }> = [];
 
-  // País de la escuela para validar el teléfono por prefijo+longitud (E.164 si es desconocido).
+  // País de la escuela: valida el teléfono por prefijo+longitud (E.164 si es
+  // desconocido) y decide el idioma del email de invitación.
   const school = await prisma.school.findUnique({
     where: { id: schoolId },
     select: { country: true },
   });
+  const locale = localeForCountry(school?.country);
 
   for (const rep of representatives) {
     const repName = `${rep.firstName} ${rep.lastName}`.trim();
-    if (rep.phoneE164 && !validatePhoneForCountry(rep.phoneE164, school?.country).valid) {
-      repErrors.push({ rep: repName, reason: 'PHONE_INVALID' });
-      continue;
-    }
     const channel = pickChannel(rep);
     if (!channel) {
       repErrors.push({ rep: repName, reason: 'REP_NEEDS_CONTACT' });
+      continue;
+    }
+    // El email tiene prioridad: un email válido NO se bloquea por un teléfono con prefijo de
+    // otro país. Solo validamos el teléfono cuando ES el canal a usar (WhatsApp, o sea sin email).
+    if (channel === 'WHATSAPP' && !validatePhoneForCountry(rep.phoneE164 ?? '', school?.country).valid) {
+      repErrors.push({ rep: repName, reason: 'PHONE_INVALID' });
       continue;
     }
     try {
@@ -229,6 +240,7 @@ export async function inviteRepresentatives({
         token: c.token,
         parentName: c.parentName,
         studentNames,
+        locale,
       }),
     ),
   );

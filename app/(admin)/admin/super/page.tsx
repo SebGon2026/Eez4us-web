@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,39 +89,43 @@ export default async function SuperDashboardPage() {
       ) / 10
     : null;
 
+  const t = await getTranslations('schools');
+
   const stats = [
-    { label: 'Colegios totales', value: totalSchools },
-    { label: 'Activos', value: activeSchools },
-    { label: 'Suspendidos', value: pausedSchools },
-    { label: 'Alumnos totales', value: totalStudents },
-    { label: 'Países en presencia', value: countries.size },
-    { label: 'Ciudades', value: cities.size },
-    { label: 'Colegios con sub activa', value: activeSubs.length },
-    { label: 'En trial', value: trialingSubs },
-    { label: 'Past due', value: pastDueSubs },
-    { label: 'Viajes ahora', value: activeTrips },
-    { label: 'Viajes últimos 7d', value: last7Trips },
+    { key: 'totalSchools', value: totalSchools },
+    { key: 'activeSchools', value: activeSchools },
+    { key: 'suspendedSchools', value: pausedSchools },
+    { key: 'totalStudents', value: totalStudents },
+    { key: 'countries', value: countries.size },
+    { key: 'cities', value: cities.size },
+    { key: 'activeSubs', value: activeSubs.length },
+    { key: 'trialing', value: trialingSubs },
+    { key: 'pastDue', value: pastDueSubs },
+    { key: 'tripsNow', value: activeTrips },
+    { key: 'tripsLast7d', value: last7Trips },
     {
-      label: 'Duración prom. recogida (30d)',
+      key: 'avgPickup30d',
       value: avgPickupMinutes == null ? '—' : `${avgPickupMinutes} min`,
     },
-    { label: 'Usuarios móviles iOS', value: iosUsers },
-    { label: 'Usuarios móviles Android', value: androidUsers },
-    { label: 'MRR estimado (USD)', value: `$${mrr.toFixed(0)}` },
+    { key: 'iosUsers', value: iosUsers },
+    { key: 'androidUsers', value: androidUsers },
+    { key: 'mrr', value: `$${mrr.toFixed(0)}` },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Super-admin · Dashboard global</h1>
-        <p className="text-sm text-muted-foreground">Métricas agregadas de toda la plataforma.</p>
+        <h1 className="text-3xl font-black">{t('super.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('super.subtitle')}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((s) => (
-          <Card key={s.label}>
+          <Card key={s.key}>
             <CardContent className="pt-6">
-              <p className="text-xs uppercase font-bold text-muted-foreground">{s.label}</p>
+              <p className="text-xs uppercase font-bold text-muted-foreground">
+                {t(`super.stats.${s.key}`)}
+              </p>
               <p className="text-3xl font-black">{s.value}</p>
             </CardContent>
           </Card>
@@ -129,19 +134,13 @@ export default async function SuperDashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Notas</CardTitle>
+          <CardTitle className="text-xl">{t('super.notes')}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-1">
-          <p>
-            · MRR estimado = alumnos activos × precio por alumno, sumado por colegio con
-            suscripción activa.
-          </p>
-          <p>
-            · Usuarios móviles = padres con dispositivo push registrado, por plataforma. El costo
-            de Pusher/Expo escala con este número.
-          </p>
-          <p>· Países/ciudades salen de la ficha del colegio (editable en su detalle).</p>
-          <p>· Stats consultan filas vivas — sin caché. Para uso en escala se denormaliza.</p>
+          <p>{t('super.note1')}</p>
+          <p>{t('super.note2')}</p>
+          <p>{t('super.note3')}</p>
+          <p>{t('super.note4')}</p>
         </CardContent>
       </Card>
     </div>

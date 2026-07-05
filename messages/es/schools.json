@@ -1,0 +1,310 @@
+{
+  "unknownError": "Error desconocido",
+  "creating": "Creando…",
+  "viewAsDirector": "Ver como director",
+  "codeLabel": "Código",
+  "list": {
+    "title": "Colegios",
+    "subtitle": "Vista global de colegios en la plataforma.",
+    "addSchool": "Alta de colegio",
+    "kpiSchools": "Colegios",
+    "kpiActive": "Activos",
+    "kpiUsers": "Usuarios",
+    "listTitle": "Listado",
+    "empty": "No hay colegios cargados.",
+    "suspended": "Suspendido",
+    "studentsCount": "{count, plural, one {# alumno} other {# alumnos}}",
+    "usersCount": "{count, plural, one {# usuario} other {# usuarios}}",
+    "tripsCount": "{count, plural, one {# viaje} other {# viajes}}",
+    "noSubscription": "sin suscripción",
+    "perMonth": "/mes",
+    "detail": "Detalle"
+  },
+  "new": {
+    "title": "Alta de colegio",
+    "subtitle": "Crear colegio + director inicial. El director recibirá credenciales por email (placeholder en dev).",
+    "schoolData": "Datos del colegio",
+    "created": "Colegio creado",
+    "nameLabel": "Nombre del colegio",
+    "internalCodeLabel": "Código interno (único)",
+    "internalCodePlaceholder": "EJ. ABC123",
+    "city": "Ciudad",
+    "cityPlaceholder": "Monterrey",
+    "country": "País",
+    "countryPlaceholder": "México",
+    "trialDaysLabel": "Días de prueba gratis",
+    "trialDaysHint": "El colegio no paga hasta que venza. Se puede extender después desde su ficha.",
+    "initialDirector": "Director inicial",
+    "initialPassword": "Contraseña inicial",
+    "createSchool": "Crear colegio"
+  },
+  "detail": {
+    "back": "← Volver",
+    "parents": "Padres de familia",
+    "vehicles": "Vehículos registrados",
+    "trips": "Viajes",
+    "pickupPoints": "Pickup points",
+    "invitations": "Invitaciones",
+    "staff": "Staff",
+    "noStaff": "Sin staff configurado.",
+    "subscription": "Suscripción",
+    "statusLabel": "Estado:",
+    "pastDueHint": "(trial vencido / pago pendiente — falta cargar tarjeta)",
+    "pricePerStudent": "Precio por alumno: {price} {currency}",
+    "trialUntil": "Trial hasta:",
+    "expired": "(vencido)",
+    "nextCharge": "Próximo cobro:",
+    "currentPeriodUntil": "Período actual hasta:",
+    "noSubscription": "Sin suscripción."
+  },
+  "actions": {
+    "suspended": "Colegio suspendido",
+    "reactivated": "Colegio reactivado",
+    "suspend": "Suspender",
+    "reactivate": "Reactivar"
+  },
+  "vendors": {
+    "title": "Agentes de venta",
+    "subtitle": "Comisión calculada sobre facturación mensual de las escuelas que enrolaron.",
+    "create": "Crear agente de venta",
+    "vendor": "Agente de venta",
+    "commission": "Comisión",
+    "duration": "Duración",
+    "schools": "Escuelas",
+    "billingPerMonth": "Facturación/mes",
+    "commissionPerMonth": "Comisión/mes",
+    "empty": "Aún no hay agentes de venta.",
+    "monthsCount": "{count, plural, one {# mes} other {# meses}}",
+    "noLimit": "Sin límite",
+    "total": "Total",
+    "newSubtitle": "Elegí un usuario existente con rol de agente de venta o creá uno nuevo.",
+    "newDataTitle": "Datos del agente de venta",
+    "defaultCommissionHint": "Comisión por defecto 10% por 3 meses.",
+    "invalidCommission": "Comisión inválida",
+    "invalidDuration": "Duración inválida (1 a 60 meses, o vacío para sin límite)",
+    "existingUser": "Usuario existente",
+    "newUser": "Crear usuario nuevo",
+    "user": "Usuario",
+    "commissionPct": "Comisión (%)",
+    "durationMonths": "Duración (meses)",
+    "emptyNoLimit": "Vacío = sin límite",
+    "commissionExample": "Ej: 10% por 3 meses — la comisión se acumula en los siguientes {months} periodos de pago de cada escuela enrolada."
+  },
+  "staff": {
+    "title": "Personal",
+    "subtitle": "Cuentas de tu colegio. El <b>portón</b> usa la app móvil para ver llegadas y confirmar entregas; <b>soporte</b> usa el tablero web.",
+    "roles": {
+      "logistics": {
+        "label": "Portón (móvil)",
+        "help": "La persona del portón. Ve las llegadas, escanea el QR del padre y confirma la entrega desde la app."
+      },
+      "support_staff": {
+        "label": "Soporte (web)",
+        "help": "Tablero web: ve llegadas, filtra y puede finalizar entregas. Sin acceso a finanzas."
+      }
+    },
+    "errors": {
+      "EMAIL_ALREADY_USED": "Ese email ya tiene una cuenta.",
+      "INVALID_BODY": "Revisá los datos: nombre, email y contraseña (mínimo 8 caracteres).",
+      "CANNOT_MODIFY_SELF": "No podés desactivar tu propia cuenta.",
+      "CANNOT_MODIFY_ROLE": "Esa cuenta no se puede modificar desde acá."
+    },
+    "createFailed": "No se pudo crear la cuenta.",
+    "updateFailed": "No se pudo actualizar.",
+    "addPerson": "Agregar persona",
+    "namePlaceholder": "Laura Méndez",
+    "emailPlaceholder": "porton@colegio.edu",
+    "tempPassword": "Contraseña temporal",
+    "min8Chars": "Mínimo 8 caracteres",
+    "createAccount": "Crear cuenta",
+    "confirmDeactivate": "¿Desactivar a {name}? No podrá iniciar sesión.",
+    "deliveries": "Entregas",
+    "empty": "Aún no hay personal cargado.",
+    "activeBadge": "Activa",
+    "deactivatedBadge": "Dada de baja",
+    "cannotDeactivateSelf": "No podés desactivar tu propia cuenta",
+    "deactivate": "Desactivar",
+    "reactivate": "Reactivar"
+  },
+  "settings": {
+    "title": "Configuración del colegio",
+    "subtitle": "Identidad, apariencia, idioma y datos técnicos.",
+    "technicalData": "Datos técnicos",
+    "statusLabel": "Estado:",
+    "createdLabel": "Creado:",
+    "active": "Activo",
+    "suspended": "Suspendido",
+    "legal": "Legales",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfService": "Términos del servicio",
+    "hues": {
+      "green": "Verde",
+      "emerald": "Esmeralda",
+      "turquoise": "Turquesa",
+      "blue": "Azul",
+      "indigo": "Índigo",
+      "purple": "Morado",
+      "fuchsia": "Fucsia",
+      "pink": "Rosa",
+      "red": "Rojo",
+      "orange": "Naranja",
+      "amber": "Ámbar",
+      "lime": "Lima"
+    },
+    "localeOptions": {
+      "esMX": {
+        "label": "Español (Latinoamérica / México)",
+        "hint": "Imperativo neutro: «carga», «define», «elimina»."
+      },
+      "esAR": {
+        "label": "Español (Argentina / Rioplatense)",
+        "hint": "Voseo: «cargá», «definí», «eliminá»."
+      }
+    },
+    "density": {
+      "compact": {
+        "label": "Compacto",
+        "hint": "Más información a la vista."
+      },
+      "comfortable": {
+        "label": "Cómodo",
+        "hint": "Equilibrio recomendado."
+      },
+      "spacious": {
+        "label": "Espacioso",
+        "hint": "Máximo aire entre bloques."
+      }
+    },
+    "logoTooBig": "El logo supera los 300 KB. Usa una imagen más liviana.",
+    "fileReadError": "No se pudo leer el archivo",
+    "saved": "Cambios guardados",
+    "saveFailed": "No se pudo guardar",
+    "confirmRegenCode": "¿Regenerar código de acceso del colegio?",
+    "newCode": "Nuevo código: {code}",
+    "regenFailed": "No se pudo regenerar",
+    "identity": "Identidad",
+    "identityDesc": "Nombre, ubicación y código de acceso del colegio.",
+    "address": "Dirección",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "accessCode": "Código de acceso",
+    "regenerating": "Regenerando…",
+    "regenerate": "Regenerar",
+    "accessCodeHint": "Compártelo con tus directores y padres — lo escriben en la pantalla de login para llegar a la versión personalizada del colegio.",
+    "appearance": "Apariencia",
+    "appearanceDesc": "Cómo se ve el panel: logo, color de marca y densidad.",
+    "schoolLogo": "Logo del colegio",
+    "logoHint": "PNG, SVG, JPG o WebP con fondo transparente. Máx. 300 KB.",
+    "change": "Cambiar",
+    "remove": "Quitar",
+    "uploadLogo": "Subir logo",
+    "clickToChoose": "Haz clic para elegir un archivo",
+    "primaryColor": "Color de marca (primario)",
+    "primaryColorHint": "Sidebar, botones y estados activos.",
+    "reset": "Restablecer",
+    "accentColor": "Color de acento (secundario)",
+    "accentColorHint": "Íconos y bandas de las tarjetas. Si no eliges, usa el primario.",
+    "preview": "Vista previa",
+    "yourSchool": "Tu colegio",
+    "primaryButton": "Botón primario",
+    "metric": "Métrica",
+    "uiDensity": "Densidad de la interfaz",
+    "densityApplyHint": "Se aplica al guardar y recargar el panel.",
+    "languageRegion": "Idioma / Región",
+    "languageRegionDesc": "Variante de español usada en los textos del panel.",
+    "saveChanges": "Guardar cambios"
+  },
+  "setup": {
+    "stepOf": "Paso {step} de {total}",
+    "title": "Configurá tu escuela",
+    "subtitle": "Esto solo lo hacés una vez. Después podés editar todo desde el panel.",
+    "defaultPickupName": "Puerta principal",
+    "schoolName": "Nombre de la escuela",
+    "schoolNamePlaceholder": "Instituto X",
+    "address": "Dirección",
+    "addressPlaceholder": "Calle, número, ciudad",
+    "internalCode": "Código interno",
+    "internalCodeHint": "4 a 12 caracteres, mayúsculas o números. Lo usás cuando un padre te dice \"estoy registrándome\".",
+    "suggest": "Sugerir",
+    "internalCodeError": "Solo A-Z y 0-9, entre 4 y 12.",
+    "pickupName": "Nombre del punto",
+    "locationRadius": "Ubicación y radio",
+    "continue": "Continuar",
+    "finish": "Finalizar",
+    "saveSchoolFailed": "No se pudo guardar la escuela",
+    "createPickupFailed": "No se pudo crear el punto de recogida",
+    "unexpectedError": "Error inesperado"
+  },
+  "onboarding": {
+    "title": "Configurá tu escuela",
+    "subtitle": "Completá estos pasos para dejar la escuela lista para operar. Podés volver cuando quieras.",
+    "readyTitle": "Tu escuela está lista",
+    "readyDesc": "Tenés puntos de recogida, grados, alumnos y padres invitados. Ya podés operar las recogidas.",
+    "goLive": "Ir al tablero en vivo",
+    "almostTitle": "Falta poco",
+    "almostDesc": "La escuela queda lista con al menos un punto de recogida, un grado, un alumno y un padre invitado.",
+    "required": "Requerido",
+    "optional": "Opcional",
+    "addMore": "Agregar más",
+    "steps": {
+      "pickup": {
+        "title": "Punto de recogida",
+        "description": "Marcá en el mapa la puerta del colegio y su radio (geofence).",
+        "cta": "Agregar punto"
+      },
+      "grades": {
+        "title": "Grados",
+        "description": "Configurá los grados del colegio (\"Primero A\", \"Kínder\") antes de cargar alumnos. Cada alumno se asigna a un grado ya creado.",
+        "cta": "Configurar grados"
+      },
+      "students": {
+        "title": "Alumnos",
+        "description": "Subí el Excel con todos los alumnos (o agregalos uno a uno desde la lista), con sus grados.",
+        "cta": "Importar alumnos"
+      },
+      "parents": {
+        "title": "Padres invitados",
+        "description": "Subí el Excel de padres: el sistema les manda la invitación por email o WhatsApp.",
+        "cta": "Importar padres"
+      },
+      "staff": {
+        "title": "Personal de portón",
+        "description": "Sumá auxiliares (logistics) y soporte que operan la TV y finalizan entregas.",
+        "cta": "Agregar personal"
+      }
+    }
+  },
+  "super": {
+    "title": "Super-admin · Dashboard global",
+    "subtitle": "Métricas agregadas de toda la plataforma.",
+    "stats": {
+      "totalSchools": "Colegios totales",
+      "activeSchools": "Activos",
+      "suspendedSchools": "Suspendidos",
+      "totalStudents": "Alumnos totales",
+      "countries": "Países en presencia",
+      "cities": "Ciudades",
+      "activeSubs": "Colegios con sub activa",
+      "trialing": "En trial",
+      "pastDue": "Past due",
+      "tripsNow": "Viajes ahora",
+      "tripsLast7d": "Viajes últimos 7d",
+      "avgPickup30d": "Duración prom. recogida (30d)",
+      "iosUsers": "Usuarios móviles iOS",
+      "androidUsers": "Usuarios móviles Android",
+      "mrr": "MRR estimado (USD)"
+    },
+    "notes": "Notas",
+    "note1": "· MRR estimado = alumnos activos × precio por alumno, sumado por colegio con suscripción activa.",
+    "note2": "· Usuarios móviles = padres con dispositivo push registrado, por plataforma. El costo de Pusher/Expo escala con este número.",
+    "note3": "· Países/ciudades salen de la ficha del colegio (editable en su detalle).",
+    "note4": "· Stats consultan filas vivas — sin caché. Para uso en escala se denormaliza."
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Últimas 100 acciones sensibles.",
+    "events": "Eventos",
+    "empty": "No hay eventos auditados todavía.",
+    "system": "sistema"
+  }
+}

@@ -1,14 +1,11 @@
+import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { StudentForm } from '@/components/admin/student-form';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
 
-export default async function EditStudentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditStudentPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
   const schoolId = session.user.schoolId;
@@ -58,6 +55,8 @@ export default async function EditStudentPage({
 
   if (!student || student.schoolId !== schoolId) notFound();
 
+  const t = await getTranslations('students');
+
   const existingReps = student.parents.map((ps) => ps.parent);
   const pendingInvitations = invitations
     .filter((inv) => inv.status !== 'CLAIMED' && inv.status !== 'REVOKED')
@@ -73,7 +72,7 @@ export default async function EditStudentPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Editar alumno</h1>
+        <h1 className="text-3xl font-black">{t('edit.title')}</h1>
         <p className="text-sm text-muted-foreground">
           {student.firstName} {student.lastName}
         </p>

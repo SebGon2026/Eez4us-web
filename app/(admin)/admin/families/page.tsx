@@ -1,5 +1,8 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
@@ -13,6 +16,9 @@ export default async function FamiliesPage({
   if (!session || !session.user.schoolId) redirect('/login');
   if (!['director', 'support_staff', 'super_admin'].includes(session.user.role)) redirect('/admin');
 
+  const t = await getTranslations('students');
+  const tCommon = await getTranslations('common');
+  const canInvite = ['director', 'super_admin'].includes(session.user.role);
   const { q } = await searchParams;
   const search = (q ?? '').trim();
 
@@ -49,38 +55,43 @@ export default async function FamiliesPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-black">Familias del colegio</h1>
-        <p className="text-sm text-muted-foreground">
-          Listado de padres con sus alumnos, vehículos y familiares secundarios.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-black">{t('families.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('families.subtitle')}</p>
+        </div>
+        {canInvite && (
+          <Link href="/admin/families/new">
+            <Button>{t('families.new.title')}</Button>
+          </Link>
+        )}
       </div>
 
       <form className="flex gap-2" action="" method="get">
         <input
           name="q"
           defaultValue={search}
-          placeholder="Buscar por nombre, email o teléfono…"
+          placeholder={t('families.searchPlaceholder')}
           className="flex h-12 w-full rounded-2xl border border-input bg-background px-4 py-2 text-sm"
         />
         <button
           type="submit"
           className="rounded-2xl border-2 border-input px-4 text-sm font-bold hover:bg-secondary"
         >
-          Buscar
+          {tCommon('actions.search')}
         </button>
       </form>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Padres ({parents.length})</CardTitle>
+          <CardTitle className="text-xl">
+            {t('families.parentsCount', { count: parents.length })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {parents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              {search
-                ? 'Ningún padre encontrado con ese criterio.'
-                : 'Aún no hay padres claimados.'}
+              {search ? t('families.emptyFiltered') : t('families.empty')}
             </p>
           ) : (
             <ul className="divide-y text-sm">
@@ -95,9 +106,11 @@ export default async function FamiliesPage({
                       </p>
                     </div>
                     <div className="flex gap-3 text-xs text-muted-foreground">
-                      <span>{p._count.parentStudents} hijos</span>
-                      <span>{p._count.vehicles} vehículos</span>
-                      <span>{p._count.authorizedFamilies} familiares</span>
+                      <span>{t('families.childrenCount', { count: p._count.parentStudents })}</span>
+                      <span>{t('families.vehiclesCount', { count: p._count.vehicles })}</span>
+                      <span>
+                        {t('families.familyMembersCount', { count: p._count.authorizedFamilies })}
+                      </span>
                     </div>
                   </div>
                 </li>

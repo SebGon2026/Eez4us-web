@@ -1,0 +1,310 @@
+{
+  "unknownError": "Unknown error",
+  "creating": "Creating…",
+  "viewAsDirector": "View as director",
+  "codeLabel": "Code",
+  "list": {
+    "title": "Schools",
+    "subtitle": "Global view of the schools on the platform.",
+    "addSchool": "Add school",
+    "kpiSchools": "Schools",
+    "kpiActive": "Active",
+    "kpiUsers": "Users",
+    "listTitle": "List",
+    "empty": "No schools added yet.",
+    "suspended": "Suspended",
+    "studentsCount": "{count, plural, one {# student} other {# students}}",
+    "usersCount": "{count, plural, one {# user} other {# users}}",
+    "tripsCount": "{count, plural, one {# trip} other {# trips}}",
+    "noSubscription": "no subscription",
+    "perMonth": "/mo",
+    "detail": "Details"
+  },
+  "new": {
+    "title": "Add school",
+    "subtitle": "Create a school plus its initial director. The director will receive credentials by email (placeholder in dev).",
+    "schoolData": "School details",
+    "created": "School created",
+    "nameLabel": "School name",
+    "internalCodeLabel": "Internal code (unique)",
+    "internalCodePlaceholder": "E.G. ABC123",
+    "city": "City",
+    "cityPlaceholder": "Monterrey",
+    "country": "Country",
+    "countryPlaceholder": "Mexico",
+    "trialDaysLabel": "Free trial days",
+    "trialDaysHint": "The school doesn't pay until it ends. It can be extended later from its detail page.",
+    "initialDirector": "Initial director",
+    "initialPassword": "Initial password",
+    "createSchool": "Create school"
+  },
+  "detail": {
+    "back": "← Back",
+    "parents": "Parents",
+    "vehicles": "Registered vehicles",
+    "trips": "Trips",
+    "pickupPoints": "Pickup points",
+    "invitations": "Invitations",
+    "staff": "Staff",
+    "noStaff": "No staff configured.",
+    "subscription": "Subscription",
+    "statusLabel": "Status:",
+    "pastDueHint": "(trial expired / payment pending — a card needs to be added)",
+    "pricePerStudent": "Price per student: {price} {currency}",
+    "trialUntil": "Trial until:",
+    "expired": "(expired)",
+    "nextCharge": "Next charge:",
+    "currentPeriodUntil": "Current period until:",
+    "noSubscription": "No subscription."
+  },
+  "actions": {
+    "suspended": "School suspended",
+    "reactivated": "School reactivated",
+    "suspend": "Suspend",
+    "reactivate": "Reactivate"
+  },
+  "vendors": {
+    "title": "Sales agents",
+    "subtitle": "Commission calculated on the monthly billing of the schools they enrolled.",
+    "create": "Create sales agent",
+    "vendor": "Sales agent",
+    "commission": "Commission",
+    "duration": "Duration",
+    "schools": "Schools",
+    "billingPerMonth": "Billing/mo",
+    "commissionPerMonth": "Commission/mo",
+    "empty": "No sales agents yet.",
+    "monthsCount": "{count, plural, one {# month} other {# months}}",
+    "noLimit": "No limit",
+    "total": "Total",
+    "newSubtitle": "Pick an existing user with the sales agent role or create a new one.",
+    "newDataTitle": "Sales agent details",
+    "defaultCommissionHint": "Default commission: 10% for 3 months.",
+    "invalidCommission": "Invalid commission",
+    "invalidDuration": "Invalid duration (1 to 60 months, or empty for no limit)",
+    "existingUser": "Existing user",
+    "newUser": "Create new user",
+    "user": "User",
+    "commissionPct": "Commission (%)",
+    "durationMonths": "Duration (months)",
+    "emptyNoLimit": "Empty = no limit",
+    "commissionExample": "E.g., 10% for 3 months — the commission accrues over the next {months} payment periods of each enrolled school."
+  },
+  "staff": {
+    "title": "Staff",
+    "subtitle": "Accounts for your school. The <b>gate</b> uses the mobile app to see arrivals and confirm deliveries; <b>support</b> uses the web board.",
+    "roles": {
+      "logistics": {
+        "label": "Gate (mobile)",
+        "help": "The person at the gate. Sees arrivals, scans the parent's QR code, and confirms the delivery from the app."
+      },
+      "support_staff": {
+        "label": "Support (web)",
+        "help": "Web board: sees arrivals, filters, and can finalize deliveries. No access to finances."
+      }
+    },
+    "errors": {
+      "EMAIL_ALREADY_USED": "That email already has an account.",
+      "INVALID_BODY": "Check the details: name, email, and password (at least 8 characters).",
+      "CANNOT_MODIFY_SELF": "You can't deactivate your own account.",
+      "CANNOT_MODIFY_ROLE": "That account can't be modified from here."
+    },
+    "createFailed": "The account could not be created.",
+    "updateFailed": "Could not update.",
+    "addPerson": "Add person",
+    "namePlaceholder": "Laura Méndez",
+    "emailPlaceholder": "gate@school.edu",
+    "tempPassword": "Temporary password",
+    "min8Chars": "At least 8 characters",
+    "createAccount": "Create account",
+    "confirmDeactivate": "Deactivate {name}? They won't be able to sign in.",
+    "deliveries": "Deliveries",
+    "empty": "No staff added yet.",
+    "activeBadge": "Active",
+    "deactivatedBadge": "Deactivated",
+    "cannotDeactivateSelf": "You can't deactivate your own account",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate"
+  },
+  "settings": {
+    "title": "School settings",
+    "subtitle": "Identity, appearance, language, and technical details.",
+    "technicalData": "Technical details",
+    "statusLabel": "Status:",
+    "createdLabel": "Created:",
+    "active": "Active",
+    "suspended": "Suspended",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "hues": {
+      "green": "Green",
+      "emerald": "Emerald",
+      "turquoise": "Turquoise",
+      "blue": "Blue",
+      "indigo": "Indigo",
+      "purple": "Purple",
+      "fuchsia": "Fuchsia",
+      "pink": "Pink",
+      "red": "Red",
+      "orange": "Orange",
+      "amber": "Amber",
+      "lime": "Lime"
+    },
+    "localeOptions": {
+      "esMX": {
+        "label": "Spanish (Latin America / Mexico)",
+        "hint": "Neutral imperative: “carga”, “define”, “elimina”."
+      },
+      "esAR": {
+        "label": "Spanish (Argentina / Rioplatense)",
+        "hint": "Voseo: “cargá”, “definí”, “eliminá”."
+      }
+    },
+    "density": {
+      "compact": {
+        "label": "Compact",
+        "hint": "More information at a glance."
+      },
+      "comfortable": {
+        "label": "Comfortable",
+        "hint": "Recommended balance."
+      },
+      "spacious": {
+        "label": "Spacious",
+        "hint": "Maximum breathing room between blocks."
+      }
+    },
+    "logoTooBig": "The logo exceeds 300 KB. Use a lighter image.",
+    "fileReadError": "Could not read the file",
+    "saved": "Changes saved",
+    "saveFailed": "Could not save",
+    "confirmRegenCode": "Regenerate the school's access code?",
+    "newCode": "New code: {code}",
+    "regenFailed": "Could not regenerate",
+    "identity": "Identity",
+    "identityDesc": "School name, location, and access code.",
+    "address": "Address",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "accessCode": "Access code",
+    "regenerating": "Regenerating…",
+    "regenerate": "Regenerate",
+    "accessCodeHint": "Share it with your directors and parents — they type it on the login screen to reach your school's personalized version.",
+    "appearance": "Appearance",
+    "appearanceDesc": "How the panel looks: logo, brand color, and density.",
+    "schoolLogo": "School logo",
+    "logoHint": "PNG, SVG, JPG, or WebP with a transparent background. Max 300 KB.",
+    "change": "Change",
+    "remove": "Remove",
+    "uploadLogo": "Upload logo",
+    "clickToChoose": "Click to choose a file",
+    "primaryColor": "Brand color (primary)",
+    "primaryColorHint": "Sidebar, buttons, and active states.",
+    "reset": "Reset",
+    "accentColor": "Accent color (secondary)",
+    "accentColorHint": "Icons and card bands. If none is chosen, the primary color is used.",
+    "preview": "Preview",
+    "yourSchool": "Your school",
+    "primaryButton": "Primary button",
+    "metric": "Metric",
+    "uiDensity": "Interface density",
+    "densityApplyHint": "Applied when you save and reload the panel.",
+    "languageRegion": "Language / Region",
+    "languageRegionDesc": "Spanish variant used in the panel texts.",
+    "saveChanges": "Save changes"
+  },
+  "setup": {
+    "stepOf": "Step {step} of {total}",
+    "title": "Set up your school",
+    "subtitle": "You only do this once. You can edit everything from the panel later.",
+    "defaultPickupName": "Main gate",
+    "schoolName": "School name",
+    "schoolNamePlaceholder": "X Institute",
+    "address": "Address",
+    "addressPlaceholder": "Street, number, city",
+    "internalCode": "Internal code",
+    "internalCodeHint": "4 to 12 characters, uppercase letters or numbers. You use it when a parent tells you \"I'm signing up\".",
+    "suggest": "Suggest",
+    "internalCodeError": "Only A-Z and 0-9, between 4 and 12.",
+    "pickupName": "Point name",
+    "locationRadius": "Location and radius",
+    "continue": "Continue",
+    "finish": "Finish",
+    "saveSchoolFailed": "The school could not be saved",
+    "createPickupFailed": "The pickup point could not be created",
+    "unexpectedError": "Unexpected error"
+  },
+  "onboarding": {
+    "title": "Set up your school",
+    "subtitle": "Complete these steps to get the school ready to operate. You can come back anytime.",
+    "readyTitle": "Your school is ready",
+    "readyDesc": "You have pickup points, grades, students, and invited parents. You can now run pickups.",
+    "goLive": "Go to the live board",
+    "almostTitle": "Almost there",
+    "almostDesc": "The school is ready with at least one pickup point, one grade, one student, and one invited parent.",
+    "required": "Required",
+    "optional": "Optional",
+    "addMore": "Add more",
+    "steps": {
+      "pickup": {
+        "title": "Pickup point",
+        "description": "Mark the school's gate and its radius (geofence) on the map.",
+        "cta": "Add point"
+      },
+      "grades": {
+        "title": "Grades",
+        "description": "Set up the school's grades (\"1st Grade A\", \"Kindergarten\") before adding students. Each student is assigned to an existing grade.",
+        "cta": "Set up grades"
+      },
+      "students": {
+        "title": "Students",
+        "description": "Upload the Excel with all students (or add them one by one from the list), with their grades.",
+        "cta": "Import students"
+      },
+      "parents": {
+        "title": "Invited parents",
+        "description": "Upload the parents' Excel file: the system sends them the invitation by email or WhatsApp.",
+        "cta": "Import parents"
+      },
+      "staff": {
+        "title": "Gate staff",
+        "description": "Add assistants (logistics) and support staff who run the TV and finalize deliveries.",
+        "cta": "Add staff"
+      }
+    }
+  },
+  "super": {
+    "title": "Super admin · Global dashboard",
+    "subtitle": "Aggregated metrics across the whole platform.",
+    "stats": {
+      "totalSchools": "Total schools",
+      "activeSchools": "Active",
+      "suspendedSchools": "Suspended",
+      "totalStudents": "Total students",
+      "countries": "Countries present",
+      "cities": "Cities",
+      "activeSubs": "Schools with an active sub",
+      "trialing": "On trial",
+      "pastDue": "Past due",
+      "tripsNow": "Trips right now",
+      "tripsLast7d": "Trips last 7d",
+      "avgPickup30d": "Avg. pickup duration (30d)",
+      "iosUsers": "iOS mobile users",
+      "androidUsers": "Android mobile users",
+      "mrr": "Estimated MRR (USD)"
+    },
+    "notes": "Notes",
+    "note1": "· Estimated MRR = active students × price per student, summed across schools with an active subscription.",
+    "note2": "· Mobile users = parents with a registered push device, per platform. Pusher/Expo costs scale with this number.",
+    "note3": "· Countries/cities come from the school's profile (editable in its detail page).",
+    "note4": "· Stats query live rows — no cache. At scale this gets denormalized."
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Last 100 sensitive actions.",
+    "events": "Events",
+    "empty": "No audited events yet.",
+    "system": "system"
+  }
+}

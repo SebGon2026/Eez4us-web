@@ -3,7 +3,22 @@ import { betterAuth } from 'better-auth';
 import { bearer, jwt, twoFactor } from 'better-auth/plugins';
 
 import { prisma } from './db';
+import { LOCALE_COOKIE, resolveLocale, type AppLocale } from './locale';
 import { sendResetPasswordEmail, sendStaffOtpEmail } from './mailer';
+
+// Idioma para los emails de auth (OTP 2FA / reset): sale de los headers del request
+// que dispara el envío (cookie NEXT_LOCALE → geo-IP → Accept-Language). Sin headers
+// (jobs internos), cae al default 'es'.
+function localeFromHeaders(headers: Headers | null | undefined): AppLocale {
+  if (!headers) return 'es';
+  const cookieHeader = headers.get('cookie') ?? '';
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE}=(es|en)(?:;|\\s|$)`));
+  return resolveLocale({
+    cookie: match?.[1] ?? null,
+    ipCountry: headers.get('cf-ipcountry'),
+    acceptLanguage: headers.get('accept-language'),
+  });
+}
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
@@ -21,9 +36,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, url }, request) => {
       // El cliente solo recibe un genérico "si existe el email te mandamos un link".
-      await sendResetPasswordEmail({ email: user.email, link: url });
+      await sendResetPasswordEmail({
+        email: user.email,
+        link: url,
+        locale: localeFromHeaders(request?.headers),
+      });
     },
   },
   user: {
@@ -46,8 +65,12 @@ export const auth = betterAuth({
       totpOptions: { disable: true },
       otpOptions: {
         period: 5, // minutos de vida del código
-        sendOTP: async ({ user, otp }) => {
-          await sendStaffOtpEmail({ email: user.email, otp });
+        sendOTP: async ({ user, otp }, ctx) => {
+          await sendStaffOtpEmail({
+            email: user.email,
+            otp,
+            locale: localeFromHeaders(ctx?.request?.headers ?? ctx?.headers),
+          });
         },
       },
     }),

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -9,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function NewSchoolForm() {
+  const t = useTranslations('schools');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [name, setName] = useState('');
   const [internalCode, setInternalCode] = useState('');
@@ -42,7 +45,7 @@ export function NewSchoolForm() {
         toast.error(data.error ?? `HTTP ${res.status}`);
         return;
       }
-      toast.success('Colegio creado');
+      toast.success(t('new.created'));
       router.push(`/admin/schools/${data.school.id}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error');
@@ -54,31 +57,39 @@ export function NewSchoolForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <Label>Nombre del colegio</Label>
+        <Label>{t('new.nameLabel')}</Label>
         <Input value={name} onChange={(e) => setName(e.target.value)} required />
       </div>
       <div>
-        <Label>Código interno (único)</Label>
+        <Label>{t('new.internalCodeLabel')}</Label>
         <Input
           value={internalCode}
           onChange={(e) => setInternalCode(e.target.value.toUpperCase())}
-          placeholder="EJ. ABC123"
+          placeholder={t('new.internalCodePlaceholder')}
           required
           className="font-mono uppercase"
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label>Ciudad</Label>
-          <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Monterrey" />
+          <Label>{t('new.city')}</Label>
+          <Input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder={t('new.cityPlaceholder')}
+          />
         </div>
         <div>
-          <Label>País</Label>
-          <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="México" />
+          <Label>{t('new.country')}</Label>
+          <Input
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            placeholder={t('new.countryPlaceholder')}
+          />
         </div>
       </div>
       <div>
-        <Label>Días de prueba gratis</Label>
+        <Label>{t('new.trialDaysLabel')}</Label>
         <Input
           type="number"
           min={1}
@@ -87,18 +98,18 @@ export function NewSchoolForm() {
           onChange={(e) => setTrialDays(e.target.value)}
           required
         />
-        <p className="mt-1 text-xs text-muted-foreground">
-          El colegio no paga hasta que venza. Se puede extender después desde su ficha.
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('new.trialDaysHint')}</p>
       </div>
       <hr className="my-4" />
-      <p className="text-sm font-bold uppercase text-muted-foreground">Director inicial</p>
+      <p className="text-sm font-bold uppercase text-muted-foreground">
+        {t('new.initialDirector')}
+      </p>
       <div>
-        <Label>Nombre</Label>
+        <Label>{tCommon('fields.name')}</Label>
         <Input value={directorName} onChange={(e) => setDirectorName(e.target.value)} required />
       </div>
       <div>
-        <Label>Email</Label>
+        <Label>{tCommon('fields.email')}</Label>
         <Input
           type="email"
           value={directorEmail}
@@ -107,7 +118,7 @@ export function NewSchoolForm() {
         />
       </div>
       <div>
-        <Label>Contraseña inicial</Label>
+        <Label>{t('new.initialPassword')}</Label>
         <Input
           type="text"
           value={directorPassword}
@@ -118,7 +129,7 @@ export function NewSchoolForm() {
       </div>
 
       <Button type="submit" disabled={pending}>
-        {pending ? 'Creando…' : 'Crear colegio'}
+        {pending ? t('creating') : t('new.createSchool')}
       </Button>
     </form>
   );

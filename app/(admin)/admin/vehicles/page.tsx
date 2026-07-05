@@ -1,7 +1,9 @@
+import { getLocale, getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 export default async function VehiclesPage({
@@ -13,6 +15,9 @@ export default async function VehiclesPage({
   if (!session || !session.user.schoolId) redirect('/login');
   if (!['director', 'support_staff', 'super_admin'].includes(session.user.role)) redirect('/admin');
 
+  const t = await getTranslations('students');
+  const tCommon = await getTranslations('common');
+  const intlLocale = intlLocaleOf(await getLocale());
   const { q } = await searchParams;
   const search = (q ?? '').trim();
 
@@ -41,35 +46,35 @@ export default async function VehiclesPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black">Vehículos registrados</h1>
-        <p className="text-sm text-muted-foreground">
-          Vehículos asociados a los padres del colegio.
-        </p>
+        <h1 className="text-3xl font-black">{t('vehicles.title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('vehicles.subtitle')}</p>
       </div>
 
       <form className="flex gap-2" action="" method="get">
         <input
           name="q"
           defaultValue={search}
-          placeholder="Buscar por placa, modelo o padre…"
+          placeholder={t('vehicles.searchPlaceholder')}
           className="flex h-12 w-full rounded-2xl border border-input bg-background px-4 py-2 text-sm"
         />
         <button
           type="submit"
           className="rounded-2xl border-2 border-input px-4 text-sm font-bold hover:bg-secondary"
         >
-          Buscar
+          {tCommon('actions.search')}
         </button>
       </form>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Vehículos ({vehicles.length})</CardTitle>
+          <CardTitle className="text-xl">
+            {t('vehicles.vehiclesCount', { count: vehicles.length })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {vehicles.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              {search ? 'No se encontró ningún vehículo.' : 'Aún no hay vehículos registrados.'}
+              {search ? t('vehicles.emptyFiltered') : t('vehicles.empty')}
             </p>
           ) : (
             <ul className="divide-y text-sm">
@@ -81,12 +86,11 @@ export default async function VehiclesPage({
                         {v.plate} · {v.model}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Color: {v.color} ·{' '}
-                        {v.parent.name ?? v.parent.email}
+                        {t('vehicles.colorLabel')}: {v.color} · {v.parent.name ?? v.parent.email}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(v.createdAt).toLocaleDateString('es-MX')}
+                      {new Date(v.createdAt).toLocaleDateString(intlLocale)}
                     </span>
                   </div>
                 </li>

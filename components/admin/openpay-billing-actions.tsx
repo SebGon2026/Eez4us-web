@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,8 @@ const INPUT_CLASS =
   'rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40';
 
 export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
+  const t = useTranslations('billing');
+  const tCommon = useTranslations('common');
   const [ready, setReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +63,7 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
     let cancelled = false;
     async function init() {
       if (!MERCHANT_ID || !PUBLIC_KEY) {
-        setError('Faltan las llaves públicas de Openpay (NEXT_PUBLIC_OPENPAY_*).');
+        setError(t('openpay.missingKeys'));
         return;
       }
       try {
@@ -69,7 +72,7 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
         if (cancelled) return;
         const op = readOpenPay();
         if (!op) {
-          setError('No se pudo cargar Openpay.js');
+          setError(t('openpay.loadFailed'));
           return;
         }
         op.setId(MERCHANT_ID);
@@ -78,7 +81,7 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
         deviceSessionId.current = op.deviceData.setup();
         setReady(true);
       } catch {
-        if (!cancelled) setError('No se pudo cargar Openpay.js');
+        if (!cancelled) setError(t('openpay.loadFailed'));
       }
     }
     void init();
@@ -95,7 +98,7 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
     setError(null);
     const op = readOpenPay();
     if (!op || !deviceSessionId.current) {
-      setError('Openpay no está listo todavía.');
+      setError(t('openpay.notReady'));
       return;
     }
     setSubmitting(true);
@@ -125,14 +128,14 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
           }
           window.location.reload();
         } catch (e) {
-          setError(e instanceof Error ? e.message : 'Error desconocido');
+          setError(e instanceof Error ? e.message : t('unknownError'));
           setSubmitting(false);
         }
       },
       (err) => {
         const desc =
           (err as { data?: { description?: string } })?.data?.description ??
-          'No se pudo validar la tarjeta';
+          t('openpay.cardValidationFailed');
         setError(desc);
         setSubmitting(false);
       },
@@ -142,21 +145,19 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
   return (
     <div className="space-y-4">
       {hasCard && (
-        <p className="text-sm text-muted-foreground">
-          Ya hay una tarjeta archivada. Cargá una nueva para reemplazarla.
-        </p>
+        <p className="text-sm text-muted-foreground">{t('openpay.cardOnFile')}</p>
       )}
       <div className="grid max-w-md gap-3">
         <input
           className={INPUT_CLASS}
-          placeholder="Nombre del titular"
+          placeholder={t('openpay.holderPlaceholder')}
           autoComplete="cc-name"
           value={form.holder}
           onChange={(e) => set('holder', e.target.value)}
         />
         <input
           className={INPUT_CLASS}
-          placeholder="Número de tarjeta"
+          placeholder={t('openpay.numberPlaceholder')}
           inputMode="numeric"
           autoComplete="cc-number"
           value={form.number}
@@ -165,7 +166,7 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
         <div className="grid grid-cols-3 gap-3">
           <input
             className={INPUT_CLASS}
-            placeholder="MM"
+            placeholder={t('openpay.monthPlaceholder')}
             inputMode="numeric"
             maxLength={2}
             value={form.month}
@@ -173,7 +174,7 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
           />
           <input
             className={INPUT_CLASS}
-            placeholder="AA"
+            placeholder={t('openpay.yearPlaceholder')}
             inputMode="numeric"
             maxLength={2}
             value={form.year}
@@ -181,7 +182,7 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
           />
           <input
             className={INPUT_CLASS}
-            placeholder="CVV"
+            placeholder={t('openpay.cvvPlaceholder')}
             inputMode="numeric"
             maxLength={4}
             autoComplete="cc-csc"
@@ -191,23 +192,21 @@ export function OpenpayBillingActions({ hasCard }: { hasCard: boolean }) {
         </div>
         <Button onClick={submit} disabled={!ready || submitting}>
           {submitting
-            ? 'Guardando…'
+            ? tCommon('actions.saving')
             : hasCard
-              ? 'Reemplazar tarjeta'
-              : 'Guardar tarjeta y activar'}
+              ? t('openpay.replaceCard')
+              : t('openpay.saveCardActivate')}
         </Button>
       </div>
       {!ready && !error && (
-        <p className="text-xs text-muted-foreground">Cargando Openpay…</p>
+        <p className="text-xs text-muted-foreground">{t('openpay.loading')}</p>
       )}
       {error && (
         <span className="inline-block rounded-2xl bg-destructive/10 px-3 py-1 text-sm font-bold text-destructive">
           {error}
         </span>
       )}
-      <p className="text-xs text-muted-foreground">
-        Procesado por Openpay (BBVA). Los datos de la tarjeta no pasan por nuestros servidores.
-      </p>
+      <p className="text-xs text-muted-foreground">{t('openpay.disclaimer')}</p>
     </div>
   );
 }

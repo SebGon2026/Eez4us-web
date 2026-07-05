@@ -1,8 +1,12 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
 
+import { intlLocaleOf } from '@/lib/locale';
+
 export function TvClock() {
+  const locale = useLocale();
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -12,7 +16,7 @@ export function TvClock() {
   }, []);
 
   const text = now
-    ? now.toLocaleTimeString('es-MX', {
+    ? now.toLocaleTimeString(intlLocaleOf(locale), {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',

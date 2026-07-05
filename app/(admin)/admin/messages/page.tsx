@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
+import { intlLocaleOf } from '@/lib/locale';
 import { getCurrentSession } from '@/lib/session';
 
 import { BroadcastForm } from './broadcast-form';
@@ -11,6 +13,8 @@ export default async function MessagesPage() {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
   const schoolId = session.user.schoolId;
+  const t = await getTranslations('comms');
+  const intlLocale = intlLocaleOf(await getLocale());
 
   const conversations = await prisma.conversation.findMany({
     where: { schoolId },
@@ -30,10 +34,8 @@ export default async function MessagesPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black">Mensajería</h1>
-          <p className="text-sm text-muted-foreground">
-            Conversaciones con padres del colegio y broadcasts.
-          </p>
+          <h1 className="text-3xl font-black">{t('messages.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('messages.subtitle')}</p>
         </div>
       </div>
 
@@ -41,13 +43,13 @@ export default async function MessagesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Conversaciones ({conversations.length})</CardTitle>
+          <CardTitle className="text-xl">
+            {t('messages.conversations', { count: conversations.length })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {conversations.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Todavía no hay conversaciones. Mandá un broadcast o esperá a que un padre escriba.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('messages.empty')}</p>
           ) : (
             <ul className="divide-y">
               {conversations.map((c) => (
@@ -61,7 +63,7 @@ export default async function MessagesPage() {
                       <p className="text-xs text-muted-foreground line-clamp-1">
                         {c.messages[0]
                           ? `${c.messages[0].senderType === 'PARENT' ? '↩' : '➜'} ${c.messages[0].body}`
-                          : c.subject ?? 'Sin mensajes'}
+                          : c.subject ?? t('messages.noMessages')}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
@@ -71,7 +73,7 @@ export default async function MessagesPage() {
                         </span>
                       )}
                       <span className="text-xs text-muted-foreground">
-                        {new Date(c.lastMessageAt).toLocaleString('es-MX', {
+                        {new Date(c.lastMessageAt).toLocaleString(intlLocale, {
                           dateStyle: 'short',
                           timeStyle: 'short',
                         })}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { SearchInput } from '@/components/search-input';
@@ -15,6 +16,7 @@ interface StudentsFiltersProps {
 }
 
 export function StudentsFilters({ grades }: StudentsFiltersProps) {
+  const t = useTranslations('students');
   const router = useRouter();
   const params = useSearchParams();
   const gradeId = params.get('gradeId') ?? '';
@@ -32,13 +34,13 @@ export function StudentsFilters({ grades }: StudentsFiltersProps) {
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <SearchInput placeholder="Buscar por nombre, apellido o matrícula" />
+      <SearchInput placeholder={t('filters.searchPlaceholder')} />
       <Select
         value={gradeId}
         onChange={(e) => onGradeChange(e.target.value)}
         className="sm:max-w-xs"
       >
-        <option value="">Todos los grados</option>
+        <option value="">{t('filters.allGrades')}</option>
         {grades.map((g) => (
           <option key={g.id} value={g.id}>
             {g.name}

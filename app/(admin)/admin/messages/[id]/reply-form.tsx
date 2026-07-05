@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -10,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 
 export function ReplyForm({ conversationId }: { conversationId: string }) {
   const router = useRouter();
+  const t = useTranslations('comms');
+  const tc = useTranslations('common');
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState(false);
 
@@ -28,7 +31,7 @@ export function ReplyForm({ conversationId }: { conversationId: string }) {
       setMessage('');
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo enviar el mensaje');
+      toast.error(err instanceof Error ? err.message : t('conversation.sendError'));
     } finally {
       setPending(false);
     }
@@ -41,13 +44,13 @@ export function ReplyForm({ conversationId }: { conversationId: string }) {
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Escribí tu respuesta…"
+            placeholder={t('conversation.replyPlaceholder')}
             rows={3}
             maxLength={2000}
             required
           />
           <Button type="submit" disabled={pending || !message.trim()} className="self-end">
-            {pending ? 'Enviando…' : 'Enviar'}
+            {pending ? tc('actions.sending') : tc('actions.send')}
           </Button>
         </form>
       </CardContent>

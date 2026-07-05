@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { BillingActions } from '@/components/admin/billing-actions';
@@ -14,13 +15,13 @@ function fmtMoney(n: number, currency: string): string {
 
 const STATUS_BADGE: Record<
   string,
-  { label: string; variant: 'default' | 'success' | 'warning' | 'destructive' | 'secondary' }
+  'default' | 'success' | 'warning' | 'destructive' | 'secondary'
 > = {
-  TRIALING: { label: 'En prueba', variant: 'warning' },
-  ACTIVE: { label: 'Activa', variant: 'success' },
-  PAST_DUE: { label: 'Pago atrasado', variant: 'destructive' },
-  CANCELED: { label: 'Cancelada', variant: 'secondary' },
-  PAUSED: { label: 'Pausada', variant: 'secondary' },
+  TRIALING: 'warning',
+  ACTIVE: 'success',
+  PAST_DUE: 'destructive',
+  CANCELED: 'secondary',
+  PAUSED: 'secondary',
 };
 
 function fmtDate(d: Date | null): string {
@@ -32,6 +33,8 @@ function fmtDate(d: Date | null): string {
 }
 
 export default async function BillingPage() {
+  const t = await getTranslations('billing');
+  const tCommon = await getTranslations('common');
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
   if (!['director', 'super_admin'].includes(session.user.role)) redirect('/admin');
@@ -69,49 +72,52 @@ export default async function BillingPage() {
   const pricePerStudent =
     sub?.pricePerStudent ?? (provider === 'openpay' ? openpayPricePerStudentMXN() : 10);
   const amount = studentCount * pricePerStudent;
-  const badge = sub ? STATUS_BADGE[sub.status] : null;
+  const badgeVariant = sub ? STATUS_BADGE[sub.status] : null;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black">Facturación</h1>
+        <h1 className="text-3xl font-black">{t('title')}</h1>
         <p className="text-sm text-muted-foreground">
-          Eez4us cobra por alumno activo a la escuela ({school?.name ?? 'tu escuela'}).
+          {t('subtitle', { school: school?.name ?? t('yourSchool') })}
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Estado</CardDescription>
+            <CardDescription>{tCommon('fields.status')}</CardDescription>
             <div className="pt-2">
-              {badge ? (
-                <Badge variant={badge.variant}>{badge.label}</Badge>
+              {sub && badgeVariant ? (
+                <Badge variant={badgeVariant}>{t(`status.${sub.status}`)}</Badge>
               ) : (
-                <Badge variant="secondary">Sin suscripción</Badge>
+                <Badge variant="secondary">{t('noSubscription')}</Badge>
               )}
             </div>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Pago mensual a Eez4us</CardDescription>
+            <CardDescription>{t('monthlyPayment')}</CardDescription>
             <CardTitle className="text-4xl text-primary">{fmtMoney(amount, currencyCode)}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              {studentCount} alumnos × {fmtMoney(pricePerStudent, currencyCode)}/mes
+              {t('perStudentBreakdown', {
+                count: studentCount,
+                price: fmtMoney(pricePerStudent, currencyCode),
+              })}
             </p>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Fecha de corte</CardDescription>
+            <CardDescription>{t('cutoffDate')}</CardDescription>
             <CardTitle className="text-2xl">{fmtDate(sub?.currentPeriodEnd ?? null)}</CardTitle>
-            <p className="text-xs text-muted-foreground">Cierre del periodo actual</p>
+            <p className="text-xs text-muted-foreground">{t('currentPeriodClose')}</p>
           </CardHeader>
         </Card>
         <Card className="shadow-sm">
           <CardHeader>
-            <CardDescription>Último pago</CardDescription>
+            <CardDescription>{t('lastPayment')}</CardDescription>
             <CardTitle className="text-2xl">{fmtDate(lastPaidInvoice?.paidAt ?? null)}</CardTitle>
             {lastPaidInvoice && (
               <p className="text-xs text-muted-foreground">
@@ -124,13 +130,13 @@ export default async function BillingPage() {
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Acciones</CardTitle>
+          <CardTitle className="text-xl">{tCommon('fields.actions')}</CardTitle>
           <CardDescription>
             {provider === 'openpay'
-              ? 'Cargá la tarjeta del colegio; Eez4us cobra cada mes por alumno activo vía Openpay (México).'
+              ? t('openpayDescription')
               : sub
-                ? 'Administrá tu suscripción y método de pago vía el portal de Stripe.'
-                : 'Iniciá la suscripción para empezar a cobrar mensualmente por alumno activo.'}
+                ? t('stripeManageDescription')
+                : t('startSubscriptionDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -144,11 +150,11 @@ export default async function BillingPage() {
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Historial de pagos</CardTitle>
+          <CardTitle className="text-xl">{t('paymentHistory')}</CardTitle>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Todavía no hay facturas emitidas.</p>
+            <p className="text-sm text-muted-foreground">{t('noInvoices')}</p>
           ) : (
             <ul className="divide-y text-sm">
               {invoices.map((inv) => (
@@ -156,8 +162,8 @@ export default async function BillingPage() {
                   <div>
                     <p className="font-bold">{fmtMoney(inv.amount, currencyCode)}</p>
                     <p className="text-xs text-muted-foreground">
-                      Emitida {fmtDate(inv.createdAt)}
-                      {inv.paidAt ? ` · Pagada ${fmtDate(inv.paidAt)}` : ''}
+                      {t('invoiceIssued', { date: fmtDate(inv.createdAt) })}
+                      {inv.paidAt ? t('invoicePaid', { date: fmtDate(inv.paidAt) }) : ''}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -171,12 +177,12 @@ export default async function BillingPage() {
                       }
                     >
                       {inv.status === 'PAID'
-                        ? 'Pagada'
+                        ? t('invoiceStatus.PAID')
                         : inv.status === 'FAILED'
-                          ? 'Falló'
+                          ? t('invoiceStatus.FAILED')
                           : inv.status === 'VOID'
-                            ? 'Anulada'
-                            : 'Pendiente'}
+                            ? t('invoiceStatus.VOID')
+                            : t('invoiceStatus.PENDING')}
                     </Badge>
                     {inv.pdfUrl && (
                       <a

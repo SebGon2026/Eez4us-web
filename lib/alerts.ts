@@ -1,12 +1,44 @@
 import type { AlertSeverity, AlertType } from '@prisma/client';
 
 import { prisma } from './db';
+import { localeForCountry, type AppLocale } from './locale';
 import { sendPushToSchoolRoles, sendPushToUser } from './push';
 import { encryptForChannel, readEncryptionMasterKey } from './pusher-encrypt';
 import { pusherTrigger, readPusherEnv } from './pusher-server';
 
 const STAFF_ROLES = ['director', 'support_staff', 'super_admin'];
 const DIRECTOR_ROLES = ['director', 'super_admin'];
+
+// Textos de las notificaciones push por idioma. Corren en crons sin request: el
+// idioma sale del país del colegio y la notificación queda generada así.
+const ALERT_M: Record<
+  AppLocale,
+  {
+    tripOverdueTitle: string;
+    tripOverdueBody: (parentName: string | null) => string;
+    arrivedNotDeliveredTitle: string;
+    arrivedNotDeliveredBody: (parentName: string | null) => string;
+    invitationStaleTitle: string;
+    invitationStaleBody: (recipientName: string | null) => string;
+  }
+> = {
+  es: {
+    tripOverdueTitle: 'Viaje demorado',
+    tripOverdueBody: (parentName) => `${parentName ?? 'Un padre'} lleva más de 30 minutos en camino.`,
+    arrivedNotDeliveredTitle: 'Entrega pendiente',
+    arrivedNotDeliveredBody: (parentName) => `${parentName ?? 'Un padre'} está en zona hace más de 10 min sin entrega.`,
+    invitationStaleTitle: 'Invitación sin claim',
+    invitationStaleBody: (recipientName) => `${recipientName ?? 'Un padre'} no ha aceptado la invitación tras 7 días.`,
+  },
+  en: {
+    tripOverdueTitle: 'Trip delayed',
+    tripOverdueBody: (parentName) => `${parentName ?? 'A parent'} has been on the way for over 30 minutes.`,
+    arrivedNotDeliveredTitle: 'Handoff pending',
+    arrivedNotDeliveredBody: (parentName) => `${parentName ?? 'A parent'} has been in the zone for over 10 minutes with no handoff.`,
+    invitationStaleTitle: 'Unclaimed invitation',
+    invitationStaleBody: (recipientName) => `${recipientName ?? 'A parent'} has not accepted the invitation after 7 days.`,
+  },
+};
 
 const TRIP_OVERDUE_MS = 30 * 60 * 1000;
 const ARRIVED_NOT_DELIVERED_MS = 10 * 60 * 1000;
@@ -82,6 +114,7 @@ export async function checkOverdueTrips(): Promise<CheckSummary> {
       schoolId: true,
       parentId: true,
       startedAt: true,
+      school: { select: { country: true } },
       parent: { select: { name: true } },
       tripStudents: { select: { student: { select: { firstName: true, lastName: true } } } },
     },
@@ -118,9 +151,10 @@ export async function checkOverdueTrips(): Promise<CheckSummary> {
       },
     });
 
+    const m = ALERT_M[localeForCountry(trip.school.country)];
     await sendPushToSchoolRoles(trip.schoolId, STAFF_ROLES, {
-      title: 'Viaje demorado',
-      body: `${trip.parent.name ?? 'Un padre'} lleva más de 30 minutos en camino.`,
+      title: m.tripOverdueTitle,
+      body: m.tripOverdueBody(trip.parent.name),
       data: { type: 'alert-trip-overdue', tripId: trip.id },
     });
     created += 1;
@@ -142,6 +176,7 @@ export async function checkArrivedNotDelivered(): Promise<CheckSummary> {
       schoolId: true,
       parentId: true,
       arrivedAt: true,
+      school: { select: { country: true } },
       parent: { select: { name: true } },
       tripStudents: { select: { student: { select: { firstName: true, lastName: true } } } },
     },
@@ -178,9 +213,10 @@ export async function checkArrivedNotDelivered(): Promise<CheckSummary> {
       },
     });
 
+    const m = ALERT_M[localeForCountry(trip.school.country)];
     await sendPushToSchoolRoles(trip.schoolId, STAFF_ROLES, {
-      title: 'Entrega pendiente',
-      body: `${trip.parent.name ?? 'Un padre'} está en zona hace más de 10 min sin entrega.`,
+      title: m.arrivedNotDeliveredTitle,
+      body: m.arrivedNotDeliveredBody(trip.parent.name),
       data: { type: 'alert-arrived-not-delivered', tripId: trip.id },
     });
     created += 1;
@@ -204,6 +240,7 @@ export async function checkStaleInvitations(): Promise<CheckSummary> {
       createdAt: true,
       channel: true,
       status: true,
+      school: { select: { country: true } },
     },
   });
 
@@ -239,10 +276,11 @@ export async function checkStaleInvitations(): Promise<CheckSummary> {
       where: { schoolId: invitation.schoolId, role: { in: DIRECTOR_ROLES } },
       select: { id: true },
     });
+    const m = ALERT_M[localeForCountry(invitation.school.country)];
     for (const dir of directors) {
       await sendPushToUser(dir.id, {
-        title: 'Invitación sin claim',
-        body: `${invitation.recipientName ?? 'Un padre'} no ha aceptado la invitación tras 7 días.`,
+        title: m.invitationStaleTitle,
+        body: m.invitationStaleBody(invitation.recipientName),
         data: { type: 'alert-invitation-stale', invitationId: invitation.id },
       });
     }

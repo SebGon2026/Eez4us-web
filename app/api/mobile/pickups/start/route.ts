@@ -46,12 +46,13 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     // "Voy en camino" solo aplica a alumnos que recoge un representante en su vehículo.
-    // Los de transporte (van/bus) no los recoge el padre: el backend lo bloquea aunque
-    // la UI falle, para no crear trips sin sentido.
-    const transportStudent = links.find((l) => l.student.pickupMode === 'TRANSPORT');
-    if (transportStudent) {
+    // Los de transporte (van/bus) y los que se recogen a pie (WALKING) no van por este
+    // flujo — el WALKING opera por "estoy afuera". El backend lo bloquea aunque la UI
+    // falle, para no crear trips con GPS/placa sin sentido.
+    const nonPrivateStudent = links.find((l) => l.student.pickupMode !== 'PRIVATE_VEHICLE');
+    if (nonPrivateStudent) {
       return Response.json(
-        { error: 'STUDENT_NOT_PRIVATE_PICKUP', studentId: transportStudent.studentId },
+        { error: 'STUDENT_NOT_PRIVATE_PICKUP', studentId: nonPrivateStudent.studentId },
         { status: 400 },
       );
     }

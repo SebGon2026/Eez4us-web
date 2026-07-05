@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -22,6 +23,8 @@ interface ValidationResult {
 
 export function ValidateCodeForm() {
   const router = useRouter();
+  const t = useTranslations('comms');
+  const locale = useLocale();
   const [code, setCode] = useState('');
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [pending, setPending] = useState(false);
@@ -46,7 +49,7 @@ export function ValidateCodeForm() {
       }
       setResult(data.authorization);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo validar');
+      toast.error(err instanceof Error ? err.message : t('validate.validateError'));
     } finally {
       setPending(false);
     }
@@ -54,7 +57,7 @@ export function ValidateCodeForm() {
 
   async function onConfirm() {
     if (!result) return;
-    if (!confirm(`¿Confirmar entrega a ${result.personName}?`)) return;
+    if (!confirm(t('validate.confirmPrompt', { name: result.personName }))) return;
     setConfirming(true);
     try {
       const res = await fetch(
@@ -62,12 +65,12 @@ export function ValidateCodeForm() {
         { method: 'POST', credentials: 'include' },
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      toast.success('Entrega confirmada');
+      toast.success(t('validate.confirmed'));
       setResult(null);
       setCode('');
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo confirmar');
+      toast.error(err instanceof Error ? err.message : t('validate.confirmError'));
     } finally {
       setConfirming(false);
     }
@@ -76,7 +79,7 @@ export function ValidateCodeForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Validar código</CardTitle>
+        <CardTitle className="text-xl">{t('validate.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={onValidate} className="flex flex-col gap-3 sm:flex-row">
@@ -89,30 +92,43 @@ export function ValidateCodeForm() {
             required
           />
           <Button type="submit" disabled={pending}>
-            {pending ? 'Validando…' : 'Validar'}
+            {pending ? t('validate.validating') : t('validate.action')}
           </Button>
         </form>
 
         {result && (
           <div className="rounded-2xl border-2 border-green-200 bg-green-50/40 p-4 space-y-3">
             <div>
-              <p className="text-xs uppercase font-bold text-muted-foreground">Persona temporal</p>
+              <p className="text-xs uppercase font-bold text-muted-foreground">
+                {t('validate.tempPerson')}
+              </p>
               <p className="text-xl font-black">{result.personName}</p>
               {result.documentId && (
                 <p className="text-sm">
-                  Documento: {documentTypeLabel(result.documentType) ?? 'Doc'} — {result.documentId}
+                  {t('validate.document', {
+                    type:
+                      documentTypeLabel(result.documentType, locale === 'en' ? 'en' : 'es') ??
+                      t('validate.docFallback'),
+                    id: result.documentId,
+                  })}
                 </p>
               )}
               {result.vehicleInfo && (
-                <p className="text-sm">Vehículo: {result.vehicleInfo}</p>
+                <p className="text-sm">
+                  {t('tempAuths.vehicleLine', { info: result.vehicleInfo })}
+                </p>
               )}
             </div>
             <div>
-              <p className="text-xs uppercase font-bold text-muted-foreground">Padre autorizante</p>
+              <p className="text-xs uppercase font-bold text-muted-foreground">
+                {t('validate.authorizingParent')}
+              </p>
               <p>{result.parent.name ?? result.parent.email}</p>
             </div>
             <div>
-              <p className="text-xs uppercase font-bold text-muted-foreground">Niños autorizados</p>
+              <p className="text-xs uppercase font-bold text-muted-foreground">
+                {t('validate.authorizedChildren')}
+              </p>
               <ul className="text-sm">
                 {result.students.map((s) => (
                   <li key={s.id}>
@@ -123,11 +139,10 @@ export function ValidateCodeForm() {
               </ul>
             </div>
             <p className="rounded-xl bg-yellow-50 border border-yellow-200 p-3 text-xs text-yellow-900">
-              Recomendación: pedile a la persona autorizada que pase personalmente con un
-              encargado de la escuela — no subir al alumno al vehículo sin verificar identidad.
+              {t('validate.recommendation')}
             </p>
             <Button onClick={onConfirm} disabled={confirming} className="w-full" size="lg">
-              {confirming ? 'Confirmando…' : 'Confirmar entrega'}
+              {confirming ? t('validate.confirming') : t('validate.confirmDelivery')}
             </Button>
           </div>
         )}
