@@ -10,6 +10,8 @@ import {
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
+import { cn } from '@/lib/utils';
+
 const DEMO_MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? 'DEMO_MAP_ID';
 
 const EARTH_RADIUS_M = 6378137;
@@ -135,8 +137,8 @@ export function PickupPointMap({ value, onChange, className }: PickupPointMapPro
   }
 
   return (
-    <div className={className}>
-      <div className="h-full overflow-hidden rounded-2xl border">
+    <div>
+      <div className={cn('overflow-hidden rounded-2xl border', className)}>
         <APIProvider apiKey={apiKey} onError={() => setHasError(true)}>
           {hasError ? (
             <div className="flex h-full items-center justify-center text-sm text-destructive">
