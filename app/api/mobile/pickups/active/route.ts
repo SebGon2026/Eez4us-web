@@ -29,6 +29,9 @@ export async function GET(req: Request): Promise<Response> {
         etaUpdatedAt: trip.etaUpdatedAt?.toISOString() ?? null,
         lastLat: trip.lastLat,
         lastLng: trip.lastLng,
+        lastHeadingDeg: trip.lastHeadingDeg,
+        lastSpeedMps: trip.lastSpeedMps,
+        lastPositionAt: trip.lastPositionAt?.toISOString() ?? null,
         pickupPoint: {
           id: trip.pickupPoint.id,
           name: trip.pickupPoint.name,

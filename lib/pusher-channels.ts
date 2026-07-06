@@ -152,6 +152,7 @@ export async function broadcastTripUpdate(tripId: string): Promise<void> {
       lastLat: true,
       lastLng: true,
       arrivedAt: true,
+      lastPositionAt: true,
     },
   });
   if (!trip) return;
@@ -163,6 +164,7 @@ export async function broadcastTripUpdate(tripId: string): Promise<void> {
     lastLat: trip.lastLat,
     lastLng: trip.lastLng,
     arrivedAt: trip.arrivedAt?.toISOString() ?? null,
+    lastPositionAt: trip.lastPositionAt?.toISOString() ?? null,
   };
   await publish(tripChannel(tripId), 'trip.update', payload);
 }

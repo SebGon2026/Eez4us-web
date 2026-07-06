@@ -23,6 +23,7 @@ export interface TripUpdatePayload {
   lastLat: number | null;
   lastLng: number | null;
   arrivedAt: string | null;
+  lastPositionAt: string | null;
 }
 
 export type RosterProximity = 'EN_CAMINO' | 'CERCA' | 'EN_PUERTA';
