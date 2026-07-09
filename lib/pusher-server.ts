@@ -40,7 +40,10 @@ export async function pusherTrigger({
   event,
   data,
 }: TriggerArgs): Promise<Response> {
-  const body = JSON.stringify(data);
+  // body_md5 tiene que ser el MD5 del body COMPLETO del request (el envelope
+  // {name, channel, data}), no del payload solo: con el hash equivocado Pusher
+  // rebotaba TODOS los triggers con 400 Invalid body_md5 y el realtime quedaba mudo.
+  const body = JSON.stringify({ name: event, channel, data: JSON.stringify(data) });
   const bodyMd5 = bytesToHex(md5(new TextEncoder().encode(body)));
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const queryString = `auth_key=${key}&auth_timestamp=${timestamp}&auth_version=1.0&body_md5=${bodyMd5}`;
@@ -52,7 +55,7 @@ export async function pusherTrigger({
   return fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: event, channel, data: body }),
+    body,
   });
 }
 
