@@ -43,7 +43,24 @@ export function TvGateBoard({ initialEntries, schoolId, pickupPointId, vertical 
     setEntries(payload.entries);
   }, []);
 
-  useEncryptedChannel(channelName, { 'roster.update': handleRoster });
+  // board.refetch = el roster cifrado superó el límite de Pusher; la lista viaja por GET.
+  // También resincroniza tras una reconexión (eventos perdidos durante el corte).
+  const refetch = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/mobile/roster?pickupPointId=${encodeURIComponent(pickupPointId)}`);
+      if (!res.ok) return;
+      const data = (await res.json()) as { entries?: RosterEntry[] };
+      if (data.entries) setEntries(data.entries);
+    } catch {
+      // el próximo evento o reconexión lo cura
+    }
+  }, [pickupPointId]);
+
+  useEncryptedChannel(
+    channelName,
+    { 'roster.update': handleRoster, 'board.refetch': () => void refetch() },
+    { onReconnect: () => void refetch() },
+  );
 
   // Lista plana ordenada por cercanía para poder paginar; el header de grupo se
   // dibuja cuando cambia la proximidad dentro de la página.

@@ -119,6 +119,8 @@ export function tripToRosterEntries(trip: RosterTrip): RosterEntry[] {
     pickupBy,
     vehicle,
     etaSeconds: trip.etaSeconds,
+    etaUpdatedAt: trip.etaUpdatedAt?.toISOString() ?? null,
+    lastPositionAt: trip.lastPositionAt?.toISOString() ?? null,
     proximity,
     atGate,
   }));

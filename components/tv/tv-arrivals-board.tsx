@@ -40,7 +40,26 @@ export function TvArrivalsBoard({ initialTrips, schoolId, pickupPointId, vertica
     setTrips([...payload.trips].sort(compareTrips));
   }, []);
 
-  useEncryptedChannel(channelName, { 'trips.ranked': handleRanked });
+  // board.refetch = el ranking cifrado superó el límite de Pusher; la lista viaja por GET.
+  // También resincroniza tras una reconexión (eventos perdidos durante el corte).
+  const refetch = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/dashboard/school/${encodeURIComponent(schoolId)}/pickup/${encodeURIComponent(pickupPointId)}`,
+      );
+      if (!res.ok) return;
+      const data = (await res.json()) as { trips?: RankedTrip[] };
+      if (data.trips) setTrips([...data.trips].sort(compareTrips));
+    } catch {
+      // el próximo evento o reconexión lo cura
+    }
+  }, [schoolId, pickupPointId]);
+
+  useEncryptedChannel(
+    channelName,
+    { 'trips.ranked': handleRanked, 'board.refetch': () => void refetch() },
+    { onReconnect: () => void refetch() },
+  );
 
   // Con la tipografía grande (pedido del jefe) entran menos filas; la rotación de
   // páginas muestra el resto.

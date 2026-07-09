@@ -67,18 +67,41 @@ export async function canAccessChannel(
   return false;
 }
 
-async function publish(channel: string, event: string, payload: unknown): Promise<void> {
-  const encrypted = await encryptForChannel(channel, payload, readEncryptionMasterKey());
+// Margen bajo el límite de 10KB que Pusher impone al campo `data` de un evento.
+const PUSHER_DATA_LIMIT_BYTES = 9_000;
+
+async function trigger(
+  channel: string,
+  event: string,
+  encrypted: { nonce: string; ciphertext: string },
+): Promise<void> {
   const creds = readPusherEnv();
-  const res = await pusherTrigger({
-    ...creds,
-    channel,
-    event,
-    data: encrypted,
-  });
+  const res = await pusherTrigger({ ...creds, channel, event, data: encrypted });
   if (!res.ok) {
-    throw new Error(`Pusher trigger ${res.status}: ${await res.text()}`);
+    const detail = await res.text();
+    // Los callers tratan el realtime como best-effort y tragan el throw: sin este log un
+    // panel congelado no deja rastro.
+    console.error(`[pusher] trigger ${res.status} en ${channel}/${event}: ${detail}`);
+    throw new Error(`Pusher trigger ${res.status}: ${detail}`);
   }
+}
+
+async function publish(channel: string, event: string, payload: unknown): Promise<void> {
+  await trigger(channel, event, await encryptForChannel(channel, payload, readEncryptionMasterKey()));
+}
+
+// Para payloads que crecen con la cantidad de viajes (roster/ranked): si el cifrado
+// supera el límite de Pusher el trigger rebota con 413 y el board quedaría congelado
+// justo en hora pico. Fallback: se emite `board.refetch` (chico) y cada cliente re-pide
+// su vista por GET.
+async function publishBounded(channel: string, event: string, payload: unknown): Promise<void> {
+  const encrypted = await encryptForChannel(channel, payload, readEncryptionMasterKey());
+  if (JSON.stringify(encrypted).length <= PUSHER_DATA_LIMIT_BYTES) {
+    await trigger(channel, event, encrypted);
+    return;
+  }
+  console.warn(`[pusher] ${event} supera ${PUSHER_DATA_LIMIT_BYTES}B en ${channel}; va board.refetch`);
+  await publish(channel, 'board.refetch', { reason: 'payload-too-large', event });
 }
 
 export async function buildRankedTrips(schoolId: string, pickupPointId: string): Promise<RankedTrip[]> {
@@ -121,7 +144,7 @@ export async function buildRankedTrips(schoolId: string, pickupPointId: string):
 // sin pull-to-refresh (decrypt NaCl manual con el shared_secret de /pusher/auth).
 export async function broadcastRoster(schoolId: string, pickupPointId: string): Promise<void> {
   const entries = await getPickupRoster(schoolId, pickupPointId);
-  await publish(schoolPickupChannel(schoolId, pickupPointId), 'roster.update', { entries });
+  await publishBounded(schoolPickupChannel(schoolId, pickupPointId), 'roster.update', { entries });
 }
 
 // TV staff y portón mobile COMPARTEN el mismo canal canónico
@@ -136,8 +159,8 @@ export async function broadcastRankedTrips(schoolId: string, pickupPointId: stri
     getPickupRoster(schoolId, pickupPointId),
   ]);
   await Promise.all([
-    publish(channel, 'trips.ranked', { trips: ranked }),
-    publish(channel, 'roster.update', { entries }),
+    publishBounded(channel, 'trips.ranked', { trips: ranked }),
+    publishBounded(channel, 'roster.update', { entries }),
   ]);
 }
 

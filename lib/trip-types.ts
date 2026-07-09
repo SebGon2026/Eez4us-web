@@ -48,6 +48,11 @@ export interface RosterEntry {
   };
   vehicle: { plate: string; model: string; color: string } | null;
   etaSeconds: number | null;
+  // Frescura de la telemetría: si lastPositionAt quedó viejo (teléfono muerto, OEM mató
+  // el tracking) el cliente pinta "sin señal" en vez de un ETA congelado. Opcionales
+  // para no romper el contrato previo del mobile. Null en walk-up / estoy afuera.
+  etaUpdatedAt?: string | null;
+  lastPositionAt?: string | null;
   proximity: RosterProximity;
   atGate: boolean;
 }

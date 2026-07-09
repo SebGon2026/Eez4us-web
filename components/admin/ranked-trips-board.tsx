@@ -85,13 +85,33 @@ export function RankedTripsBoard({
     setTrips((current) => current.filter((t) => t.tripId !== tripId));
   }, []);
 
-  useEncryptedChannel(channelName, {
-    'trips.ranked': handleRanked,
-    'ranked-update': handleRanked,
-    'trip.update': handleTripUpdate,
-    'trip-update': handleTripUpdate,
-    'trip-removed': handleTripRemoved,
-  });
+  // board.refetch = el ranking cifrado superó el límite de Pusher; la lista viaja por GET.
+  // También resincroniza tras una reconexión (eventos perdidos durante el corte).
+  const refetch = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/dashboard/school/${encodeURIComponent(schoolId)}/pickup/${encodeURIComponent(pickupPointId)}`,
+      );
+      if (!res.ok) return;
+      const data = (await res.json()) as { trips?: RankedTrip[] };
+      if (data.trips) setTrips([...data.trips].sort(compareTrips));
+    } catch {
+      // el próximo evento o reconexión lo cura
+    }
+  }, [schoolId, pickupPointId]);
+
+  useEncryptedChannel(
+    channelName,
+    {
+      'trips.ranked': handleRanked,
+      'ranked-update': handleRanked,
+      'trip.update': handleTripUpdate,
+      'trip-update': handleTripUpdate,
+      'trip-removed': handleTripRemoved,
+      'board.refetch': () => void refetch(),
+    },
+    { onReconnect: () => void refetch() },
+  );
 
   if (trips.length === 0) {
     return (
