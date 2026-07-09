@@ -11,7 +11,10 @@ const schema = z.object({
   lng: z.number(),
   speed: z.number().nullable().optional(),
   heading: z.number().nullable().optional(),
-  timestamp: z.string().datetime().optional(),
+  // El mobile manda epoch ms (número); builds futuros pueden mandar ISO. El valor no se
+  // usa (lastPositionAt es hora del server), pero exigir string ISO rebotaba TODOS los
+  // pings con INVALID_BODY y mataba el tracking completo.
+  timestamp: z.union([z.string(), z.number()]).optional(),
 });
 
 export async function POST(

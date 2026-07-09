@@ -6,7 +6,6 @@ import { prisma } from './db';
 import { getRoute } from './directions';
 
 const RECOMPUTE_MIN_INTERVAL_MS = 30_000;
-const DEVIATION_THRESHOLD_METERS = 100;
 
 export interface RecomputeResult {
   trip: Trip;
@@ -80,14 +79,12 @@ export async function recomputeTripEta(tripId: string): Promise<RecomputeResult>
     };
   }
 
+  // Throttle duro por tiempo: cada llamada a Directions cuesta plata (ley: cache +
+  // throttling). El check de "drift" anterior comparaba contra la distancia AL colegio —
+  // >100m durante casi todo el viaje — y anulaba el throttle: una llamada por ping (cada
+  // 5s). No hace falta detectar desvío: el recompute de 30s ya corrige cualquier ruta.
   const lastEtaAge = trip.etaUpdatedAt ? Date.now() - trip.etaUpdatedAt.getTime() : Infinity;
-  const lastCallTooRecent = lastEtaAge < RECOMPUTE_MIN_INTERVAL_MS;
-  const driftSmall =
-    trip.etaSeconds != null && distToPickup > DEVIATION_THRESHOLD_METERS
-      ? false
-      : true;
-
-  if (lastCallTooRecent && driftSmall) {
+  if (lastEtaAge < RECOMPUTE_MIN_INTERVAL_MS) {
     return {
       trip,
       etaSeconds: trip.etaSeconds,
@@ -105,6 +102,12 @@ export async function recomputeTripEta(tripId: string): Promise<RecomputeResult>
     route = await getRoute(current, center);
   } catch (err) {
     console.error('[eta] Directions falló, ETA queda con valor previo:', (err as Error).message);
+    // Backoff: sin esto el próximo ping (5s) reintenta contra una API que está fallando
+    // (key mala, quota, outage) y se martilla a Google. etaUpdatedAt actúa de timer del
+    // throttle; el staleness del panel se pinta con lastPositionAt, no con este campo.
+    await prisma.trip
+      .update({ where: { id: tripId }, data: { etaUpdatedAt: new Date() } })
+      .catch(() => undefined);
     return {
       trip,
       etaSeconds: trip.etaSeconds,

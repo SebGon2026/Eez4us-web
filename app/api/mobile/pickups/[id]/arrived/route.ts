@@ -14,6 +14,11 @@ export async function POST(
     if (!trip || trip.parentId !== session.user.id) {
       return Response.json({ error: 'NOT_FOUND' }, { status: 404 });
     }
+    // Un POST tardío sobre un viaje ENTREGADO/CANCELADO lo resucitaba a EN_ZONA y
+    // reaparecía en el roster/TV.
+    if (trip.status !== 'EN_CAMINO' && trip.status !== 'EN_ZONA') {
+      return Response.json({ error: 'TRIP_CLOSED' }, { status: 409 });
+    }
     const now = new Date();
     const updated = await prisma.trip.update({
       where: { id },
