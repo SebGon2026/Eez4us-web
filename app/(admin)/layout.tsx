@@ -1,10 +1,10 @@
-import { headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { AdminShell } from '@/components/admin/admin-shell';
-import { billingBlockEnabled } from '@/lib/billing';
+import { BillingLockScreen } from '@/components/admin/billing-lock-screen';
+import { isBillingLocked, resolveProvider } from '@/lib/billing';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
 
@@ -29,6 +29,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   let primaryHue = 142;
   let accentHue = 142;
   let pastDue = false;
+  let billingLocked = false;
+  let lockProvider: 'openpay' | 'stripe' = 'stripe';
   if (session.user.schoolId) {
     const school = await prisma.school.findUnique({
       where: { id: session.user.schoolId },
@@ -39,7 +41,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         density: true,
         brandHue: true,
         brandHueSecondary: true,
-        subscription: { select: { status: true } },
+        country: true,
+        currency: true,
+        subscription: {
+          select: {
+            status: true,
+            gracePeriodDays: true,
+            pastDueSince: true,
+            updatedAt: true,
+          },
+        },
       },
     });
     schoolName = school?.name ?? null;
@@ -51,12 +62,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     primaryHue = school?.brandHue ?? 142;
     accentHue = school?.brandHueSecondary ?? school?.brandHue ?? 142;
     pastDue = school?.subscription?.status === 'PAST_DUE';
+    lockProvider = resolveProvider(school ?? { country: null, currency: null });
+    // Corte duro SOLO para el director y SOLO pasada la gracia. El support_staff/logistics
+    // no se bloquean para no cortar la operación del portón (decisión: bloqueo de panel, no
+    // de tracking). Dentro de la gracia sigue el banner.
+    billingLocked =
+      session.user.role === 'director' && isBillingLocked(school?.subscription ?? null);
   }
 
   const t = await getTranslations('nav');
 
-  // Trial vencido / pago pendiente: hoy solo AVISA (banner). El corte duro está detrás de
-  // BILLING_BLOCK_ON_PAST_DUE (apagado — decisión de producto pendiente: avisar vs bloquear).
+  // Trial vencido / pago pendiente DENTRO de la gracia: solo AVISA (banner). Pasada la gracia
+  // se muestra el takeover de pago (billingLocked) en lugar del contenido.
   const billingBanner = pastDue ? (
     <div className="border-b border-destructive/20 bg-destructive/10 px-4 py-2 text-center text-sm font-semibold text-destructive">
       {t.rich('billingBanner.message', {
@@ -68,15 +85,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       })}
     </div>
   ) : null;
-
-  if (pastDue && billingBlockEnabled() && session.user.role === 'director') {
-    // x-pathname lo inyecta el middleware. Sin header (fail-open) no bloqueamos, y
-    // /admin/billing queda accesible para poder cargar la tarjeta.
-    const pathname = (await headers()).get('x-pathname');
-    if (pathname && !pathname.startsWith('/admin/billing')) {
-      redirect('/admin/billing');
-    }
-  }
 
   // Theming por colegio: primario (chrome/sidebar) + acento (íconos, bandas)
   const brandStyle = {
@@ -99,7 +107,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         internalCode={internalCode}
       >
         {billingBanner}
-        {children}
+        {billingLocked ? <BillingLockScreen provider={lockProvider} /> : children}
       </AdminShell>
     </div>
   );

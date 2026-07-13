@@ -9,15 +9,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-// Control del owner para extender/ajustar el trial de un colegio (PUT /trial, con AuditLog).
-export function TrialEditor({ schoolId }: { schoolId: string }) {
+// Control del owner para extender/ajustar el trial y la gracia por impago de un colegio
+// (PUT /trial, con AuditLog).
+export function TrialEditor({
+  schoolId,
+  gracePeriodDays = 7,
+}: {
+  schoolId: string;
+  gracePeriodDays?: number;
+}) {
   const t = useTranslations('billing');
   const router = useRouter();
   const [days, setDays] = useState('15');
   const [date, setDate] = useState('');
+  const [grace, setGrace] = useState(String(gracePeriodDays));
   const [pending, setPending] = useState(false);
 
-  async function submit(body: { extendDays?: number; trialEndsAt?: string }) {
+  async function submit(body: { extendDays?: number; trialEndsAt?: string; gracePeriodDays?: number }) {
     setPending(true);
     try {
       const res = await fetch(`/api/admin/schools/${schoolId}/trial`, {
@@ -31,7 +39,7 @@ export function TrialEditor({ schoolId }: { schoolId: string }) {
         toast.error(data.error ?? `HTTP ${res.status}`);
         return;
       }
-      toast.success(t('trial.updated'));
+      toast.success(body.gracePeriodDays != null ? t('trial.graceUpdated') : t('trial.updated'));
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error');
@@ -85,7 +93,30 @@ export function TrialEditor({ schoolId }: { schoolId: string }) {
             </Button>
           </div>
         </div>
+        <div>
+          <Label className="text-xs">{t('trial.gracePeriod')}</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={0}
+              max={60}
+              value={grace}
+              onChange={(e) => setGrace(e.target.value)}
+              className="w-24"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={pending || grace === '' || Number.isNaN(Number(grace))}
+              onClick={() => submit({ gracePeriodDays: Number(grace) })}
+            >
+              {t('trial.saveGrace')}
+            </Button>
+          </div>
+        </div>
       </div>
+      <p className="text-xs text-muted-foreground">{t('trial.gracePeriodHint')}</p>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { resolveProvider } from '@/lib/billing';
+import { resolveProvider, usdPricePerStudent } from '@/lib/billing';
 import { prisma } from '@/lib/db';
 import { jsonError, requireRole } from '@/lib/session';
 import { createCustomer, createSubscription } from '@/lib/stripe';
@@ -68,7 +68,8 @@ export async function POST(req: Request): Promise<Response> {
         schoolId,
         stripeSubscriptionId: sub.id,
         status: 'TRIALING',
-        pricePerStudent: 10,
+        // Display en el panel (el cobro real sale del Price de Stripe). Precio del negocio: 6.99 USD.
+        pricePerStudent: usdPricePerStudent(),
       },
       update: {
         stripeSubscriptionId: sub.id,

@@ -27,10 +27,13 @@ async function upsertFromSubscription(sub: Stripe.Subscription): Promise<void> {
   }
   const status = STATUS_MAP[sub.status] ?? 'TRIALING';
   const item = sub.items.data[0];
+  // Fallback 6.99 USD (precio del negocio) si Stripe no devuelve unit_amount; el monto real
+  // cobrado siempre sale del Price de Stripe, esto solo alimenta el display del panel.
   const unitAmountUsd =
-    item && typeof item.price.unit_amount === 'number' ? item.price.unit_amount / 100 : 10;
+    item && typeof item.price.unit_amount === 'number' ? item.price.unit_amount / 100 : 6.99;
   const periodStart = toDate(item?.current_period_start ?? null);
   const periodEnd = toDate(item?.current_period_end ?? null);
+  const isPastDue = status === 'PAST_DUE';
 
   await prisma.subscription.upsert({
     where: { schoolId },
@@ -42,6 +45,7 @@ async function upsertFromSubscription(sub: Stripe.Subscription): Promise<void> {
       currentPeriodStart: periodStart,
       currentPeriodEnd: periodEnd,
       cancelAt: toDate(sub.cancel_at),
+      pastDueSince: isPastDue ? new Date() : null,
     },
     update: {
       stripeSubscriptionId: sub.id,
@@ -50,8 +54,16 @@ async function upsertFromSubscription(sub: Stripe.Subscription): Promise<void> {
       currentPeriodStart: periodStart,
       currentPeriodEnd: periodEnd,
       cancelAt: toDate(sub.cancel_at),
+      // Al día: limpia el reloj de gracia. En mora lo arranca abajo solo si no venía ya.
+      ...(isPastDue ? {} : { pastDueSince: null }),
     },
   });
+  if (isPastDue) {
+    await prisma.subscription.updateMany({
+      where: { schoolId, pastDueSince: null },
+      data: { pastDueSince: new Date() },
+    });
+  }
 }
 
 async function markPastDueByCustomer(customerId: string): Promise<void> {
@@ -60,6 +72,11 @@ async function markPastDueByCustomer(customerId: string): Promise<void> {
     select: { id: true },
   });
   if (!school) return;
+  // Arranca el reloj de gracia solo en el primer fallo (no reiniciar en reintentos).
+  await prisma.subscription.updateMany({
+    where: { schoolId: school.id, pastDueSince: null },
+    data: { pastDueSince: new Date() },
+  });
   await prisma.subscription.updateMany({
     where: { schoolId: school.id },
     data: { status: 'PAST_DUE' },

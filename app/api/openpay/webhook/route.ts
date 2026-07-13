@@ -63,6 +63,19 @@ async function setSubscriptionStatus(
   schoolId: string,
   status: 'ACTIVE' | 'PAST_DUE',
 ): Promise<void> {
+  if (status === 'ACTIVE') {
+    // Pago conciliado: sale de mora y limpia el reloj de gracia.
+    await prisma.subscription.updateMany({
+      where: { schoolId, provider: 'openpay' },
+      data: { status, pastDueSince: null },
+    });
+    return;
+  }
+  // Mora: arranca el reloj de gracia solo si no venía ya en mora (no reiniciar cada evento).
+  await prisma.subscription.updateMany({
+    where: { schoolId, provider: 'openpay', pastDueSince: null },
+    data: { pastDueSince: new Date() },
+  });
   await prisma.subscription.updateMany({
     where: { schoolId, provider: 'openpay' },
     data: { status },

@@ -100,6 +100,9 @@ export async function POST(req: Request): Promise<Response> {
         openpayCardId: card.id,
         openpayDeviceSessionId: body.deviceSessionId,
         nextChargeAt,
+        // Cargar/actualizar tarjeta saca la mora: el próximo cron cobrará y el reloj de
+        // gracia se reinicia (si el cobro vuelve a fallar, pastDueSince arranca de nuevo).
+        pastDueSince: null,
       },
     });
 

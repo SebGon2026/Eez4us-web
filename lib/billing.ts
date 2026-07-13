@@ -35,10 +35,33 @@ export function pricePerStudentFor(currency?: string | null): number {
     : usdPricePerStudent();
 }
 
-// Corte duro por mora. Apagado por defecto: la decisión de producto (solo avisar vs.
-// bloquear el panel) sigue abierta — hoy el vencimiento solo avisa (banner + PAST_DUE).
+// Corte duro por mora. Encendido por defecto (decisión del owner: bloqueo duro del panel
+// tras la gracia). Se puede apagar globalmente con BILLING_BLOCK_ON_PAST_DUE=false para
+// volver a "solo banner" sin redeploy de código.
 export function billingBlockEnabled(): boolean {
-  return process.env.BILLING_BLOCK_ON_PAST_DUE === 'true';
+  return process.env.BILLING_BLOCK_ON_PAST_DUE !== 'false';
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// ¿La suscripción ya agotó su gracia y debe bloquear el panel? PAST_DUE dentro de la gracia
+// solo avisa (banner); pasada la gracia corta. Sin pastDueSince (mora previa a la migración)
+// tomamos la gracia desde updatedAt como fallback conservador — nunca bloquea sin margen.
+export function isBillingLocked(
+  sub: {
+    status: string;
+    gracePeriodDays?: number | null;
+    pastDueSince?: Date | null;
+    updatedAt?: Date | null;
+  } | null,
+  now: Date = new Date(),
+): boolean {
+  if (!sub || sub.status !== 'PAST_DUE') return false;
+  if (!billingBlockEnabled()) return false;
+  const graceDays = Math.max(0, sub.gracePeriodDays ?? 7);
+  const since = sub.pastDueSince ?? sub.updatedAt ?? null;
+  if (!since) return false;
+  return now.getTime() > since.getTime() + graceDays * DAY_MS;
 }
 
 // Barrido de trials vencidos: TRIALING sin tarjeta con trialEndsAt pasado → PAST_DUE.
@@ -57,7 +80,9 @@ export async function enforceTrialExpirations(now: Date): Promise<number> {
   for (const sub of expired) {
     await prisma.subscription.update({
       where: { schoolId: sub.schoolId },
-      data: { status: 'PAST_DUE' },
+      // pastDueSince arranca el reloj de gracia; el corte del panel se evalúa contra
+      // pastDueSince + gracePeriodDays (ver isBillingLocked).
+      data: { status: 'PAST_DUE', pastDueSince: sub.trialEndsAt ?? now },
     });
     await prisma.auditLog.create({
       data: {
@@ -207,12 +232,20 @@ async function chargeOneOpenpay(sub: DueSubscription, now: Date): Promise<Charge
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
         nextChargeAt: periodEnd,
+        // Cobro OK: sale de mora y se reinicia el reloj de gracia.
+        pastDueSince: null,
       },
     });
     return 'charged';
   } catch (err) {
     const code = err instanceof OpenpayError ? err.errorCode : undefined;
     await prisma.invoice.update({ where: { id: invoice.id }, data: { status: 'FAILED' } });
+    // Arranca la gracia solo en el PRIMER fallo del periodo: el dunning diario reusa la misma
+    // factura y no debe reiniciar el reloj cada día (si no, nunca se cumple la gracia).
+    await prisma.subscription.updateMany({
+      where: { schoolId: sub.schoolId, pastDueSince: null },
+      data: { pastDueSince: now },
+    });
     await prisma.subscription.update({
       where: { schoolId: sub.schoolId },
       data: { status: 'PAST_DUE' },

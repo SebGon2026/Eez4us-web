@@ -563,6 +563,13 @@ model Subscription {
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
   cancelAt             DateTime?
+  // Días de gracia tras impago/trial vencido antes del corte duro del panel. Configurable
+  // por colegio por el owner (super_admin). Dentro de la gracia solo se avisa (banner); pasada
+  // la gracia el director queda bloqueado en /admin/billing hasta regularizar.
+  gracePeriodDays      Int                @default(7)
+  // Momento en que la suscripción entró en mora (trial vencido o cargo fallido). El corte
+  // se dispara cuando now > pastDueSince + gracePeriodDays. null = al día. Se limpia al pagar.
+  pastDueSince         DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 

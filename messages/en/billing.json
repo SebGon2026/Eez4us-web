@@ -57,6 +57,16 @@
     "extendDays": "Extend (days)",
     "extend": "Extend",
     "orSetExactDate": "or set an exact date",
-    "set": "Set"
+    "set": "Set",
+    "gracePeriod": "Grace days on non-payment",
+    "gracePeriodHint": "Days of tolerance after a failed charge or expired trial before locking the panel.",
+    "saveGrace": "Save grace",
+    "graceUpdated": "Grace updated"
+  },
+  "lock": {
+    "badge": "Service suspended",
+    "title": "Settle the payment to continue",
+    "body": "The grace period for the missed payment has ended. The panel stays locked until payment is recorded. Gate operations are not interrupted.",
+    "footer": "Already paid? Refresh the page. If you think this is a mistake, contact support."
   }
 }

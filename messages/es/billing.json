@@ -57,6 +57,16 @@
     "extendDays": "Extender (días)",
     "extend": "Extender",
     "orSetExactDate": "o fijar fecha exacta",
-    "set": "Fijar"
+    "set": "Fijar",
+    "gracePeriod": "Días de gracia por impago",
+    "gracePeriodHint": "Días de tolerancia tras un pago fallido o trial vencido antes de bloquear el panel.",
+    "saveGrace": "Guardar gracia",
+    "graceUpdated": "Gracia actualizada"
+  },
+  "lock": {
+    "badge": "Servicio suspendido",
+    "title": "Regularizá el pago para seguir",
+    "body": "El período de gracia por falta de pago terminó. El panel queda bloqueado hasta que se registre el pago. La operación del portón no se interrumpe.",
+    "footer": "¿Ya pagaste? Actualizá la página. Si creés que es un error, contactá a soporte."
   }
 }

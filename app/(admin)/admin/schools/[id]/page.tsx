@@ -153,7 +153,10 @@ export default async function SchoolDetailPage({
                   {new Date(school.subscription.currentPeriodEnd).toLocaleDateString(dateLocale)}
                 </p>
               )}
-              <TrialEditor schoolId={school.id} />
+              <TrialEditor
+                schoolId={school.id}
+                gracePeriodDays={school.subscription.gracePeriodDays}
+              />
             </>
           ) : (
             <p className="text-muted-foreground">{t('detail.noSubscription')}</p>

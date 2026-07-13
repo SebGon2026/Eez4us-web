@@ -5,7 +5,7 @@ import { BillingActions } from '@/components/admin/billing-actions';
 import { OpenpayBillingActions } from '@/components/admin/openpay-billing-actions';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { openpayPricePerStudentMXN, resolveProvider } from '@/lib/billing';
+import { openpayPricePerStudentMXN, resolveProvider, usdPricePerStudent } from '@/lib/billing';
 import { prisma } from '@/lib/db';
 import { getCurrentSession } from '@/lib/session';
 
@@ -70,7 +70,8 @@ export default async function BillingPage() {
   const provider = resolveProvider(school ?? { country: null, currency: null });
   const currencyCode = sub?.currency ?? (provider === 'openpay' ? 'MXN' : 'USD');
   const pricePerStudent =
-    sub?.pricePerStudent ?? (provider === 'openpay' ? openpayPricePerStudentMXN() : 10);
+    sub?.pricePerStudent ??
+    (provider === 'openpay' ? openpayPricePerStudentMXN() : usdPricePerStudent());
   const amount = studentCount * pricePerStudent;
   const badgeVariant = sub ? STATUS_BADGE[sub.status] : null;
 
