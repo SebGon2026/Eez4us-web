@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db';
 import { parseParentsExcel } from '@/lib/excel';
-import { createInvitation, pickChannel, sendInvitation } from '@/lib/invitations';
-import { localeForCountry } from '@/lib/locale';
+import { createInvitation, pickChannel } from '@/lib/invitations';
 import { jsonError, requireSchool } from '@/lib/session';
 
 const ALLOWED_ROLES = ['director', 'super_admin'];
@@ -78,14 +77,14 @@ export async function POST(
       }
     }
 
-    const created: Array<{
-      invitationId: string;
-      token: string;
-      channel: 'EMAIL' | 'WHATSAPP';
-      contactValue: string;
-      parentName: string;
-      studentNames: string[];
-    }> = [];
+    // La carga masiva SOLO crea invitaciones en PENDING — no envía nada. El director dispara
+    // el envío después desde /admin/invitations (seleccionadas, por grado o todas).
+    // Re-subir el archivo NO duplica: invitación viva del mismo contacto → se le suman los
+    // alumnos; contacto ya claimeado → se omite y se reporta (mismo criterio que el
+    // importador combinado).
+    let createdCount = 0;
+    let mergedCount = 0;
+    const skippedClaimed: Array<{ parent: string; contact: string }> = [];
 
     for (const g of groups.values()) {
       const parentName = `${g.firstName} ${g.lastName}`.trim();
@@ -101,45 +100,45 @@ export async function POST(
         rowErrors.push({ parent: parentName, reason: 'sin email ni teléfono' });
         continue;
       }
+      const contactValue = channel === 'EMAIL' ? g.email! : g.phoneE164!;
+      const studentIds = matched.map((s) => s.id);
       try {
-        const invitation = await createInvitation({
+        const existing = await prisma.invitation.findFirst({
+          where: {
+            schoolId,
+            contactValue: { equals: contactValue, mode: 'insensitive' },
+            status: { in: ['PENDING', 'SENT', 'CLAIMED'] },
+          },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, status: true, studentIds: true, recipientName: true },
+        });
+        if (existing?.status === 'CLAIMED') {
+          skippedClaimed.push({ parent: parentName, contact: contactValue });
+          continue;
+        }
+        if (existing) {
+          const merged = [...new Set([...existing.studentIds, ...studentIds])];
+          await prisma.invitation.update({
+            where: { id: existing.id },
+            data: {
+              studentIds: merged,
+              recipientName: existing.recipientName ?? (parentName || null),
+            },
+          });
+          mergedCount += 1;
+          continue;
+        }
+        await createInvitation({
           schoolId,
           parent: g,
-          studentIds: matched.map((s) => s.id),
+          studentIds,
           channel,
         });
-        created.push({
-          invitationId: invitation.id,
-          token: invitation.token,
-          channel,
-          contactValue: invitation.contactValue,
-          parentName,
-          studentNames: matched.map((s) => `${s.firstName} ${s.lastName}`.trim()),
-        });
+        createdCount += 1;
       } catch (err) {
         rowErrors.push({ parent: parentName, reason: err instanceof Error ? err.message : 'unknown' });
       }
     }
-
-    const sendResults = await Promise.allSettled(
-      created.map((c) =>
-        sendInvitation({
-          invitationId: c.invitationId,
-          channel: c.channel,
-          contactValue: c.contactValue,
-          token: c.token,
-          parentName: c.parentName,
-          studentNames: c.studentNames,
-          locale: localeForCountry(school?.country),
-        }),
-      ),
-    );
-
-    const sendFailures = sendResults
-      .map((r, i) =>
-        r.status === 'rejected' ? { parent: created[i].parentName, reason: String(r.reason) } : null,
-      )
-      .filter(Boolean);
 
     // Guía de cobertura: qué alumnos ACTIVOS quedaron sin ninguna invitación viva, para que
     // el director sepa a quién le falta padre (obs. del cliente: "que diga mira te falta").
@@ -161,10 +160,10 @@ export async function POST(
       .map((s) => ({ name: `${s.firstName} ${s.lastName}`.trim(), externalId: s.externalId }));
 
     return Response.json({
-      createdCount: created.length,
-      sentCount: sendResults.filter((r) => r.status === 'fulfilled').length,
+      createdCount,
+      mergedCount,
+      skippedClaimed,
       rowErrors,
-      sendFailures,
       coverage: {
         totalStudents: allStudents.length,
         withoutParent: studentsWithoutParent.length,

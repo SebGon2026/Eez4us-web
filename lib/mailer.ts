@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, type AppLocale } from './locale';
+import { type AppLocale, DEFAULT_LOCALE } from './locale';
 
 export interface InvitationEmailArgs {
   email: string;
@@ -122,13 +122,14 @@ export interface SendEmailArgs {
   devFallbackLog?: string;
 }
 
-// Remitente de emergencia de Resend: funciona sin dominio verificado, pero SOLO entrega
-// al email del dueño de la cuenta Resend. Mantiene vivo el 2FA del owner mientras
-// eez4us.com no esté verificado en resend.com/domains.
-const RESEND_FALLBACK_FROM = 'Eez4us <onboarding@resend.dev>';
-
 // Envío genérico vía Resend con retries. Toda pieza de email del sistema (invitaciones,
-// reset de contraseña, OTP de 2FA) pasa por acá para compartir auth, retries y fallback dev.
+// reset de contraseña, OTP de 2FA) pasa por acá para compartir auth y retries.
+// eez4us.com está verificado en resend.com/domains, así que TODO sale desde EMAIL_FROM
+// (tequio-mail@eez4us.com). NO hay fallback a onboarding@resend.dev: ese remitente solo
+// entrega al dueño de la cuenta Resend, y un fallback silencioso haría creer que las
+// invitaciones se enviaron a los padres cuando en realidad se desviaron. Si el dominio
+// dejara de estar verificado, preferimos que el envío falle visible (send-bulk lo reporta
+// como failure) a que se desvíe sin avisar.
 export async function sendEmail(args: SendEmailArgs): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const baseUrl = (process.env.RESEND_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/$/, '');
@@ -136,30 +137,14 @@ export async function sendEmail(args: SendEmailArgs): Promise<void> {
 
   if (!apiKey) {
     if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
+       
       console.warn(`[mailer] RESEND_API_KEY ausente — ${args.devFallbackLog ?? `email a ${args.to} (${args.subject})`}`);
       return;
     }
     throw new Error('RESEND_API_KEY no configurado');
   }
 
-  try {
-    await postResend(baseUrl, apiKey, { from, to: [args.to], subject: args.subject, html: args.html });
-  } catch (err) {
-    // Dominio sin verificar: reintento único con el remitente de emergencia antes de rendirme.
-    if (err instanceof Error && /not verified/i.test(err.message) && from !== RESEND_FALLBACK_FROM) {
-      // eslint-disable-next-line no-console
-      console.error(`[mailer] dominio de ${from} sin verificar en Resend; reintento con ${RESEND_FALLBACK_FROM}`);
-      await postResend(baseUrl, apiKey, {
-        from: RESEND_FALLBACK_FROM,
-        to: [args.to],
-        subject: args.subject,
-        html: args.html,
-      });
-      return;
-    }
-    throw err;
-  }
+  await postResend(baseUrl, apiKey, { from, to: [args.to], subject: args.subject, html: args.html });
 }
 
 async function postResend(

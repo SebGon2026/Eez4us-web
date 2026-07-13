@@ -21,22 +21,30 @@ export interface SchoolReadiness {
   gradesCount: number;
   studentsCount: number;
   invitedParentsCount: number;
+  registeredParentsCount: number;
   staffCount: number;
   isReady: boolean;
   steps: ReadinessStep[];
 }
 
 export async function getSchoolReadiness(schoolId: string): Promise<SchoolReadiness> {
-  const [pickupPointsCount, gradesCount, studentsCount, invitedParentsCount, staffCount] =
-    await Promise.all([
-      prisma.pickupPoint.count({ where: { schoolId, active: true } }),
-      prisma.grade.count({ where: { schoolId } }),
-      prisma.student.count({ where: { schoolId, active: true } }),
-      prisma.invitation.count({
-        where: { schoolId, status: { in: ['PENDING', 'SENT', 'CLAIMED'] } },
-      }),
-      prisma.user.count({ where: { schoolId, role: { in: ['support_staff', 'logistics'] } } }),
-    ]);
+  const [
+    pickupPointsCount,
+    gradesCount,
+    studentsCount,
+    invitedParentsCount,
+    registeredParentsCount,
+    staffCount,
+  ] = await Promise.all([
+    prisma.pickupPoint.count({ where: { schoolId, active: true } }),
+    prisma.grade.count({ where: { schoolId } }),
+    prisma.student.count({ where: { schoolId, active: true } }),
+    prisma.invitation.count({
+      where: { schoolId, status: { in: ['PENDING', 'SENT', 'CLAIMED'] } },
+    }),
+    prisma.invitation.count({ where: { schoolId, status: 'CLAIMED' } }),
+    prisma.user.count({ where: { schoolId, role: { in: ['support_staff', 'logistics'] } } }),
+  ]);
 
   const steps: ReadinessStep[] = [
     { key: 'pickup', done: pickupPointsCount >= 1, count: pickupPointsCount, required: true },
@@ -52,6 +60,7 @@ export async function getSchoolReadiness(schoolId: string): Promise<SchoolReadin
     gradesCount,
     studentsCount,
     invitedParentsCount,
+    registeredParentsCount,
     staffCount,
     isReady,
     steps,

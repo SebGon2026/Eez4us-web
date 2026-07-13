@@ -1,8 +1,8 @@
 'use client';
 
 import { Bell, Menu, PanelLeft, PanelLeftClose, Search } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';

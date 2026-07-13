@@ -27,7 +27,7 @@ export default {
       openNextDefault.fetch(req, env, ctx).then(async (res) => {
         if (!res.ok) {
           // log to Workers tail
-          // eslint-disable-next-line no-console
+           
           console.error('cron failed', path, res.status, await res.text());
         }
       }),

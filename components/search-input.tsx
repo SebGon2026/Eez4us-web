@@ -1,8 +1,8 @@
 'use client';
 
 import { Search, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 interface SearchInputProps {

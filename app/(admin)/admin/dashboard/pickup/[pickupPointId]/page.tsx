@@ -1,6 +1,6 @@
-import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { RankedTripsBoard } from '@/components/admin/ranked-trips-board';
 import { prisma } from '@/lib/db';

@@ -59,10 +59,15 @@ export async function POST(
     }
 
     const now = new Date();
-    await prisma.tripStudent.update({
-      where: { id: target.id },
+    // Guard atómico: dos misses escaneando al mismo alumno a la vez → solo la primera
+    // entrega gana; la segunda recibe ALREADY_DELIVERED en vez de pisar la atribución.
+    const delivered = await prisma.tripStudent.updateMany({
+      where: { id: target.id, deliveredAt: null },
       data: { deliveredAt: now, finalizedByUserId: session.user.id },
     });
+    if (delivered.count === 0) {
+      return Response.json({ error: 'ALREADY_DELIVERED' }, { status: 409 });
+    }
     await prisma.tripEvent.create({
       data: {
         tripId,

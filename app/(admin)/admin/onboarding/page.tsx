@@ -1,4 +1,4 @@
-import { ArrowRight, Check, MapPin, ShieldCheck, Tag, UserPlus, Users } from 'lucide-react';
+import { ArrowRight, Check, FileSpreadsheet, MapPin, ShieldCheck, Tag, UserPlus, Users } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
@@ -61,6 +61,23 @@ export default async function OnboardingPage() {
         </Card>
       )}
 
+      <Card className="border-2 border-dashed border-primary/30 shadow-sm">
+        <CardContent className="flex flex-wrap items-center gap-4 p-5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <FileSpreadsheet className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold leading-tight">{t('onboarding.combined.title')}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {t('onboarding.combined.description')}
+            </p>
+          </div>
+          <Button asChild variant="outline" className="shrink-0">
+            <Link href="/admin/imports/combined">{t('onboarding.combined.cta')}</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="space-y-4">
         {readiness.steps.map((step) => {
           const meta = STEP_META[step.key];
@@ -93,6 +110,17 @@ export default async function OnboardingPage() {
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {t(`onboarding.steps.${step.key}.description`)}
                   </p>
+                  {step.key === 'parents' && readiness.invitedParentsCount > 0 && (
+                    <p className="mt-1 text-xs font-bold">
+                      {t('onboarding.parentsProgress', {
+                        invited: readiness.invitedParentsCount,
+                        registered: readiness.registeredParentsCount,
+                      })}{' '}
+                      <Link href="/admin/invitations" className="text-primary underline">
+                        {t('onboarding.manageInvitations')}
+                      </Link>
+                    </p>
+                  )}
                 </div>
                 <Button asChild variant={step.done ? 'outline' : 'default'} className="shrink-0">
                   <Link href={meta.href}>

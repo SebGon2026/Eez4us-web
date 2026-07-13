@@ -1,6 +1,6 @@
-import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { TrialEditor } from '@/components/admin/trial-editor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

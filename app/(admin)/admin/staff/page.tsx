@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { StaffManager } from '@/components/admin/staff-manager';
 import { prisma } from '@/lib/db';

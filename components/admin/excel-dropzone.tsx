@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -18,9 +19,7 @@ import { cn } from '@/lib/utils';
 
 interface BulkResult {
   createdCount: number;
-  sentCount: number;
   rowErrors: Array<{ parent: string; reason: string }>;
-  sendFailures: Array<{ parent: string; reason: string }>;
   coverage?: { totalStudents: number; withoutParent: number };
   studentsWithoutParent?: Array<{ name: string; externalId: string | null }>;
 }
@@ -265,39 +264,29 @@ export function ExcelDropzone({ schoolId, country, students = [] }: ExcelDropzon
       {result && (
         <div className="rounded-3xl border bg-card p-6">
           <h3 className="text-lg font-black">{t('dropzone.result.title')}</h3>
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div className="mt-4 grid grid-cols-1 gap-4 text-sm">
             <div className="rounded-2xl bg-secondary p-4">
               <p className="text-xs font-bold uppercase text-muted-foreground">
                 {t('dropzone.result.created')}
               </p>
               <p className="text-2xl font-black">{result.createdCount}</p>
             </div>
-            <div className="rounded-2xl bg-secondary p-4">
-              <p className="text-xs font-bold uppercase text-muted-foreground">
-                {t('dropzone.result.sent')}
-              </p>
-              <p className="text-2xl font-black">{result.sentCount}</p>
-            </div>
           </div>
+
+          {result.createdCount > 0 && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+              <p className="text-sm font-bold text-amber-900">{t('dropzone.result.pendingNote')}</p>
+              <Button asChild size="sm">
+                <Link href="/admin/invitations?status=PENDING">{t('dropzone.result.goSend')}</Link>
+              </Button>
+            </div>
+          )}
 
           {result.rowErrors.length > 0 && (
             <div className="mt-4">
               <p className="text-sm font-bold">{t('dropzone.result.rowErrors')}</p>
               <ul className="mt-2 space-y-1 text-xs text-destructive">
                 {result.rowErrors.map((e, i) => (
-                  <li key={i}>
-                    {e.parent}: {e.reason}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {result.sendFailures.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-bold">{t('dropzone.result.sendFailures')}</p>
-              <ul className="mt-2 space-y-1 text-xs text-destructive">
-                {result.sendFailures.map((e, i) => (
                   <li key={i}>
                     {e.parent}: {e.reason}
                   </li>

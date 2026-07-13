@@ -1,6 +1,6 @@
-import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { prisma } from '@/lib/db';
@@ -28,12 +28,20 @@ export default async function ImportsPage() {
           <h1 className="text-3xl font-black">{t('imports.title')}</h1>
           <p className="text-sm text-muted-foreground">{t('imports.subtitle')}</p>
         </div>
-        <Link
-          href="/admin/students/import"
-          className="rounded-2xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
-        >
-          {t('imports.newImport')}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/imports/combined"
+            className="rounded-2xl border-2 border-input px-4 py-2 text-sm font-bold hover:bg-secondary"
+          >
+            {t('imports.newCombined')}
+          </Link>
+          <Link
+            href="/admin/students/import"
+            className="rounded-2xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:opacity-90"
+          >
+            {t('imports.newImport')}
+          </Link>
+        </div>
       </div>
 
       <Card>

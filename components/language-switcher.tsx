@@ -1,11 +1,11 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { useTransition } from 'react';
 
 import { setLocale } from '@/app/actions/set-locale';
-import { LOCALES, type AppLocale } from '@/lib/locale';
+import { type AppLocale,LOCALES } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 
 interface LanguageSwitcherProps {

@@ -74,6 +74,37 @@ export function downloadParentTemplate(format: TemplateFormat, dialPrefix: strin
   );
 }
 
+// Plantilla COMBINADA (colegio completo): una fila = alumno + su padre. El mismo padre se
+// repite en la fila de cada hijo (el import agrupa por email/teléfono en una invitación).
+export const COMBINED_TEMPLATE_HEADERS = [
+  'alumno_nombre',
+  'alumno_apellido',
+  'grado',
+  'matricula',
+  'padre_nombre',
+  'padre_apellido',
+  'email',
+  'whatsapp',
+];
+
+export function combinedTemplateSample(dialPrefix: string): Cell[][] {
+  return [
+    ['Sofía', 'Martínez', 'Primero A', '7047', 'Laura', 'Martínez', 'laura.martinez@example.com', `${dialPrefix}5512345601`],
+    ['Ana', 'Rodríguez', 'Primero A', '8585', 'Carlos', 'Rodríguez', 'carlos.rodriguez@example.com', ''],
+    ['Valentina', 'Rodríguez', 'Segundo B', '7913', 'Carlos', 'Rodríguez', 'carlos.rodriguez@example.com', ''],
+    ['Mateo', 'González', 'Segundo B', '8226', 'Lucía', 'Pérez', '', `${dialPrefix}5512345604`],
+    ['Diego', 'García', 'Tercero A', '', 'Pedro', 'García', 'pedro.garcia@example.com', ''],
+  ];
+}
+
+export function downloadCombinedTemplate(format: TemplateFormat, dialPrefix: string): void {
+  downloadWorkbook(
+    [COMBINED_TEMPLATE_HEADERS, ...combinedTemplateSample(dialPrefix)],
+    'plantilla-colegio-completo',
+    format,
+  );
+}
+
 // Plantilla de padres PRECARGADA con los alumnos del colegio (idea del cliente): una fila
 // por alumno, con su nombre (referencia) y su ID ya puestos; el director solo agrega el
 // padre de cada uno y re-sube. La columna `id_alumno` usa la matrícula si existe, sino el

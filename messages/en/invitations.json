@@ -28,7 +28,8 @@
       "title": "No invitations sent yet",
       "description": "Import an Excel with parents and students — invitations are generated automatically from there.",
       "importExcel": "Import Excel"
-    }
+    },
+    "importCombined": "Import whole school"
   },
   "status": {
     "PENDING": "Not sent yet",
@@ -43,11 +44,29 @@
   },
   "filters": {
     "all": "All statuses",
+    "allGrades": "All grades",
     "PENDING": "Not sent yet",
     "SENT": "Sent, not registered",
     "CLAIMED": "Registered",
     "EXPIRED": "Expired",
     "REVOKED": "Revoked"
+  },
+  "bulkSend": {
+    "selectPage": "Select page",
+    "selectRow": "Select invitation",
+    "selectedCount": "{count, plural, =0 {Nothing selected} one {# selected} other {# selected}}",
+    "sendSelected": "Send selected",
+    "sendAllPending": "Send all pending",
+    "sendGradePending": "Send grade's pending",
+    "remindUnregistered": "Remind unregistered",
+    "confirmSendAll": "ALL invitations pending delivery will be sent (per the current grade filter). Continue?",
+    "confirmReminder": "The invitation will be resent (with a fresh link) to everyone who hasn't registered yet. Continue?",
+    "sending": "Sending…",
+    "sentToast": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+    "failedToast": "{count, plural, one {# send failed} other {# sends failed}}",
+    "remainingToast": "{count} left unprocessed — repeat the action to continue",
+    "nothingToSend": "No invitations to send with that criteria",
+    "error": "Could not complete the send"
   },
   "resend": {
     "action": "Resend",
@@ -59,6 +78,7 @@
     "title": "Imports",
     "subtitle": "History of bulk parent/student uploads.",
     "newImport": "New import",
+    "newCombined": "Import whole school",
     "history": "History",
     "empty": "No imports recorded yet.",
     "byUser": "By {name}",
@@ -69,7 +89,53 @@
   },
   "importParents": {
     "title": "Import parents",
-    "subtitle": "Upload an Excel or CSV with parents and their students' IDs. We generate one invitation per parent (email if available, otherwise WhatsApp). Students must exist first — import the student roster first."
+    "subtitle": "Upload an Excel or CSV with parents and their students' IDs. We generate one invitation per parent (email if available, otherwise WhatsApp) in pending state — nothing is sent until you trigger it from Invitations. Students must exist first — import the student roster first."
+  },
+  "combinedImport": {
+    "title": "Import whole school",
+    "subtitle": "A single file with students and parents: one row per student with their parent's details. We create the students and leave the invitations pending delivery — you send them whenever you want from Invitations.",
+    "template": {
+      "label": "Template:",
+      "xlsx": "Download .xlsx",
+      "csv": "Download .csv"
+    },
+    "dropzone": {
+      "dropActive": "Drop the file here",
+      "dropIdle": "Drag a .xlsx or .csv, or click",
+      "columnsHint": "Columns: alumno_nombre, alumno_apellido, grado, matricula, padre_nombre, padre_apellido, email, whatsapp. If a parent has several children, repeat their details on each child's row.",
+      "previewSummary": "{valid} valid · {errors} with errors · preview of first 20",
+      "removeFile": "Remove file",
+      "studentOnly": "Student only (no parent)",
+      "rowError": "Row {row}: {message}",
+      "importFailed": "Import failed",
+      "unexpectedError": "Unexpected error",
+      "importCount": "{count, plural, one {Import # row} other {Import # rows}}",
+      "importing": "Importing…",
+      "example": {
+        "title": "Example of a valid file",
+        "hint": "grado and matricula are optional. The same parent on several rows (several children) generates ONE invitation with all their students. A row without parent data creates the student only."
+      },
+      "columns": {
+        "student": "Student",
+        "grade": "Grade",
+        "externalId": "Student ID",
+        "parent": "Parent",
+        "contact": "Contact",
+        "channel": "Channel"
+      }
+    },
+    "result": {
+      "title": "Result",
+      "studentsCreated": "Students created",
+      "studentsUpdated": "Students updated",
+      "invitationsCreated": "Invitations created",
+      "invitationsMerged": "Invitations updated",
+      "errors": "Rows with errors",
+      "skippedClaimed": "Skipped because the parent is already registered:",
+      "pendingNote": "Nothing was sent yet: the invitations are pending. Send them by grade or all at once.",
+      "goSend": "Go to Invitations",
+      "importAnother": "Import another file"
+    }
   },
   "dropzone": {
     "dropActive": "Drop the file here",
@@ -104,10 +170,10 @@
     "importing": "Importing…",
     "result": {
       "title": "Result",
-      "created": "Created",
-      "sent": "Sent",
+      "created": "Invitations created (pending delivery)",
+      "pendingNote": "Nothing was sent yet: the invitations are pending. Send them by grade or all at once.",
+      "goSend": "Go send them",
       "rowErrors": "Rows with errors",
-      "sendFailures": "Failed sends",
       "coverageComplete": "All your students ({total}) have at least one invited parent.",
       "coverageMissing": "You're missing {count} of {total} students with no invited parent:",
       "importAnother": "Import another file"
@@ -147,6 +213,7 @@
       "INVITATION_EXPIRED": "This invitation has expired. Ask the school for a new one.",
       "INVITATION_NOT_FOUND": "Invitation not found.",
       "SIGNUP_FAILED": "We couldn't create the account. One may already exist with this email.",
+      "EMAIL_ALREADY_REGISTERED": "An account with this contact already exists. Enter that account's password to add your students, or recover the password from the app.",
       "fallback": "We couldn't create your account. Please try again.",
       "unexpected": "Unexpected error"
     },

@@ -28,7 +28,8 @@
       "title": "Aún no enviaste invitaciones",
       "description": "Importá un Excel con padres y alumnos — desde ahí se generan las invitaciones automáticas.",
       "importExcel": "Importar Excel"
-    }
+    },
+    "importCombined": "Importar colegio completo"
   },
   "status": {
     "PENDING": "Pendiente de envío",
@@ -43,11 +44,29 @@
   },
   "filters": {
     "all": "Todos los estados",
+    "allGrades": "Todos los grados",
     "PENDING": "Pendientes de envío",
     "SENT": "Enviadas sin registrar",
     "CLAIMED": "Registradas",
     "EXPIRED": "Expiradas",
     "REVOKED": "Revocadas"
+  },
+  "bulkSend": {
+    "selectPage": "Seleccionar página",
+    "selectRow": "Seleccionar invitación",
+    "selectedCount": "{count, plural, =0 {Nada seleccionado} one {# seleccionada} other {# seleccionadas}}",
+    "sendSelected": "Enviar seleccionadas",
+    "sendAllPending": "Enviar todas las pendientes",
+    "sendGradePending": "Enviar pendientes del grado",
+    "remindUnregistered": "Recordatorio a no registrados",
+    "confirmSendAll": "Se enviarán TODAS las invitaciones pendientes de envío (según el filtro de grado actual). ¿Continuar?",
+    "confirmReminder": "Se reenviará la invitación (con link nuevo) a todos los que aún no se registraron. ¿Continuar?",
+    "sending": "Enviando…",
+    "sentToast": "{count, plural, one {# invitación enviada} other {# invitaciones enviadas}}",
+    "failedToast": "{count, plural, one {# envío falló} other {# envíos fallaron}}",
+    "remainingToast": "Quedan {count} sin procesar — repetí la acción para continuar",
+    "nothingToSend": "No hay invitaciones para enviar con ese criterio",
+    "error": "No se pudo completar el envío"
   },
   "resend": {
     "action": "Reenviar",
@@ -59,6 +78,7 @@
     "title": "Importaciones",
     "subtitle": "Histórico de cargas masivas de padres/alumnos.",
     "newImport": "Nueva importación",
+    "newCombined": "Importar colegio completo",
     "history": "Histórico",
     "empty": "Aún no hay importaciones registradas.",
     "byUser": "Por {name}",
@@ -69,7 +89,53 @@
   },
   "importParents": {
     "title": "Importar padres",
-    "subtitle": "Subí un Excel o CSV con padres y las matrículas de sus alumnos. Generamos una invitación por padre (email si tiene, sino WhatsApp). Los alumnos deben existir antes — cargá el roster de alumnos primero."
+    "subtitle": "Subí un Excel o CSV con padres y las matrículas de sus alumnos. Generamos una invitación por padre (email si tiene, sino WhatsApp) en estado pendiente — nada se envía hasta que vos lo dispares desde Invitaciones. Los alumnos deben existir antes — cargá el roster de alumnos primero."
+  },
+  "combinedImport": {
+    "title": "Importar colegio completo",
+    "subtitle": "Un solo archivo con alumnos y padres: una fila por alumno con los datos de su padre o madre. Creamos los alumnos y dejamos las invitaciones pendientes de envío — las mandás cuando quieras desde Invitaciones.",
+    "template": {
+      "label": "Plantilla:",
+      "xlsx": "Descargar .xlsx",
+      "csv": "Descargar .csv"
+    },
+    "dropzone": {
+      "dropActive": "Soltá el archivo aquí",
+      "dropIdle": "Arrastrá un .xlsx o .csv, o hacé click",
+      "columnsHint": "Columnas: alumno_nombre, alumno_apellido, grado, matricula, padre_nombre, padre_apellido, email, whatsapp. Si un padre tiene varios hijos, repetí sus datos en la fila de cada hijo.",
+      "previewSummary": "{valid} válidas · {errors} con errores · vista previa primeras 20",
+      "removeFile": "Quitar archivo",
+      "studentOnly": "Solo alumno (sin padre)",
+      "rowError": "Fila {row}: {message}",
+      "importFailed": "Error al importar",
+      "unexpectedError": "Error inesperado",
+      "importCount": "{count, plural, one {Importar # fila} other {Importar # filas}}",
+      "importing": "Importando…",
+      "example": {
+        "title": "Ejemplo de archivo válido",
+        "hint": "grado y matricula son opcionales. El mismo padre en varias filas (varios hijos) genera UNA sola invitación con todos sus alumnos. Una fila sin datos de padre crea solo el alumno."
+      },
+      "columns": {
+        "student": "Alumno",
+        "grade": "Grado",
+        "externalId": "Matrícula",
+        "parent": "Padre/Madre",
+        "contact": "Contacto",
+        "channel": "Canal"
+      }
+    },
+    "result": {
+      "title": "Resultado",
+      "studentsCreated": "Alumnos creados",
+      "studentsUpdated": "Alumnos actualizados",
+      "invitationsCreated": "Invitaciones creadas",
+      "invitationsMerged": "Invitaciones actualizadas",
+      "errors": "Filas con error",
+      "skippedClaimed": "Omitidas porque el padre ya está registrado:",
+      "pendingNote": "Nada se envió todavía: las invitaciones quedaron pendientes. Envialas por grado o todas juntas.",
+      "goSend": "Ir a Invitaciones",
+      "importAnother": "Importar otro archivo"
+    }
   },
   "dropzone": {
     "dropActive": "Soltá el archivo aquí",
@@ -104,10 +170,10 @@
     "importing": "Importando…",
     "result": {
       "title": "Resultado",
-      "created": "Creadas",
-      "sent": "Enviadas",
+      "created": "Invitaciones creadas (pendientes de envío)",
+      "pendingNote": "Nada se envió todavía: las invitaciones quedaron pendientes. Envialas por grado o todas juntas.",
+      "goSend": "Ir a enviarlas",
       "rowErrors": "Filas con error",
-      "sendFailures": "Envíos fallidos",
       "coverageComplete": "Todos tus alumnos ({total}) tienen al menos un padre invitado.",
       "coverageMissing": "Te faltan {count} de {total} alumnos sin padre invitado:",
       "importAnother": "Importar otro archivo"
@@ -147,6 +213,7 @@
       "INVITATION_EXPIRED": "Esta invitación venció. Pedí una nueva a la escuela.",
       "INVITATION_NOT_FOUND": "Invitación no encontrada.",
       "SIGNUP_FAILED": "No pudimos crear la cuenta. Puede que ya exista una con este email.",
+      "EMAIL_ALREADY_REGISTERED": "Ya existe una cuenta con este contacto. Ingresá la contraseña de esa cuenta para sumar a tus alumnos, o recuperá la contraseña desde la app.",
       "fallback": "No pudimos crear tu cuenta. Intentá de nuevo.",
       "unexpected": "Error inesperado"
     },

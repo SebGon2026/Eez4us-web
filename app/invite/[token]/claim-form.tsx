@@ -1,8 +1,8 @@
 'use client';
 
 import { CheckCircle2, GraduationCap, Smartphone } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -30,6 +30,7 @@ const CLAIM_ERROR_CODES = new Set([
   'INVITATION_EXPIRED',
   'INVITATION_NOT_FOUND',
   'SIGNUP_FAILED',
+  'EMAIL_ALREADY_REGISTERED',
 ]);
 
 export function ClaimInvitation({

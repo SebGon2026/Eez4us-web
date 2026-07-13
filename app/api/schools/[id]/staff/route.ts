@@ -63,8 +63,10 @@ export async function POST(
     const session = await requireSchool(req, schoolId, ALLOWED_ROLES);
     const body = createSchema.parse(await req.json());
 
+    // better-auth guarda el email en minúsculas: comparar y persistir igual.
+    const email = body.email.trim().toLowerCase();
     const emailExists = await prisma.user.findUnique({
-      where: { email: body.email },
+      where: { email },
       select: { id: true },
     });
     if (emailExists) {
@@ -73,10 +75,10 @@ export async function POST(
 
     // Mismo patrón que el alta de director: signUp y luego seteamos rol + escuela.
     await auth.api.signUpEmail({
-      body: { email: body.email, password: body.password, name: body.name },
+      body: { email, password: body.password, name: body.name },
     });
     const user = await prisma.user.update({
-      where: { email: body.email },
+      where: { email },
       data: { role: body.role, schoolId, emailVerified: true },
       select: { id: true, name: true, email: true, role: true, active: true, createdAt: true },
     });

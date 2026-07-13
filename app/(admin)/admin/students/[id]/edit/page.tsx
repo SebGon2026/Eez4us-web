@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { StudentForm } from '@/components/admin/student-form';
 import { prisma } from '@/lib/db';

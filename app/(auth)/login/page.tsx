@@ -1,9 +1,9 @@
 'use client';
 
 import { ArrowRight, KeyRound, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -20,6 +20,11 @@ interface SchoolBrand {
 }
 
 const STORAGE_KEY = 'eez4us.lastSchoolCode';
+
+// better-auth limita /two-factor/* a 3 requests por 10 s en producción y el envío
+// automático del sign-in ya consume uno. Sin cooldown, dos o tres taps seguidos a
+// "Reenviar código" devuelven 429 y la UI moría en un error genérico.
+const RESEND_COOLDOWN_S = 30;
 
 function initials(name: string): string {
   return name
@@ -42,8 +47,17 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('');
   const [trustDevice, setTrustDevice] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [resendPending, setResendPending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const id = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [resendCooldown]);
 
   useEffect(() => {
     const remembered = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
@@ -111,6 +125,9 @@ export default function LoginPage() {
           return;
         }
         setOtp('');
+        setNotice(null);
+        // El envío automático de recién cuenta para el rate limit: arrancamos en cooldown.
+        setResendCooldown(RESEND_COOLDOWN_S);
         setStep('otp');
         return;
       }
@@ -131,6 +148,10 @@ export default function LoginPage() {
     try {
       const result = await authClient.twoFactor.verifyOtp({ code: otp.trim(), trustDevice });
       if (result.error) {
+        if (result.error.code === 'INVALID_TWO_FACTOR_COOKIE') {
+          expireToCreds();
+          return;
+        }
         setError(t('login.otp.invalidOrExpired'));
         return;
       }
@@ -142,10 +163,45 @@ export default function LoginPage() {
     }
   }
 
+  // La ventana 2FA (cookie + verification de 10 min) venció: el server ya no sabe quién
+  // pidió el código, así que reenviar/verificar es imposible por diseño. Volvemos a
+  // credenciales para re-emitir el desafío en vez de dejar al usuario en un paso muerto.
+  function expireToCreds() {
+    setStep('creds');
+    setOtp('');
+    setNotice(null);
+    setResendCooldown(0);
+    setError(t('login.otp.sessionExpired'));
+  }
+
   async function resendOtp() {
+    if (resendPending || resendCooldown > 0) return;
     setError(null);
-    const sent = await authClient.twoFactor.sendOtp();
-    if (sent.error) setError(t('login.otp.resendFailed'));
+    setNotice(null);
+    setResendPending(true);
+    try {
+      const sent = await authClient.twoFactor.sendOtp();
+      if (sent.error) {
+        if (sent.error.code === 'INVALID_TWO_FACTOR_COOKIE' || sent.error.status === 401) {
+          expireToCreds();
+          return;
+        }
+        if (sent.error.status === 429) {
+          // Ventana del rate limit de better-auth: 10 s.
+          setResendCooldown(10);
+          setError(t('login.otp.resendThrottled'));
+          return;
+        }
+        setError(t('login.otp.resendFailed'));
+        return;
+      }
+      setNotice(t('login.otp.resent'));
+      setResendCooldown(RESEND_COOLDOWN_S);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('errors.unexpected'));
+    } finally {
+      setResendPending(false);
+    }
   }
 
   function switchSchool() {
@@ -279,6 +335,9 @@ export default function LoginPage() {
                 </label>
 
                 {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+                {notice && !error && (
+                  <p className="text-sm font-medium text-primary">{notice}</p>
+                )}
 
                 <button
                   type="submit"
@@ -291,9 +350,14 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={resendOtp}
-                  className="block w-full text-center text-xs font-semibold text-primary hover:underline"
+                  disabled={resendPending || resendCooldown > 0}
+                  className="block w-full text-center text-xs font-semibold text-primary hover:underline disabled:cursor-default disabled:text-muted-foreground disabled:no-underline"
                 >
-                  {t('login.otp.resend')}
+                  {resendPending
+                    ? t('login.otp.resending')
+                    : resendCooldown > 0
+                      ? t('login.otp.resendCountdown', { seconds: resendCooldown })
+                      : t('login.otp.resend')}
                 </button>
 
                 <button
@@ -302,6 +366,8 @@ export default function LoginPage() {
                     setStep('creds');
                     setOtp('');
                     setError(null);
+                    setNotice(null);
+                    setResendCooldown(0);
                   }}
                   className="block w-full text-center text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                 >

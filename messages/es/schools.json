@@ -246,6 +246,13 @@
     "required": "Requerido",
     "optional": "Opcional",
     "addMore": "Agregar más",
+    "parentsProgress": "{invited, plural, one {# invitado} other {# invitados}} · {registered, plural, one {# registrado} other {# registrados}} en la app.",
+    "manageInvitations": "Ver y enviar invitaciones",
+    "combined": {
+      "title": "Subí todo el colegio en un solo archivo",
+      "description": "Alumnos y padres juntos: una fila por alumno con los datos de su padre. Las invitaciones quedan pendientes y las enviás cuando la escuela esté lista.",
+      "cta": "Importación combinada"
+    },
     "steps": {
       "pickup": {
         "title": "Punto de recogida",
@@ -264,7 +271,7 @@
       },
       "parents": {
         "title": "Padres invitados",
-        "description": "Subí el Excel de padres: el sistema les manda la invitación por email o WhatsApp.",
+        "description": "Subí el Excel de padres: las invitaciones quedan pendientes y las enviás desde Invitaciones (seleccionadas, por grado o todas), con recordatorios a los que no se registren.",
         "cta": "Importar padres"
       },
       "staff": {

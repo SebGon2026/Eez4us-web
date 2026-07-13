@@ -3,7 +3,7 @@ import { betterAuth } from 'better-auth';
 import { bearer, jwt, twoFactor } from 'better-auth/plugins';
 
 import { prisma } from './db';
-import { LOCALE_COOKIE, resolveLocale, type AppLocale } from './locale';
+import { type AppLocale,LOCALE_COOKIE, resolveLocale } from './locale';
 import { sendResetPasswordEmail, sendStaffOtpEmail } from './mailer';
 
 // Idioma para los emails de auth (OTP 2FA / reset): sale de los headers del request
@@ -47,7 +47,10 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      schoolId: { type: 'string', required: false },
+      // input: false — schoolId NUNCA viene del cliente: lo asigna el server (claim de
+      // invitación, alta de staff/director). Con input habilitado, cualquiera podía
+      // self-signupearse como parent de un colegio arbitrario.
+      schoolId: { type: 'string', required: false, input: false },
       role: {
         type: 'string',
         defaultValue: 'parent',

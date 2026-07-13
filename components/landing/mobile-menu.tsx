@@ -2,8 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';

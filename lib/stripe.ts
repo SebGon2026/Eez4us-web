@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 
+import { appBaseUrl } from './app-url';
 import { prisma } from './db';
 
 type ApiVersion = NonNullable<ConstructorParameters<typeof Stripe>[1]>['apiVersion'];
@@ -35,7 +36,7 @@ export function priceIdForCurrency(currency?: string | null): string {
 }
 
 export function readPortalReturnUrl(): string {
-  return process.env.STRIPE_PORTAL_RETURN_URL ?? `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/admin/billing`;
+  return process.env.STRIPE_PORTAL_RETURN_URL ?? `${appBaseUrl()}/admin/billing`;
 }
 
 interface SchoolForCustomer {

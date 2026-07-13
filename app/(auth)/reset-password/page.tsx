@@ -1,9 +1,9 @@
 'use client';
 
 import { CheckCircle2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Suspense, useState } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';

@@ -2,6 +2,7 @@ import type { Invitation, InvitationChannel } from '@prisma/client';
 import { customAlphabet } from 'nanoid';
 import { z } from 'zod';
 
+import { appBaseUrl } from './app-url';
 import { auth } from './auth';
 import { prisma } from './db';
 import { type AppLocale,localeForCountry } from './locale';
@@ -98,8 +99,7 @@ export function pickChannel(contact: {
 }
 
 export function inviteLink(token: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? '';
-  return `${base.replace(/\/$/, '')}/invite/${token}`;
+  return `${appBaseUrl()}/invite/${token}`;
 }
 
 interface DispatchInvitationArgs {
@@ -163,6 +163,10 @@ export async function sendInvitation({
 export interface InviteRepresentativesResult {
   createdCount: number;
   sentCount: number;
+  // Contacto que ya tiene cuenta de padre en ESTA escuela: se vinculan los alumnos directo
+  // (sin invitación). Contacto con invitación viva: se le suman los alumnos (sin duplicar).
+  linkedCount: number;
+  mergedCount: number;
   repErrors: Array<{ rep: string; reason: string }>;
 }
 
@@ -178,13 +182,16 @@ export async function inviteRepresentatives({
   representatives: RepresentativeInput[];
 }): Promise<InviteRepresentativesResult> {
   const repErrors: Array<{ rep: string; reason: string }> = [];
-  const created: Array<{
+  const toSend: Array<{
     invitationId: string;
     channel: InvitationChannel;
     contactValue: string;
     token: string;
     parentName: string;
   }> = [];
+  let createdCount = 0;
+  let linkedCount = 0;
+  let mergedCount = 0;
 
   // País de la escuela: valida el teléfono por prefijo+longitud (E.164 si es
   // desconocido) y decide el idioma del email de invitación.
@@ -207,7 +214,66 @@ export async function inviteRepresentatives({
       repErrors.push({ rep: repName, reason: 'PHONE_INVALID' });
       continue;
     }
+    const contactValue = (channel === 'EMAIL' ? rep.email : rep.phoneE164) as string;
     try {
+      // Contacto que YA es padre registrado de esta escuela (mismo email de login que usaría
+      // el claim): vincular los alumnos directo. Invitarlo de nuevo era un callejón sin
+      // salida — el claim moría en "email ya registrado".
+      const loginEmail =
+        channel === 'EMAIL' ? contactValue.toLowerCase() : syntheticEmailFromPhone(contactValue);
+      const existingUser = await prisma.user.findUnique({
+        where: { email: loginEmail },
+        select: { id: true, role: true, schoolId: true, active: true },
+      });
+      if (
+        existingUser &&
+        existingUser.role === 'parent' &&
+        existingUser.active &&
+        existingUser.schoolId === schoolId
+      ) {
+        for (const studentId of studentIds) {
+          await prisma.parentStudent.upsert({
+            where: { parentId_studentId: { parentId: existingUser.id, studentId } },
+            create: { parentId: existingUser.id, studentId },
+            update: {},
+          });
+        }
+        linkedCount += 1;
+        continue;
+      }
+
+      // Invitación viva para el mismo contacto: sumarle los alumnos en vez de duplicar, y
+      // reenviar el link existente para avisarle del alumno nuevo.
+      const live = await prisma.invitation.findFirst({
+        where: {
+          schoolId,
+          contactValue: { equals: contactValue, mode: 'insensitive' },
+          status: { in: ['PENDING', 'SENT'] },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, token: true, studentIds: true, recipientName: true, channel: true },
+      });
+      if (live) {
+        const mergedIds = [...new Set([...live.studentIds, ...studentIds])];
+        await prisma.invitation.update({
+          where: { id: live.id },
+          data: {
+            studentIds: mergedIds,
+            recipientName: live.recipientName ?? (repName || null),
+            expiresAt: new Date(Date.now() + DEFAULT_EXPIRY_DAYS * 24 * 60 * 60 * 1000),
+          },
+        });
+        mergedCount += 1;
+        toSend.push({
+          invitationId: live.id,
+          channel: live.channel,
+          contactValue,
+          token: live.token,
+          parentName: repName,
+        });
+        continue;
+      }
+
       const invitation = await createInvitation({
         schoolId,
         parent: {
@@ -219,7 +285,8 @@ export async function inviteRepresentatives({
         studentIds,
         channel,
       });
-      created.push({
+      createdCount += 1;
+      toSend.push({
         invitationId: invitation.id,
         channel,
         contactValue: invitation.contactValue,
@@ -232,7 +299,7 @@ export async function inviteRepresentatives({
   }
 
   const sendResults = await Promise.allSettled(
-    created.map((c) =>
+    toSend.map((c) =>
       sendInvitation({
         invitationId: c.invitationId,
         channel: c.channel,
@@ -246,12 +313,14 @@ export async function inviteRepresentatives({
   );
   sendResults.forEach((r, i) => {
     if (r.status === 'rejected') {
-      repErrors.push({ rep: created[i].parentName, reason: `send: ${String(r.reason)}` });
+      repErrors.push({ rep: toSend[i].parentName, reason: `send: ${String(r.reason)}` });
     }
   });
 
   return {
-    createdCount: created.length,
+    createdCount,
+    linkedCount,
+    mergedCount,
     sentCount: sendResults.filter((r) => r.status === 'fulfilled').length,
     repErrors,
   };
@@ -271,8 +340,35 @@ export interface ClaimInvitationResult {
   setCookie: string | null;
 }
 
-function syntheticEmailFromPhone(phoneE164: string): string {
+export function syntheticEmailFromPhone(phoneE164: string): string {
   return `${phoneE164.replace(/[^\d]/g, '')}@whatsapp.eez4us.local`;
+}
+
+// better-auth tira APIError con body.code USER_ALREADY_EXISTS; el fallback por mensaje
+// cubre cambios de shape entre versiones.
+function isUserAlreadyExistsError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { body?: { code?: string }; message?: string };
+  if (e.body?.code === 'USER_ALREADY_EXISTS') return true;
+  return (e.message ?? '').toLowerCase().includes('already exists');
+}
+
+interface AuthResponseShape {
+  headers?: unknown;
+  response?: { token?: string | null; user?: { id?: string } } | null;
+}
+
+function extractAuthResult(res: AuthResponseShape): {
+  setCookie: string | null;
+  sessionToken: string | null;
+  userId: string | null;
+} {
+  return {
+    setCookie:
+      (res.headers instanceof Headers ? res.headers.get('set-cookie') : null) ?? null,
+    sessionToken: res.response?.token ?? null,
+    userId: res.response?.user?.id ?? null,
+  };
 }
 
 export async function claimInvitation({
@@ -303,59 +399,110 @@ export async function claimInvitation({
     }
   }
 
-  const email =
+  const email = (
     invitation.channel === 'EMAIL'
       ? invitation.contactValue
-      : syntheticEmailFromPhone(invitation.contactValue);
+      : syntheticEmailFromPhone(invitation.contactValue)
+  ).toLowerCase();
 
   const phone =
     phoneE164 ?? (invitation.channel === 'WHATSAPP' ? invitation.contactValue : null);
 
-  const signUpResponse = await auth.api.signUpEmail({
-    body: {
-      email,
-      password,
-      name,
-      schoolId: invitation.schoolId,
-      phoneE164: phone ?? undefined,
-    },
-    returnHeaders: true,
-  });
+  // Solo alumnos que EXISTEN en la escuela de la invitación: un alumno borrado después del
+  // envío no puede reventar el claim con un error de FK (dejaba usuario creado sin alumnos
+  // y la invitación atascada en SENT, imposible de reintentar).
+  const validStudents = invitation.studentIds.length
+    ? await prisma.student.findMany({
+        where: { id: { in: invitation.studentIds }, schoolId: invitation.schoolId },
+        select: { id: true },
+      })
+    : [];
 
-  const setCookie =
-    (signUpResponse.headers instanceof Headers
-      ? signUpResponse.headers.get('set-cookie')
-      : null) ?? null;
+  let setCookie: string | null = null;
+  let sessionToken: string | null = null;
+  let userId: string | null = null;
 
-  const sessionToken =
-    (signUpResponse.response as { token?: string | null } | null)?.token ?? null;
-  const userId =
-    (signUpResponse.response as { user?: { id?: string } } | null)?.user?.id ?? null;
+  try {
+    // schoolId NO va en el body (additionalField con input:false): lo asigna la transacción.
+    const signUp = await auth.api.signUpEmail({
+      body: { email, password, name, phoneE164: phone ?? undefined },
+      returnHeaders: true,
+    });
+    ({ setCookie, sessionToken, userId } = extractAuthResult(signUp as AuthResponseShape));
+    if (!userId) throw new Error('SIGNUP_FAILED');
+  } catch (err) {
+    if (err instanceof Error && err.message === 'SIGNUP_FAILED') throw err;
+    if (!isUserAlreadyExistsError(err)) throw err;
+
+    // Ya existe una cuenta con ese contacto: segunda invitación al mismo padre (hermano
+    // nuevo, cambio de colegio) o un claim anterior que quedó a medias. El claim exige la
+    // contraseña de ESA cuenta (sign-in); si no coincide, que recupere la contraseña.
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, role: true, active: true },
+    });
+    // Nunca re-rolear una cuenta de staff/director a parent por un claim.
+    if (!existing || existing.role !== 'parent' || !existing.active) {
+      throw new Error('EMAIL_ALREADY_REGISTERED');
+    }
+    try {
+      const signIn = await auth.api.signInEmail({
+        body: { email, password },
+        returnHeaders: true,
+      });
+      ({ setCookie, sessionToken } = extractAuthResult(signIn as AuthResponseShape));
+      userId = existing.id;
+    } catch {
+      throw new Error('EMAIL_ALREADY_REGISTERED');
+    }
+  }
 
   if (!userId) {
     throw new Error('SIGNUP_FAILED');
   }
+  const uid = userId;
 
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: userId },
-      data: { role: 'parent', schoolId: invitation.schoolId },
-    }),
-    ...invitation.studentIds.map((studentId) =>
-      prisma.parentStudent.upsert({
-        where: { parentId_studentId: { parentId: userId, studentId } },
-        create: { parentId: userId, studentId },
+  // claimedByUserId es @unique: un padre con varias invitaciones claimeadas solo puede
+  // atribuirse una. Las siguientes se marcan CLAIMED sin atribución (no rompe conteos:
+  // registeredParentsCount cuenta por status).
+  const alreadyAttributed = await prisma.invitation.findFirst({
+    where: { claimedByUserId: uid },
+    select: { id: true },
+  });
+
+  await prisma.$transaction(async (tx) => {
+    // Guard atómico contra doble-claim: si otro request ya la claimeó entre el check de
+    // arriba y acá, count viene 0 y se aborta sin pisar nada.
+    const claimed = await tx.invitation.updateMany({
+      where: { id: invitation.id, status: { in: ['PENDING', 'SENT'] } },
+      data: {
+        status: 'CLAIMED',
+        claimedAt: new Date(),
+        ...(alreadyAttributed ? {} : { claimedByUserId: uid }),
+      },
+    });
+    if (claimed.count === 0) {
+      throw new Error('INVITATION_ALREADY_USED');
+    }
+    await tx.user.update({
+      where: { id: uid },
+      data: {
+        role: 'parent',
+        schoolId: invitation.schoolId,
+        ...(phone ? { phoneE164: phone } : {}),
+      },
+    });
+    for (const s of validStudents) {
+      await tx.parentStudent.upsert({
+        where: { parentId_studentId: { parentId: uid, studentId: s.id } },
+        create: { parentId: uid, studentId: s.id },
         update: {},
-      }),
-    ),
-    prisma.invitation.update({
-      where: { id: invitation.id },
-      data: { status: 'CLAIMED', claimedAt: new Date(), claimedByUserId: userId },
-    }),
-  ]);
+      });
+    }
+  });
 
   return {
-    userId,
+    userId: uid,
     schoolId: invitation.schoolId,
     sessionToken,
     setCookie,

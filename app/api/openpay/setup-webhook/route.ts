@@ -1,3 +1,4 @@
+import { appBaseUrl } from '@/lib/app-url';
 import { createWebhook } from '@/lib/openpay';
 import { jsonError, requireRole } from '@/lib/session';
 
@@ -10,7 +11,7 @@ export async function POST(req: Request): Promise<Response> {
     await requireRole(req, ALLOWED_ROLES);
     const user = process.env.OPENPAY_WEBHOOK_USER;
     const password = process.env.OPENPAY_WEBHOOK_PASSWORD;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL;
+    const appUrl = appBaseUrl();
     if (!user || !password) {
       return Response.json({ error: 'WEBHOOK_CREDS_MISSING' }, { status: 500 });
     }
@@ -19,7 +20,7 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const webhook = await createWebhook({
-      url: `${appUrl.replace(/\/$/, '')}/api/openpay/webhook`,
+      url: `${appUrl}/api/openpay/webhook`,
       user,
       password,
       eventTypes: [

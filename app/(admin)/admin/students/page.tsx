@@ -1,7 +1,7 @@
 import { GraduationCap } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { type Column, DataTable } from '@/components/admin/data-table';
 import { DeleteButton } from '@/components/admin/delete-button';

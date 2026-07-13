@@ -1,15 +1,10 @@
-import type { InvitationStatus } from '@prisma/client';
-import { Mail } from 'lucide-react';
+import type { InvitationStatus, Prisma } from '@prisma/client';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 
-import { CopyInviteLink } from '@/components/admin/copy-invite-link';
-import { type Column, DataTable } from '@/components/admin/data-table';
 import { InvitationsFilters } from '@/components/admin/invitations-filters';
-import { ResendButton } from '@/components/admin/resend-button';
-import { EmptyState } from '@/components/empty-state';
-import { Badge, type BadgeProps } from '@/components/ui/badge';
+import { type InvitationRow, InvitationsTable } from '@/components/admin/invitations-table';
 import { Button } from '@/components/ui/button';
 import { prisma } from '@/lib/db';
 import { intlLocaleOf } from '@/lib/locale';
@@ -19,47 +14,44 @@ const PAGE_SIZE = 25;
 
 const VALID_STATUSES: InvitationStatus[] = ['PENDING', 'SENT', 'CLAIMED', 'EXPIRED', 'REVOKED'];
 
-const STATUS_VARIANTS: Record<InvitationStatus, BadgeProps['variant']> = {
-  PENDING: 'warning',
-  SENT: 'default',
-  CLAIMED: 'success',
-  EXPIRED: 'secondary',
-  REVOKED: 'destructive',
-};
-
-interface InvitationRow {
-  id: string;
-  token: string;
-  contactValue: string;
-  channel: 'EMAIL' | 'WHATSAPP';
-  status: InvitationStatus;
-  recipientName: string | null;
-  studentNames: string[];
-  createdAt: string;
-  claimedAt: string | null;
-  expiresAt: string;
-  resendable: boolean;
-}
-
 export default async function InvitationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; status?: string }>;
+  searchParams: Promise<{ page?: string; status?: string; grade?: string }>;
 }) {
   const session = await getCurrentSession();
   if (!session || !session.user.schoolId) redirect('/login');
   const t = await getTranslations('invitations');
   const intlLocale = intlLocaleOf(await getLocale());
   const schoolId = session.user.schoolId;
-  const { page: pageParam, status } = await searchParams;
+  const { page: pageParam, status, grade } = await searchParams;
   const page = Math.max(1, Number(pageParam ?? '1') || 1);
   const statusFilter = VALID_STATUSES.includes(status as InvitationStatus)
     ? (status as InvitationStatus)
     : undefined;
 
-  const where = {
+  const grades = await prisma.grade.findMany({
+    where: { schoolId },
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    select: { id: true, name: true },
+  });
+  const gradeFilter = grades.some((g) => g.id === grade) ? grade : undefined;
+
+  // El grado de una invitación se deriva de sus alumnos: matchea si ata al menos un alumno
+  // del grado elegido.
+  let gradeStudentIds: string[] | null = null;
+  if (gradeFilter) {
+    const gradeStudents = await prisma.student.findMany({
+      where: { schoolId, gradeId: gradeFilter },
+      select: { id: true },
+    });
+    gradeStudentIds = gradeStudents.map((s) => s.id);
+  }
+
+  const where: Prisma.InvitationWhereInput = {
     schoolId,
     ...(statusFilter ? { status: statusFilter } : {}),
+    ...(gradeStudentIds ? { studentIds: { hasSome: gradeStudentIds } } : {}),
   };
 
   const [total, invitations, byStatus] = await Promise.all([
@@ -79,7 +71,6 @@ export default async function InvitationsPage({
         studentIds: true,
         createdAt: true,
         claimedAt: true,
-        expiresAt: true,
       },
     }),
     prisma.invitation.groupBy({
@@ -114,92 +105,9 @@ export default async function InvitationsPage({
     studentNames: i.studentIds.map((sid) => studentMap.get(sid) ?? sid),
     createdAt: i.createdAt.toISOString(),
     claimedAt: i.claimedAt?.toISOString() ?? null,
-    expiresAt: i.expiresAt.toISOString(),
     resendable: i.status !== 'CLAIMED' && i.status !== 'REVOKED',
+    selectable: i.status === 'PENDING' || i.status === 'SENT' || i.status === 'EXPIRED',
   }));
-
-  const columns: Column<InvitationRow>[] = [
-    {
-      key: 'contact',
-      header: t('list.columns.contact'),
-      cell: (r) => (
-        <div>
-          <p className="font-bold">{r.recipientName ?? t('list.noName')}</p>
-          <p className="text-xs text-muted-foreground">{r.contactValue}</p>
-        </div>
-      ),
-    },
-    {
-      key: 'channel',
-      header: t('list.columns.channel'),
-      cell: (r) => (
-        <Badge variant={r.channel === 'EMAIL' ? 'default' : 'success'}>{r.channel}</Badge>
-      ),
-    },
-    {
-      key: 'students',
-      header: t('list.columns.students'),
-      cell: (r) => (
-        <div className="space-y-0.5 text-xs">
-          {r.studentNames.slice(0, 3).map((n) => (
-            <p key={n}>{n}</p>
-          ))}
-          {r.studentNames.length > 3 && (
-            <p className="text-muted-foreground">
-              {t('list.moreStudents', { count: r.studentNames.length - 3 })}
-            </p>
-          )}
-        </div>
-      ),
-    },
-    {
-      // "Envío" habla del ENVÍO; el registro del padre en la app va aparte (columna Registro).
-      // Pendiente de envío ≠ enviada ≠ enviada y registrada.
-      key: 'status',
-      header: t('list.columns.delivery'),
-      cell: (r) => <Badge variant={STATUS_VARIANTS[r.status]}>{t(`status.${r.status}`)}</Badge>,
-    },
-    {
-      key: 'registration',
-      header: t('list.columns.registration'),
-      cell: (r) =>
-        r.status === 'CLAIMED' ? (
-          <div>
-            <Badge variant="success">{t('list.registered')}</Badge>
-            {r.claimedAt && (
-              <p className="mt-0.5 text-[10px] text-muted-foreground">
-                {new Date(r.claimedAt).toLocaleDateString(intlLocale)}
-              </p>
-            )}
-          </div>
-        ) : r.status === 'REVOKED' ? (
-          <span className="text-xs text-muted-foreground">—</span>
-        ) : (
-          <Badge variant="warning">{t('list.registrationPending')}</Badge>
-        ),
-    },
-    {
-      key: 'date',
-      header: t('list.columns.created'),
-      cell: (r) => (
-        <span className="font-mono text-xs">
-          {new Date(r.createdAt).toLocaleDateString(intlLocale)}
-        </span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '',
-      className: 'text-right',
-      cell: (r) =>
-        r.resendable ? (
-          <div className="flex items-center justify-end gap-2">
-            <CopyInviteLink token={r.token} />
-            <ResendButton schoolId={schoolId} invitationId={r.id} />
-          </div>
-        ) : null,
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -208,9 +116,14 @@ export default async function InvitationsPage({
           <h1 className="text-3xl font-black">{t('list.title')}</h1>
           <p className="text-sm text-muted-foreground">{t('list.totalCount', { count: total })}</p>
         </div>
-        <Link href="/admin/invitations/import">
-          <Button>{t('importParents.title')}</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/imports/combined">
+            <Button variant="outline">{t('list.importCombined')}</Button>
+          </Link>
+          <Link href="/admin/invitations/import">
+            <Button>{t('importParents.title')}</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -241,35 +154,17 @@ export default async function InvitationsPage({
         </Link>
       </div>
 
-      <InvitationsFilters />
-      <DataTable
+      <InvitationsFilters grades={grades} />
+      <InvitationsTable
         rows={rows}
-        columns={columns}
+        schoolId={schoolId}
         page={page}
         pageSize={PAGE_SIZE}
         total={total}
-        baseUrl="/admin/invitations"
-        queryParams={{ status: status }}
-        empty={
-          status ? (
-            <EmptyState
-              icon={Mail}
-              title={t('list.emptyFiltered.title')}
-              description={t('list.emptyFiltered.description')}
-            />
-          ) : (
-            <EmptyState
-              icon={Mail}
-              title={t('list.empty.title')}
-              description={t('list.empty.description')}
-              action={
-                <Link href="/admin/invitations/import">
-                  <Button>{t('list.empty.importExcel')}</Button>
-                </Link>
-              }
-            />
-          )
-        }
+        status={statusFilter}
+        grade={gradeFilter}
+        intlLocale={intlLocale}
+        filtered={Boolean(statusFilter || gradeFilter)}
       />
     </div>
   );

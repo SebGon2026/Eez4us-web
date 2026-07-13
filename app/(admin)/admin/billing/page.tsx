@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { BillingActions } from '@/components/admin/billing-actions';
 import { OpenpayBillingActions } from '@/components/admin/openpay-billing-actions';

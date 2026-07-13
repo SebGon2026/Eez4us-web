@@ -42,6 +42,14 @@ export async function POST(
 
     const parentName = inv.recipientName ?? 'Padre/Madre';
 
+    // Persistir el token ANTES de enviarlo: si el update fallara después del envío, el padre
+    // quedaba con un link que no existe en la DB (404 imposible de diagnosticar). Si en cambio
+    // falla el envío, el director simplemente reintenta el reenvío.
+    await prisma.invitation.update({
+      where: { id: invId },
+      data: { token: newToken, expiresAt: newExpiresAt },
+    });
+
     await dispatchInvitation({
       channel: inv.channel,
       contactValue: inv.contactValue,
@@ -54,8 +62,6 @@ export async function POST(
     const updated = await prisma.invitation.update({
       where: { id: invId },
       data: {
-        token: newToken,
-        expiresAt: newExpiresAt,
         status: 'SENT',
         sentAt: new Date(),
       },

@@ -1,7 +1,7 @@
 import type { AlertSeverity, AlertType } from '@prisma/client';
 
 import { prisma } from './db';
-import { localeForCountry, type AppLocale } from './locale';
+import { type AppLocale,localeForCountry } from './locale';
 import { sendPushToSchoolRoles, sendPushToUser } from './push';
 import { encryptForChannel, readEncryptionMasterKey } from './pusher-encrypt';
 import { pusherTrigger, readPusherEnv } from './pusher-server';

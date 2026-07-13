@@ -246,6 +246,13 @@
     "required": "Required",
     "optional": "Optional",
     "addMore": "Add more",
+    "parentsProgress": "{invited, plural, one {# invited} other {# invited}} · {registered, plural, one {# registered} other {# registered}} in the app.",
+    "manageInvitations": "View and send invitations",
+    "combined": {
+      "title": "Upload the whole school in a single file",
+      "description": "Students and parents together: one row per student with their parent's details. Invitations stay pending and you send them when the school is ready.",
+      "cta": "Combined import"
+    },
     "steps": {
       "pickup": {
         "title": "Pickup point",
@@ -264,7 +271,7 @@
       },
       "parents": {
         "title": "Invited parents",
-        "description": "Upload the parents' Excel file: the system sends them the invitation by email or WhatsApp.",
+        "description": "Upload the parents' Excel file: invitations stay pending and you send them from Invitations (selected, by grade, or all), with reminders for those who don't register.",
         "cta": "Import parents"
       },
       "staff": {

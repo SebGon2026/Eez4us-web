@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { OperationalReport } from '@/components/admin/operational-report';
 import { getCurrentSession } from '@/lib/session';

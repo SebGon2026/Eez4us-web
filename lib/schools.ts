@@ -42,7 +42,10 @@ export async function createSchoolWithDirector(args: CreateSchoolArgs) {
   const exists = await prisma.school.findUnique({ where: { internalCode: codeUpper } });
   if (exists) throw new SchoolCreateError('CODE_ALREADY_USED');
 
-  const emailExists = await prisma.user.findUnique({ where: { email: args.director.email } });
+  // better-auth guarda el email en minúsculas: el check de duplicado debe comparar igual,
+  // o un casing distinto pasa el check y revienta en el signUp con un 500 crudo.
+  const directorEmail = args.director.email.trim().toLowerCase();
+  const emailExists = await prisma.user.findUnique({ where: { email: directorEmail } });
   if (emailExists) throw new SchoolCreateError('DIRECTOR_EMAIL_ALREADY_USED');
 
   const defaults = countryDefaults(args.country);
@@ -70,13 +73,13 @@ export async function createSchoolWithDirector(args: CreateSchoolArgs) {
   try {
     await auth.api.signUpEmail({
       body: {
-        email: args.director.email,
+        email: directorEmail,
         password: args.director.password,
         name: args.director.name,
       },
     });
     await prisma.user.update({
-      where: { email: args.director.email },
+      where: { email: directorEmail },
       // twoFactorEnabled: el 2FA por email es obligatorio para directores (requerimiento
       // del dueño), se fuerza acá y no hay opt-out en UI.
       data: { role: 'director', schoolId: school.id, emailVerified: true, twoFactorEnabled: true },
@@ -116,7 +119,7 @@ export async function createSchoolWithDirector(args: CreateSchoolArgs) {
         entity: 'School',
         entityId: school.id,
         metadata: {
-          directorEmail: args.director.email,
+          directorEmail,
           currency,
           timezone,
           trialDays,
@@ -129,7 +132,7 @@ export async function createSchoolWithDirector(args: CreateSchoolArgs) {
     // Compensación: borramos primero al director (si signUp alcanzó a crearlo) para soltar la
     // FK y liberar el email, y después la School (cascada de subscription/vendorSchool). Así un
     // reintento puede reusar el mismo internalCode y email.
-    await prisma.user.deleteMany({ where: { email: args.director.email, schoolId: school.id } }).catch(() => {});
+    await prisma.user.deleteMany({ where: { email: directorEmail, schoolId: school.id } }).catch(() => {});
     await prisma.school.delete({ where: { id: school.id } }).catch(() => {});
     throw err;
   }

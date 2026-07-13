@@ -63,9 +63,11 @@ export async function POST(req: Request): Promise<Response> {
         'INVITATION_EXPIRED',
         'SIGNUP_FAILED',
         'PHONE_INVALID',
+        'EMAIL_ALREADY_REGISTERED',
       ];
       if (known.includes(err.message)) {
-        return Response.json({ error: err.message }, { status: 400 });
+        const status = err.message === 'EMAIL_ALREADY_REGISTERED' ? 409 : 400;
+        return Response.json({ error: err.message }, { status });
       }
     }
     if (err instanceof HttpError) {
