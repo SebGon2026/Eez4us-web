@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { usePoll } from '@/lib/use-poll';
 import { cn } from '@/lib/utils';
 
 type Translator = ReturnType<typeof useTranslations>;
@@ -145,25 +146,26 @@ export function LiveArrivalsBoard({
   const fetchTrips = useCallback(async () => {
     try {
       const res = await fetch('/api/admin/live-trips', { credentials: 'include' });
-      if (!res.ok) return;
+      if (!res.ok) return false;
       const data = (await res.json()) as { trips: LiveTrip[] };
-      setTrips(data.trips ?? []);
+      const next = data.trips ?? [];
+      setTrips(next);
+      return next.length > 0;
     } catch {
-      // ignore
+      return false;
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // Fuera de la ventana de salida no hay un solo viaje: bajamos a 60s hasta que
+  // aparezca el primero, y con la pestaña oculta no se pega nada.
+  usePoll(fetchTrips, { activeMs: 5_000, idleMs: 60_000 });
+
   useEffect(() => {
-    fetchTrips();
-    const id = setInterval(fetchTrips, 5000);
     const tick = setInterval(() => setNow(Date.now()), 30000);
-    return () => {
-      clearInterval(id);
-      clearInterval(tick);
-    };
-  }, [fetchTrips]);
+    return () => clearInterval(tick);
+  }, []);
 
   const filtered = useMemo(
     () =>

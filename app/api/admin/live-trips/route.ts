@@ -11,6 +11,10 @@ export async function GET(req: Request): Promise<Response> {
         status: { in: ['EN_CAMINO', 'EN_ZONA'] },
       },
       orderBy: [{ etaSeconds: 'asc' }, { startedAt: 'asc' }],
+      // Director + staff + tablero de TV miran el mismo pickup point a la vez.
+      // 5s es el propio ritmo del board, así que no agrega latencia percibida y
+      // colapsa N espectadores en una sola lectura.
+      cacheStrategy: { ttl: 5 },
       include: {
         parent: { select: { id: true, name: true, email: true } },
         vehicle: { select: { plate: true, model: true, color: true } },

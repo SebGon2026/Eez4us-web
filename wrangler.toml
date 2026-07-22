@@ -34,10 +34,12 @@ directory = ".open-next/assets"
 binding = "ASSETS"
 
 # Cron Triggers:
-#   */1 * * * *  → alertas (overdue trips / arrived-not-delivered / stale invitations)
+#   */5 * * * *  → alertas (overdue trips / arrived-not-delivered / stale invitations).
+#                  Los umbrales son de 10 y 30 min: cada minuto sólo multiplicaba
+#                  por 5 las lecturas a Accelerate sin adelantar una sola alerta.
 #   0 9 * * *    → cobro mensual Openpay (run-openpay-charges; el ruteo está en worker-entry.mjs)
 [triggers]
-crons = ["*/1 * * * *", "0 9 * * *"]
+crons = ["*/5 * * * *", "0 9 * * *"]
 
 # Secrets a setear vía `wrangler secret put NAME` (NO en este archivo):
 #   DATABASE_URL                     Accelerate (prisma+postgres://...)

@@ -3,9 +3,10 @@
 import { Bell, Menu, PanelLeft, PanelLeftClose, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { usePoll } from '@/lib/use-poll';
 
 interface TopbarProps {
   schoolName: string | null;
@@ -25,25 +26,23 @@ export function Topbar({
   const t = useTranslations('nav');
   const [unread, setUnread] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    const tick = async () => {
-      try {
-        const res = await fetch('/api/alerts?unread=true&limit=1', { credentials: 'include' });
-        if (!res.ok) return;
-        const data = (await res.json()) as { unreadCount?: number };
-        if (!cancelled && typeof data.unreadCount === 'number') setUnread(data.unreadCount);
-      } catch {
-        // ignore
-      }
-    };
-    tick();
-    const id = setInterval(tick, 30_000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
+  // El topbar vive en TODAS las páginas del admin: es el poller que más pesa por
+  // volumen. Sólo necesita el número del badge, no la lista.
+  const tick = useCallback(async () => {
+    try {
+      const res = await fetch('/api/alerts?unread=true&countOnly=true', {
+        credentials: 'include',
+      });
+      if (!res.ok) return false;
+      const data = (await res.json()) as { unreadCount?: number };
+      if (typeof data.unreadCount === 'number') setUnread(data.unreadCount);
+    } catch {
+      // ignore
+    }
+    return false;
   }, []);
+
+  usePoll(tick, { activeMs: 60_000, idleMs: 60_000 });
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-card/90 px-4 backdrop-blur sm:gap-4 sm:px-6">

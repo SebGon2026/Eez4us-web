@@ -8,7 +8,9 @@ import {
   useMapsLibrary,
 } from '@vis.gl/react-google-maps';
 import { useTranslations } from 'next-intl';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
+
+import { usePoll } from '@/lib/use-poll';
 
 const DEMO_MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? 'DEMO_MAP_ID';
 
@@ -78,27 +80,22 @@ export function LiveMap({ center, pickupPoints }: Props) {
   const [mapError, setMapError] = useState(false);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_WEB_KEY;
 
-  useEffect(() => {
-    let cancelled = false;
-    async function tick() {
-      try {
-        const res = await fetch('/api/admin/live-trips', { credentials: 'include' });
-        if (!res.ok) return;
-        const data = (await res.json()) as { trips: LiveTrip[] };
-        if (!cancelled) setTrips(data.trips ?? []);
-      } catch {
-        // ignore
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+  const tick = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/live-trips', { credentials: 'include' });
+      if (!res.ok) return false;
+      const data = (await res.json()) as { trips: LiveTrip[] };
+      const next = data.trips ?? [];
+      setTrips(next);
+      return next.length > 0;
+    } catch {
+      return false;
+    } finally {
+      setLoading(false);
     }
-    tick();
-    const id = setInterval(tick, 5000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
   }, []);
+
+  usePoll(tick, { activeMs: 5_000, idleMs: 60_000 });
 
   const tripsWithPosition = trips.filter((trip) => trip.lastLat != null && trip.lastLng != null);
 

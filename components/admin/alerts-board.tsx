@@ -1,9 +1,10 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { intlLocaleOf } from '@/lib/locale';
+import { usePoll } from '@/lib/use-poll';
 import { cn } from '@/lib/utils';
 
 type AlertSeverity = 'info' | 'warning' | 'critical';
@@ -79,15 +80,13 @@ export function AlertsBoard({ initial }: { initial: AlertItem[] }) {
 
   const reload = useCallback(async () => {
     const res = await fetch('/api/alerts?limit=100', { credentials: 'include' });
-    if (!res.ok) return;
+    if (!res.ok) return false;
     const data = (await res.json()) as { alerts?: AlertItem[] };
     if (data.alerts) setAlerts(data.alerts);
+    return false;
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(reload, 30_000);
-    return () => clearInterval(id);
-  }, [reload]);
+  usePoll(reload, { activeMs: 60_000, idleMs: 60_000 });
 
   const visible = useMemo(() => {
     if (filter === 'all') return alerts;

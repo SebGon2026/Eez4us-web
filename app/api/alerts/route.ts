@@ -15,6 +15,7 @@ export async function GET(req: Request): Promise<Response> {
 
     const url = new URL(req.url);
     const unreadOnly = url.searchParams.get('unread') === 'true';
+    const countOnly = url.searchParams.get('countOnly') === 'true';
     const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50', 10) || 50, 200);
 
     const where: Prisma.AlertWhereInput = {
@@ -33,6 +34,13 @@ export async function GET(req: Request): Promise<Response> {
 
     if (unreadOnly) {
       where.readAt = null;
+    }
+
+    // El badge del topbar sólo quiere el número: nos ahorramos el findMany en el
+    // poller que corre en todas las páginas del admin.
+    if (countOnly) {
+      const unreadCount = await prisma.alert.count({ where: { ...where, readAt: null } });
+      return Response.json({ alerts: [], unreadCount });
     }
 
     const [alerts, unreadCount] = await Promise.all([
